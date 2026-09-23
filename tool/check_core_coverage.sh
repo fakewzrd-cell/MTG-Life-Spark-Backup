@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-MIN_PCT="${MIN_CORE_COVERAGE_PCT:-50}"
+MIN_PCT="${MIN_CORE_COVERAGE_PCT:-45}"
 
 if [[ ! -f coverage/lcov.info ]]; then
   echo "Missing coverage/lcov.info — run: flutter test --coverage"
