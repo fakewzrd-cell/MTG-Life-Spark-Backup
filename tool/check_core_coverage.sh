@@ -18,8 +18,12 @@ if ! command -v lcov >/dev/null 2>&1; then
   exit 0
 fi
 
-lcov --quiet --extract coverage/lcov.info '*/lib/core/*' -o coverage/core.lcov
-SUMMARY=$(lcov --summary coverage/core.lcov 2>&1)
+# Flutter may write relative (lib/core/...) or absolute (.../lib/core/...) SF paths.
+# lcov 2.x errors on empty extracts unless ignore-errors empty is set.
+lcov --quiet --ignore-errors empty,unused,mismatch \
+  --extract coverage/lcov.info 'lib/core/*' '*/lib/core/*' \
+  -o coverage/core.lcov
+SUMMARY=$(lcov --summary --ignore-errors empty,unused,mismatch coverage/core.lcov 2>&1)
 echo "$SUMMARY"
 
 LINE_PCT=$(echo "$SUMMARY" | awk '/lines.*:/ { gsub(/%/, "", $2); print $2; exit }')
