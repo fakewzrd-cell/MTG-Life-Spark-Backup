@@ -43,6 +43,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   String? _qrData;
   _QrHostLoadState _qrLoadState = _QrHostLoadState.loading;
   String? _qrErrorMessage;
+
   /// True after we successfully became host — used to detect external leave.
   var _hadHostSession = false;
   var _leaveInProgress = false;
@@ -102,8 +103,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
       if (host is! WsHostService) {
         setState(() {
           _qrLoadState = _QrHostLoadState.error;
-          _qrErrorMessage =
-              AppLocalizations.of(context).hostSessionDidNotStart;
+          _qrErrorMessage = AppLocalizations.of(context).hostSessionDidNotStart;
         });
         return;
       }
@@ -192,43 +192,53 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
           ),
         ),
         body: SafeArea(
-        bottom: false,
-        child: Builder(
-          builder: (context) {
-            return ListView(
-              padding: LayoutTokens.shellListPadding(context),
-              children: [
-          _QrHeader(
-            qrData: _qrData,
-            loadState: _qrLoadState,
-            errorMessage: _qrErrorMessage,
-            onRetry: _prepareHostQr,
-            playerCount: lobby.players.length,
-            maxPlayers: lobby.config.maxPlayers,
+          bottom: false,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: LayoutTokens.shellScrollPadding(context),
+                  children: [
+                    _QrHeader(
+                      qrData: _qrData,
+                      loadState: _qrLoadState,
+                      errorMessage: _qrErrorMessage,
+                      onRetry: _prepareHostQr,
+                      playerCount: lobby.players.length,
+                      maxPlayers: lobby.config.maxPlayers,
+                    ),
+                    SizedBox(height: LayoutTokens.shellSectionGap),
+                    ...lobby.players.map((slot) => _PlayerSlotCard(slot: slot)),
+                    if (lobby.players.length < lobby.config.maxPlayers)
+                      _EmptySlotCard(
+                        remaining:
+                            lobby.config.maxPlayers - lobby.players.length,
+                      ),
+                    SizedBox(height: LayoutTokens.shellSectionGap),
+                    const _MatchLabelSection(),
+                    SizedBox(height: LayoutTokens.shellSectionGap),
+                    _ConfigSection(config: lobby.config),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  LayoutTokens.shellPageInset,
+                  LayoutTokens.gr2,
+                  LayoutTokens.shellPageInset,
+                  LayoutTokens.shellBottomInset(context),
+                ),
+                child: _StartGameButton(
+                  canStart: lobby.canStart,
+                  hint: lobby.players.isEmpty
+                      ? l10n.hostNeedOnePlayer
+                      : lobby.players.any((p) => !p.isReady)
+                      ? l10n.hostEveryoneMustBeReady
+                      : null,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: LayoutTokens.shellSectionGap),
-          ...lobby.players.map((slot) => _PlayerSlotCard(slot: slot)),
-          if (lobby.players.length < lobby.config.maxPlayers)
-            _EmptySlotCard(
-              remaining: lobby.config.maxPlayers - lobby.players.length,
-            ),
-          SizedBox(height: LayoutTokens.shellSectionGap),
-          const _MatchLabelSection(),
-          SizedBox(height: LayoutTokens.shellSectionGap),
-          _ConfigSection(config: lobby.config),
-          SizedBox(height: LayoutTokens.shellSectionGap),
-          _StartGameButton(
-            canStart: lobby.canStart,
-            hint: lobby.players.isEmpty
-                ? l10n.hostNeedOnePlayer
-                : lobby.players.any((p) => !p.isReady)
-                    ? l10n.hostEveryoneMustBeReady
-                    : l10n.hostStartGame,
-          ),
-              ],
-            );
-          },
-        ),
         ),
       ),
     );
@@ -277,13 +287,15 @@ class _MatchLabelSectionState extends ConsumerState<_MatchLabelSection> {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
     final compact = MediaQuery.sizeOf(context).width < 360;
-    final recentLabels =
-        ref.watch(matchRepositoryProvider).recentLabels(limit: 6);
+    final recentLabels = ref
+        .watch(matchRepositoryProvider)
+        .recentLabels(limit: 6);
     final current = ref.watch(lobbyProvider).matchLabel;
     // Keep the field in sync if lobby state changes outside this TextField
     // (e.g. host QR Retry re-init preserving or clearing the label).
     final currentText = current ?? '';
-    if (_controller.text != currentText && !_controller.value.isComposingRangeValid) {
+    if (_controller.text != currentText &&
+        !_controller.value.isComposingRangeValid) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || _controller.text == currentText) return;
         _controller.value = TextEditingValue(
@@ -350,8 +362,9 @@ class _MatchLabelSectionState extends ConsumerState<_MatchLabelSection> {
                       ),
                     ),
                     backgroundColor: label == current
-                        ? colors.primaryAccent
-                            .withValues(alpha: OpacityTokens.soft)
+                        ? colors.primaryAccent.withValues(
+                            alpha: OpacityTokens.soft,
+                          )
                         : colors.backgroundSecondary,
                     side: BorderSide.none,
                     onPressed: () => _applyLabel(label),
@@ -405,7 +418,11 @@ class _QrHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.qr_code, color: colors.primaryAccent, size: compact ? 16 : 18),
+              Icon(
+                Icons.qr_code,
+                color: colors.primaryAccent,
+                size: compact ? 16 : 18,
+              ),
               SizedBox(width: LayoutTokens.gr1),
               Flexible(
                 child: Text(
@@ -644,8 +661,7 @@ class _SlotCommanderControls extends ConsumerWidget {
             label: l10n.hostSelectDeck,
             highlighted: slot.selectedDeckId != null,
             filled: false,
-            onPressed:
-                () => showDeckPickerSheet(context, ref, slot.playerId),
+            onPressed: () => showDeckPickerSheet(context, ref, slot.playerId),
           ),
         ),
         SizedBox(width: gap),
@@ -654,11 +670,10 @@ class _SlotCommanderControls extends ConsumerWidget {
             label: l10n.hostSelectCommander,
             highlighted: slot.commanderName != null,
             filled: true,
-            onPressed:
-                () => context.push(
-                  AppRoutes.commanderSelect,
-                  extra: {'playerId': slot.playerId},
-                ),
+            onPressed: () => context.push(
+              AppRoutes.commanderSelect,
+              extra: {'playerId': slot.playerId},
+            ),
           ),
         ),
       ],
@@ -682,12 +697,12 @@ class _SlotReadyButton extends ConsumerWidget {
           LayoutTokens.minTapTarget,
           LayoutTokens.minTapTarget,
         ),
-        backgroundColor:
-            slot.isReady
-                ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
-                : colors.backgroundSecondary,
-        foregroundColor:
-            slot.isReady ? colors.primaryAccent : colors.textSecondary,
+        backgroundColor: slot.isReady
+            ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
+            : colors.backgroundSecondary,
+        foregroundColor: slot.isReady
+            ? colors.primaryAccent
+            : colors.textSecondary,
       ),
       onPressed: () {
         final notifier = ref.read(lobbyProvider.notifier);
@@ -766,10 +781,7 @@ class _ConfigSection extends ConsumerWidget {
             child: _FormatDropdown(
               value: config.format,
               onChanged: (f) => notifier.updateConfig(
-                config.copyWith(
-                  format: f,
-                  startingLife: f.defaultStartingLife,
-                ),
+                config.copyWith(format: f, startingLife: f.defaultStartingLife),
               ),
             ),
           ),
@@ -778,10 +790,8 @@ class _ConfigSection extends ConsumerWidget {
             label: l10n.hostStartingLife,
             child: _StartingLifeDropdown(
               value: config.startingLife,
-              onChanged:
-                  (v) => notifier.updateConfig(
-                    config.copyWith(startingLife: v),
-                  ),
+              onChanged: (v) =>
+                  notifier.updateConfig(config.copyWith(startingLife: v)),
             ),
           ),
           SizedBox(height: LayoutTokens.gr4),
@@ -873,15 +883,9 @@ class _FormatDropdown extends StatelessWidget {
       dropdownColor: colors.surface,
       style: TextStyle(color: colors.textPrimary, fontSize: FontTokens.body),
       menuMaxHeight: 360,
-      items:
-          GameFormatDetails.lobbyPickerOrder
-              .map(
-                (f) => DropdownMenuItem(
-                  value: f,
-                  child: Text(f.displayName),
-                ),
-              )
-              .toList(),
+      items: GameFormatDetails.lobbyPickerOrder
+          .map((f) => DropdownMenuItem(value: f, child: Text(f.displayName)))
+          .toList(),
       onChanged: (f) {
         if (f != null) onChanged(f);
       },
@@ -893,10 +897,7 @@ class _StartingLifeDropdown extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
 
-  const _StartingLifeDropdown({
-    required this.value,
-    required this.onChanged,
-  });
+  const _StartingLifeDropdown({required this.value, required this.onChanged});
 
   static const _presets = [20, 25, 30, 40, 60];
   static const _customMenuValue = -1;
@@ -942,9 +943,7 @@ class _StartingLifeDropdown extends StatelessWidget {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
     final items = <DropdownMenuItem<int>>[
-      ..._presets.map(
-        (v) => DropdownMenuItem(value: v, child: Text('$v')),
-      ),
+      ..._presets.map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
       if (!_presets.contains(value))
         DropdownMenuItem(value: value, child: Text('$value')),
       DropdownMenuItem(
@@ -977,17 +976,15 @@ class _TurnTimeLimitDropdown extends StatelessWidget {
   final int? value;
   final ValueChanged<int?> onChanged;
 
-  const _TurnTimeLimitDropdown({
-    required this.value,
-    required this.onChanged,
-  });
+  const _TurnTimeLimitDropdown({required this.value, required this.onChanged});
 
   static const _presets = <int?>[null, 30, 60];
 
-  static String _label(AppLocalizations l10n, int? seconds) => switch (seconds) {
-    null => l10n.hostTurnLimitOff,
-    final int s => l10n.hostTurnLimitSeconds(s),
-  };
+  static String _label(AppLocalizations l10n, int? seconds) =>
+      switch (seconds) {
+        null => l10n.hostTurnLimitOff,
+        final int s => l10n.hostTurnLimitSeconds(s),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -1064,18 +1061,21 @@ class _GameplayToggles extends StatelessWidget {
           title: l10n.hostToggleAutoKo,
           subtitle: l10n.hostToggleAutoKoSubtitle,
           value: _autoKoAll,
-          onChanged: (v) => notifier.updateConfig(config.copyWith(
-                autoKoFromLife: v,
-                autoKoFromPoison: v,
-                autoKoFromCommanderDamage: v,
-              )),
+          onChanged: (v) => notifier.updateConfig(
+            config.copyWith(
+              autoKoFromLife: v,
+              autoKoFromPoison: v,
+              autoKoFromCommanderDamage: v,
+            ),
+          ),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleCommanderDmgLife,
           subtitle: l10n.hostToggleCommanderDmgLifeSubtitle,
           value: config.commanderDamageReducesLife,
           onChanged: (v) => notifier.updateConfig(
-              config.copyWith(commanderDamageReducesLife: v)),
+            config.copyWith(commanderDamageReducesLife: v),
+          ),
         ),
         _GameplaySwitchTile(
           title: l10n.hostTogglePhaseTracker,
@@ -1088,13 +1088,12 @@ class _GameplayToggles extends StatelessWidget {
           title: l10n.hostToggleTurnTimer,
           subtitle: l10n.hostToggleTurnTimerSubtitle,
           value: config.trackTurnDuration,
-          onChanged:
-              (v) => notifier.updateConfig(
-                config.copyWith(
-                  trackTurnDuration: v,
-                  turnTimeLimitSeconds: v ? config.turnTimeLimitSeconds : null,
-                ),
-              ),
+          onChanged: (v) => notifier.updateConfig(
+            config.copyWith(
+              trackTurnDuration: v,
+              turnTimeLimitSeconds: v ? config.turnTimeLimitSeconds : null,
+            ),
+          ),
         ),
         if (config.trackTurnDuration) ...[
           SizedBox(height: LayoutTokens.gr1),
@@ -1108,10 +1107,9 @@ class _GameplayToggles extends StatelessWidget {
               label: l10n.hostTurnLimit,
               child: _TurnTimeLimitDropdown(
                 value: config.turnTimeLimitSeconds,
-                onChanged:
-                    (v) => notifier.updateConfig(
-                      config.copyWith(turnTimeLimitSeconds: v),
-                    ),
+                onChanged: (v) => notifier.updateConfig(
+                  config.copyWith(turnTimeLimitSeconds: v),
+                ),
               ),
             ),
           ),
@@ -1161,7 +1159,9 @@ class _GameplaySwitchTile extends StatelessWidget {
       ),
       value: value,
       onChanged: onChanged,
-      activeTrackColor: colors.primaryAccent.withValues(alpha: OpacityTokens.half),
+      activeTrackColor: colors.primaryAccent.withValues(
+        alpha: OpacityTokens.half,
+      ),
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return colors.primaryAccent;
@@ -1180,7 +1180,7 @@ class _GameplaySwitchTile extends StatelessWidget {
 
 class _StartGameButton extends ConsumerStatefulWidget {
   final bool canStart;
-  final String hint;
+  final String? hint;
   const _StartGameButton({required this.canStart, required this.hint});
 
   @override
@@ -1194,21 +1194,41 @@ class _StartGameButtonState extends ConsumerState<_StartGameButton> {
   Widget build(BuildContext context) {
     final canStart = widget.canStart && !_isStarting;
     final l10n = AppLocalizations.of(context);
-    return UiButton(
-      label: widget.canStart ? l10n.hostStartGame : widget.hint,
-      enabled: widget.canStart,
-      loading: _isStarting,
-      onPressed: canStart
-          ? () async {
-              setState(() => _isStarting = true);
-              try {
-                await ref.read(lobbyProvider.notifier).broadcastGameStart();
-                if (context.mounted) context.go(AppRoutes.game);
-              } finally {
-                if (mounted) setState(() => _isStarting = false);
-              }
-            }
-          : null,
+    final colors = AppColorTokens.of(context);
+    final hint = widget.hint;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (hint != null) ...[
+          Text(
+            hint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: FontTokens.hudSm,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: LayoutTokens.gr1),
+        ],
+        UiButton(
+          label: l10n.hostStartGame,
+          enabled: widget.canStart,
+          loading: _isStarting,
+          onPressed: canStart
+              ? () async {
+                  setState(() => _isStarting = true);
+                  try {
+                    await ref.read(lobbyProvider.notifier).broadcastGameStart();
+                    if (context.mounted) context.go(AppRoutes.game);
+                  } finally {
+                    if (mounted) setState(() => _isStarting = false);
+                  }
+                }
+              : null,
+        ),
+      ],
     );
   }
 }

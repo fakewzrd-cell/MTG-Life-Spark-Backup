@@ -22,6 +22,9 @@ void main() {
       find.text('Create a session — others join you'),
       findsOneWidget,
     );
-    expect(find.text('Scan for a nearby host'), findsOneWidget);
+    expect(
+      find.text("Scan the host's QR code on the same Wi‑Fi"),
+      findsOneWidget,
+    );
   });
 }

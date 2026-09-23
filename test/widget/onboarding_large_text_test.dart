@@ -36,7 +36,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final bodyFinder = find.textContaining('Commander battlefield companion');
+    final bodyFinder = find.textContaining('Hold to change by 5');
     expect(bodyFinder, findsOneWidget);
 
     final body = tester.widget<Text>(bodyFinder);

@@ -149,7 +149,7 @@ void main() {
     expect(hostTimeout.canHostSkipTurn, isFalse);
   });
 
-  testWidgets('inactive End turn ignores tap; host long-press skips', (
+  testWidgets('inactive End turn ignores tap; host Skip button skips', (
     tester,
   ) async {
     var taps = 0;
@@ -168,7 +168,7 @@ void main() {
                 accentColor: Colors.purple,
                 onEndTurn: () => taps++,
                 endTurnEnabled: false,
-                onEndTurnLongPress: () => skips++,
+                onHostSkip: () => skips++,
                 endTurnSkipName: 'Bob',
               ),
             ),
@@ -177,14 +177,14 @@ void main() {
       ),
     );
 
-    expect(find.textContaining('Hold to skip Bob'), findsOneWidget);
+    expect(find.text('Skip Bob'), findsOneWidget);
 
     await tester.tap(find.text('End turn'));
     await tester.pump();
     expect(taps, 0);
     expect(skips, 0);
 
-    await tester.longPress(find.text('End turn'));
+    await tester.tap(find.text('Skip Bob'));
     await tester.pump();
     expect(taps, 0);
     expect(skips, 1);

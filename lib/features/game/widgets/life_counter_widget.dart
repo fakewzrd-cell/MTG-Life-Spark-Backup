@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import '../../../ui/theme/app_color_tokens.dart';
 import '../../../ui/tokens/motion_tokens.dart';
+
 import 'package:flutter/services.dart';
 
 import '../../../core/game/commander_identity_colors.dart';
@@ -22,7 +24,7 @@ import 'game_modal_chrome.dart';
 /// Interactions:
 ///   • Horizontal drag on the triplet → ±1 per 36px (4dp-aligned stride)
 ///   • Tap left / right edge → −1 / +1
-///   • Hold left / right → −5 / +5 every 150 ms (after 500 ms threshold)
+///   • Hold left / right → one ±5 after 500 ms, then ±5 every 500 ms
 ///   • Double-tap → numeric input dialog
 class LifeCounterWidget extends StatefulWidget {
   final int life;
@@ -103,11 +105,20 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
   void _change(int delta) {
     if (widget.isEliminated) return;
     widget.onLifeChange(delta);
-    final coalesce = _lastDelta != null &&
-        _deltaAnim.status != AnimationStatus.dismissed &&
-        _deltaAnim.value < 1.0;
+    final coalesce =
+        _lastDelta != null &&
+        (_holding ||
+            (_deltaAnim.status != AnimationStatus.dismissed &&
+                _deltaAnim.value < 1.0));
     setState(() => _lastDelta = coalesce ? _lastDelta! + delta : delta);
-    _deltaAnim.forward(from: 0);
+    if (_holding) {
+      // Stay fully visible while the finger is down so the running total
+      // can be read before the next step.
+      _deltaAnim.stop();
+      _deltaAnim.value = 0;
+    } else {
+      _deltaAnim.forward(from: 0);
+    }
     _pulseHaptic();
   }
 
@@ -128,10 +139,11 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
   void _startHold(int direction) {
     if (widget.isEliminated) return;
     _holding = true;
-    _holdTimer = Timer(MotionTokens.hero, () {
+    // One ±5 after a short hold, then the same step on a slow repeat.
+    _holdTimer = Timer(MotionTokens.lifeHoldStep, () {
       if (!_holding || !mounted) return;
       _change(direction * 5);
-      _holdTimer = Timer.periodic(MotionTokens.fast, (_) {
+      _holdTimer = Timer.periodic(MotionTokens.lifeHoldStep, (_) {
         if (!_holding || !mounted) {
           _holdTimer?.cancel();
           return;
@@ -142,9 +154,13 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
   }
 
   void _stopHold() {
+    final wasHolding = _holding;
     _holding = false;
     _holdTimer?.cancel();
     _holdTimer = null;
+    if (wasHolding && _lastDelta != null && mounted) {
+      _deltaAnim.forward(from: 0);
+    }
   }
 
   Future<void> _showNumberPad() async {
@@ -198,46 +214,45 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
               color: colors.backgroundPrimary.withValues(alpha: 0.88),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                    final wBody = constraints.maxWidth;
-                    final hBody = constraints.maxHeight;
-                    final tapEdge = _kStepStripWidth;
+                  final wBody = constraints.maxWidth;
+                  final hBody = constraints.maxHeight;
+                  final tapEdge = _kStepStripWidth;
 
-                    if (widget.isEliminated) {
-                      return Center(
-                        child: Text(
-                          '☠',
-                          style: TextStyle(
-                            fontSize: (hBody * 0.45).clamp(40.0, 96.0),
-                            fontWeight: FontWeight.w700,
-                            color: colors.textSecondary,
+                  if (widget.isEliminated) {
+                    return Semantics(
+                      label: l10n.lifeA11yEliminatedAt('${widget.life}'),
+                      child: Center(
+                        child: ExcludeSemantics(
+                          child: Text(
+                            '☠',
+                            style: TextStyle(
+                              fontSize: (hBody * 0.45).clamp(40.0, 96.0),
+                              fontWeight: FontWeight.w700,
+                              color: colors.textSecondary,
+                            ),
                           ),
                         ),
-                      );
-                    }
-
-                    final baseFontSize =
-                        (wBody < 200 || hBody < 120)
-                            ? FontTokens.displayLife - 12
-                            : (wBody < 280 || hBody < 150)
-                            ? FontTokens.displayLife
-                            : (widget.life.abs() >= 100 ? 72.0 : 80.0);
-                    final deltaFontSize = (baseFontSize * 0.27).clamp(
-                      18.0,
-                      26.0,
+                      ),
                     );
+                  }
 
-                    return Semantics(
-                      label: widget.isEliminated
-                          ? l10n.lifeA11yEliminatedAt('${widget.life}')
-                          : l10n.lifeA11yLifeTotal('${widget.life}'),
-                      value: '${widget.life}',
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          SizedBox(
-                            height: hBody,
-                            width: double.infinity,
-                            child: Row(
+                  final baseFontSize = (wBody < 200 || hBody < 120)
+                      ? FontTokens.displayLife - 12
+                      : (wBody < 280 || hBody < 150)
+                      ? FontTokens.displayLife
+                      : (widget.life.abs() >= 100 ? 72.0 : 80.0);
+                  final deltaFontSize = (baseFontSize * 0.27).clamp(18.0, 26.0);
+
+                  return Semantics(
+                    label: l10n.lifeA11yLifeTotal('${widget.life}'),
+                    value: '${widget.life}',
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        SizedBox(
+                          height: hBody,
+                          width: double.infinity,
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _LifeEdgeStepStrip(
@@ -300,36 +315,35 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
                               ),
                             ],
                           ),
-                          ),
-                          Center(
-                            child: IgnorePointer(
-                              child:
-                                  _lastDelta == null
-                                      ? const SizedBox.shrink()
-                                      : FadeTransition(
-                                        opacity: Tween(
-                                          begin: 1.0,
-                                          end: 0.0,
-                                        ).animate(_deltaFade),
-                                        child: SlideTransition(
-                                          position: _deltaSlide,
-                                          child: Text(
-                                            _lastDelta! > 0
-                                                ? '+$_lastDelta'
-                                                : '$_lastDelta',
-                                            style: TextStyle(
-                                              fontSize: deltaFontSize,
-                                              fontWeight: FontWeight.bold,
-                                              color: _deltaColor(colors),
-                                            ),
-                                          ),
+                        ),
+                        Center(
+                          child: IgnorePointer(
+                            child: _lastDelta == null
+                                ? const SizedBox.shrink()
+                                : FadeTransition(
+                                    opacity: Tween(
+                                      begin: 1.0,
+                                      end: 0.0,
+                                    ).animate(_deltaFade),
+                                    child: SlideTransition(
+                                      position: _deltaSlide,
+                                      child: Text(
+                                        _lastDelta! > 0
+                                            ? '+$_lastDelta'
+                                            : '$_lastDelta',
+                                        style: TextStyle(
+                                          fontSize: deltaFontSize,
+                                          fontWeight: FontWeight.bold,
+                                          color: _deltaColor(colors),
                                         ),
                                       ),
-                            ),
+                                    ),
+                                  ),
                           ),
-                        ],
-                      ),
-                    );
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
             ),
@@ -469,8 +483,7 @@ class _LifeInputDialogState extends State<_LifeInputDialog> {
         titleWidget: Text(
           _input.isEmpty ? l10n.lifeSetTotalTitle : _input,
           style: TextStyle(
-            color:
-                _input.isEmpty ? colors.textSecondary : colors.textPrimary,
+            color: _input.isEmpty ? colors.textSecondary : colors.textPrimary,
             fontSize: _input.isEmpty ? LayoutTokens.gr3 : LayoutTokens.gr5,
             fontWeight: FontWeight.bold,
           ),
@@ -489,37 +502,36 @@ class _LifeInputDialogState extends State<_LifeInputDialog> {
             ['⌫', '0', '✓'],
           ])
             Row(
-              children:
-                  row.map((label) {
-                    if (label == '⌫') {
-                      return _key(label, onTap: _delete);
-                    }
-                    if (label == '✓') {
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(LayoutTokens.gr0),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primaryAccent,
-                              minimumSize: const Size(0, LayoutTokens.gr6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  RadiusTokens.sm,
-                                ),
-                              ),
-                            ),
-                            onPressed: _input.isNotEmpty ? _confirm : null,
-                            child: Icon(
-                              Icons.check,
-                              color: colors.onAccent,
-                              size: LayoutTokens.gr3,
+              children: row.map((label) {
+                if (label == '⌫') {
+                  return _key(label, onTap: _delete);
+                }
+                if (label == '✓') {
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(LayoutTokens.gr0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primaryAccent,
+                          minimumSize: const Size(0, LayoutTokens.gr6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              RadiusTokens.sm,
                             ),
                           ),
                         ),
-                      );
-                    }
-                    return _key(label);
-                  }).toList(),
+                        onPressed: _input.isNotEmpty ? _confirm : null,
+                        child: Icon(
+                          Icons.check,
+                          color: colors.onAccent,
+                          size: LayoutTokens.gr3,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return _key(label);
+              }).toList(),
             ),
         ],
       ),

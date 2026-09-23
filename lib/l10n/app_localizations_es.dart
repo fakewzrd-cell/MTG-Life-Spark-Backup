@@ -255,7 +255,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lobbyJoinGame => 'Unirse';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Busca un anfitrión cercano';
+  String get lobbyJoinGameSubtitle =>
+      'Escanea el QR del anfitrión en la misma Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Sala del anfitrión';
@@ -464,7 +465,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'Se necesita acceso a la cámara para escanear el QR del anfitrión.\\nSi ya lo permitiste en Ajustes, pulsa Reintentar.';
+      'Se necesita acceso a la cámara para escanear el QR del anfitrión.\nSi ya lo permitiste en Ajustes, pulsa Reintentar.';
 
   @override
   String get joinOpenSettings => 'Abrir Ajustes';
@@ -536,21 +537,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      'Un jugador aloja la partida — los demás escanean un QR en la misma red Wi‑Fi. Sin cuenta de internet. Para 4 a 6 jugadores en la misma mesa.';
+      'Un jugador aloja la partida. Los demás escanean su código QR en la misma Wi‑Fi. Sin cuenta. Sirve para 1 a 6 jugadores.';
 
   @override
   String get onboardingSlide3Title => 'Controla tu vida';
 
   @override
   String get onboardingSlide3Body =>
-      'Toca +/- para cambiar la vida en 1. Mantén +/- para ±5. Arrastra izquierda o derecha para ajustar rápido. Doble toque en la vida para un número exacto. Deshacer está en la barra inferior (o agita, si está activado).';
+      'Toca + o − para cambiar la vida en 1. Mantén pulsado para cambiar 5, y luego sigue despacio. Arrastra a los lados para ajustar rápido. Doble toque en la vida para un número exacto. Deshacer está en la barra inferior.';
 
   @override
   String get onboardingSlide4Title => 'Fases y turnos';
 
   @override
   String get onboardingSlide4Body =>
-      'Usa la barra de fases para avanzar el turno, o deja el seguimiento de fases desactivado en la sala. La pausa detiene toda la partida.';
+      'Terminar turno es el botón grande. Atrás y Siguiente recorren las fases, o desactiva el seguimiento en la sala. El anfitrión puede tocar Saltar si alguien se queda atascado. La pausa detiene toda la partida.';
 
   @override
   String get onboardingSlide5Title => 'Commander y contadores';
@@ -2968,4 +2969,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get logTails => 'Cruz';
+
+  @override
+  String get gameBarStopTimeout => 'Parar';
+
+  @override
+  String get gameSkipTurn => 'Saltar turno';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return 'Saltar a $name';
+  }
+
+  @override
+  String get gameTabLookup => 'Reglas';
+
+  @override
+  String get lookupRulingsError =>
+      'No se pudieron cargar las rulings. Revisa tu conexión.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Mostrando los primeros $count resultados.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life de vida';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, eliminado';
+  }
 }

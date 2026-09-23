@@ -254,7 +254,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lobbyJoinGame => 'Entrar na partida';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Procure um host por perto';
+  String get lobbyJoinGameSubtitle =>
+      'Escaneie o QR do anfitrião na mesma Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Lobby do host';
@@ -464,7 +465,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'É preciso acesso à câmera para escanear o QR do host.\\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
+      'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
 
   @override
   String get joinOpenSettings => 'Abrir Ajustes';
@@ -536,21 +537,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      'Um jogador hospeda — os outros escaneiam um QR na mesma rede Wi‑Fi. Sem conta na internet. Funciona com 4 a 6 jogadores na mesma mesa.';
+      'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
 
   @override
   String get onboardingSlide3Title => 'Acompanhe sua vida';
 
   @override
   String get onboardingSlide3Body =>
-      'Toque em +/- para mudar a vida em 1. Segure +/- para ±5. Arraste para a esquerda ou direita para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra inferior (ou agite, se ativado).';
+      'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
 
   @override
   String get onboardingSlide4Title => 'Fases e turnos';
 
   @override
   String get onboardingSlide4Body =>
-      'Use a barra de fases para avançar o turno, ou deixe o rastreador desligado no lobby. A pausa interrompe a partida inteira.';
+      'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
 
   @override
   String get onboardingSlide5Title => 'Commander e contadores';
@@ -2967,6 +2968,39 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get logTails => 'Coroa';
+
+  @override
+  String get gameBarStopTimeout => 'Parar';
+
+  @override
+  String get gameSkipTurn => 'Pular turno';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return 'Pular $name';
+  }
+
+  @override
+  String get gameTabLookup => 'Regras';
+
+  @override
+  String get lookupRulingsError =>
+      'Não foi possível carregar as rulings. Verifique a conexão.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Mostrando os primeiros $count resultados.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life de vida';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, fora';
+  }
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3219,7 +3253,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get lobbyJoinGame => 'Entrar na partida';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Procure um host por perto';
+  String get lobbyJoinGameSubtitle =>
+      'Escaneie o QR do anfitrião na mesma Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Lobby do host';
@@ -3429,7 +3464,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get joinCameraDeniedBody =>
-      'É preciso acesso à câmera para escanear o QR do host.\\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
+      'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
 
   @override
   String get joinOpenSettings => 'Abrir Ajustes';
@@ -3501,21 +3536,21 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get onboardingSlide2Body =>
-      'Um jogador hospeda — os outros escaneiam um QR na mesma rede Wi‑Fi. Sem conta na internet. Funciona com 4 a 6 jogadores na mesma mesa.';
+      'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
 
   @override
   String get onboardingSlide3Title => 'Acompanhe sua vida';
 
   @override
   String get onboardingSlide3Body =>
-      'Toque em +/- para mudar a vida em 1. Segure +/- para ±5. Arraste para a esquerda ou direita para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra inferior (ou agite, se ativado).';
+      'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
 
   @override
   String get onboardingSlide4Title => 'Fases e turnos';
 
   @override
   String get onboardingSlide4Body =>
-      'Use a barra de fases para avançar o turno, ou deixe o rastreador desligado no lobby. A pausa interrompe a partida inteira.';
+      'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
 
   @override
   String get onboardingSlide5Title => 'Commander e contadores';
@@ -5932,4 +5967,37 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get logTails => 'Coroa';
+
+  @override
+  String get gameBarStopTimeout => 'Parar';
+
+  @override
+  String get gameSkipTurn => 'Pular turno';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return 'Pular $name';
+  }
+
+  @override
+  String get gameTabLookup => 'Regras';
+
+  @override
+  String get lookupRulingsError =>
+      'Não foi possível carregar as rulings. Verifique a conexão.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Mostrando os primeiros $count resultados.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life de vida';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, fora';
+  }
 }

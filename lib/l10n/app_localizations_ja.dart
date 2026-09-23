@@ -245,7 +245,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lobbyJoinGame => '参加する';
 
   @override
-  String get lobbyJoinGameSubtitle => '近くのホストを探す';
+  String get lobbyJoinGameSubtitle => '同じWi‑FiでホストのQRコードを読み取る';
 
   @override
   String get hostLobbyTitle => 'ホストロビー';
@@ -441,7 +441,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'ホストのQRをスキャンするにはカメラアクセスが必要です。\\n設定で既に許可している場合は、再試行をタップ。';
+      'ホストのQRコードを読むにはカメラへのアクセスが必要です。\n設定ですでに許可している場合は、もう一度試すをタップしてください。';
 
   @override
   String get joinOpenSettings => '設定を開く';
@@ -511,21 +511,21 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      '1人がホストし、他の人は同じWi‑Fi上でQRをスキャン。インターネットアカウント不要。同じテーブルの4〜6人向け。';
+      '1人がホストになります。ほかの人は同じWi‑FiでそのQRコードを読み取ります。アカウントは不要です。1人から6人まで遊べます。';
 
   @override
   String get onboardingSlide3Title => 'ライフを追跡';
 
   @override
   String get onboardingSlide3Body =>
-      '+/-をタップでライフ±1。+/-を長押しで±5。左右にドラッグで素早く調整。ライフをダブルタップで正確な数値。取り消しは下部バー（または有効ならシェイク）。';
+      '+か−をタップするとライフが1変わります。長押しすると5変わり、そのあとゆっくり続きます。左右にドラッグするとすばやく調整できます。ライフをダブルタップすると数字を直接入力できます。やり直しは下のバーにあります。';
 
   @override
   String get onboardingSlide4Title => 'フェーズバーとターン';
 
   @override
   String get onboardingSlide4Body =>
-      'フェーズバーでターンを進めるか、ロビーでフェーズトラッカーをオフに。一時停止はゲーム全体を止めます。';
+      'ターン終了は大きいボタンです。戻ると次へでフェイズを進めます。ロビーでフェイズ表示をオフにもできます。席が止まったらホストはスキップをタップできます。タイムアウトはゲーム全体を止めます。';
 
   @override
   String get onboardingSlide5Title => '統率者とカウンター';
@@ -2870,4 +2870,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get logTails => '裏';
+
+  @override
+  String get gameBarStopTimeout => '停止';
+
+  @override
+  String get gameSkipTurn => 'ターンをスキップ';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return '$nameをスキップ';
+  }
+
+  @override
+  String get gameTabLookup => 'ルール';
+
+  @override
+  String get lookupRulingsError => 'ルーリングを読み込めませんでした。接続を確認してください。';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return '最初の$count件を表示しています。';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name、ライフ$life';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name、脱落';
+  }
 }

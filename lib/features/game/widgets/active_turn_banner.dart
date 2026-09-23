@@ -24,13 +24,14 @@ class ActiveTurnBanner extends StatelessWidget {
     final isLocal = game.isLocalPlayersTurn;
     // Seat identity uses player color — brand accent is reserved for CTAs.
     final accent = active?.playerColor ?? colors.primaryAccent;
+    final youLabel = l10n.glanceYou;
     final name = isLocal
-        ? 'You'
+        ? youLabel
         : overviewShortPlayerName(active?.username ?? '—', maxChars: 14);
     final turnLabel =
         isLocal ? l10n.gameYourTurn : l10n.gamePlayersTurn(name);
     final initial = isLocal
-        ? 'Y'
+        ? (youLabel.isNotEmpty ? youLabel[0].toUpperCase() : '?')
         : (active?.username.isNotEmpty == true
             ? active!.username[0].toUpperCase()
             : '?');

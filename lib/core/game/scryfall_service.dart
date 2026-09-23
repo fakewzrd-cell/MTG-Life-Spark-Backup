@@ -210,8 +210,10 @@ class ScryfallService {
   }
 
   /// Official Wizards / Scryfall rulings for a card UUID from [ScryfallCard.id].
-  /// Returns an empty list when the card has no rulings or the id is missing.
-  Future<List<ScryfallRuling>> fetchRulings(String? cardId) async {
+  ///
+  /// Empty list: the card has no rulings, or [cardId] is missing.
+  /// Null: the request failed, so the UI must not claim there are no rulings.
+  Future<List<ScryfallRuling>?> fetchRulings(String? cardId) async {
     final id = cardId?.trim();
     if (id == null || id.isEmpty) return const [];
     try {
@@ -236,7 +238,7 @@ class ScryfallService {
       ].where((r) => r.comment.isNotEmpty).toList();
     } catch (e, st) {
       appLog('Scryfall rulings fetch failed for $id', error: e, stackTrace: st);
-      return const [];
+      return null;
     }
   }
 

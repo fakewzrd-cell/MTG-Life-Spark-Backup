@@ -764,8 +764,7 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                                 game.timeoutActive ? null : notifier.setPhase,
                             onEndTurn: notifier.endTurn,
                             endTurnEnabled: endTurnEnabled,
-                            onEndTurnLongPress:
-                                canHostSkip ? notifier.endTurn : null,
+                            onHostSkip: canHostSkip ? notifier.endTurn : null,
                             endTurnSkipName: canHostSkip ? activeName : null,
                           )
                           : EndTurnBar(
@@ -843,8 +842,8 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                       );
                   final turnChromeH =
                       game.phasesEnabled
-                          ? PhaseNavCluster.barHeight
-                          : EndTurnBar.barHeight;
+                          ? PhaseNavCluster.heightFor(showSkip: canHostSkip)
+                          : EndTurnBar.heightFor(showSkip: canHostSkip);
                   final comfortableMin =
                       extraRowEstimate + // Card lookup always present
                       (variantsEnabled ? extraRowEstimate : 0.0) +

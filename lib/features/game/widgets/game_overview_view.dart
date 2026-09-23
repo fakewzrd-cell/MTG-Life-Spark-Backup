@@ -155,9 +155,8 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
 
     // Keep status / nav bar styling aligned with the rest of the app so Table
     // does not flash a white system bar (SliverAppBar default overlay).
-    final overlay = AppSystemUi.overlayStyle(
-      context,
-    ).copyWith(statusBarColor: Colors.transparent);
+    final overlay = AppSystemUi.overlayStyle(context)
+        .copyWith(statusBarColor: Colors.transparent);
 
     // Transparent top chrome so the identity gradient reads edge-to-edge;
     // [SliverAppBar] (primary) still owns status-bar inset without a dark band.
@@ -369,25 +368,24 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                       pageInset,
                       LayoutTokens.gr3,
                     ),
-                    sliver:
-                        _canHostReorder(game)
-                            ? SliverReorderableList(
-                              itemCount: game.playersInTurnOrder.length,
-                              onReorder: _onHostReorder,
-                              itemBuilder: (context, index) {
-                                final p = game.playersInTurnOrder[index];
-                                return ReorderableDelayedDragStartListener(
-                                  key: ValueKey(p.playerId),
-                                  index: index,
-                                  child: _keyedRow(p),
-                                );
-                              },
-                            )
-                            : SliverList(
-                              delegate: SliverChildListDelegate(
-                                _buildPlayerListChildren(),
-                              ),
+                    sliver: _canHostReorder(game)
+                        ? SliverReorderableList(
+                            itemCount: game.playersInTurnOrder.length,
+                            onReorder: _onHostReorder,
+                            itemBuilder: (context, index) {
+                              final p = game.playersInTurnOrder[index];
+                              return ReorderableDelayedDragStartListener(
+                                key: ValueKey(p.playerId),
+                                index: index,
+                                child: _keyedRow(p),
+                              );
+                            },
+                          )
+                        : SliverList(
+                            delegate: SliverChildListDelegate(
+                              _buildPlayerListChildren(),
                             ),
+                          ),
                   ),
                 ],
               ),
@@ -410,54 +408,40 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                       enabled: endTurnEnabled,
                       onEndTurn: () => notifier.endTurn(),
                       waitingForName: waitingForName,
-                      onHostSkip:
-                          game.canHostSkipTurn
-                              ? () => notifier.endTurn()
-                              : null,
+                      onHostSkip: game.canHostSkipTurn
+                          ? () => notifier.endTurn()
+                          : null,
                     ),
                     if (game.localPlayer != null &&
                         !game.localPlayer!.isEliminated &&
-                        !game.gameOver) ...[
-                      SizedBox(height: LayoutTokens.gr1),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: colors.surface.withValues(alpha: 0.94),
-                          borderRadius: RadiusTokens.radiusControlSm,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: RadiusTokens.radiusControlSm,
-                          child: SizedBox(
-                            height: EndTurnBar.barHeight,
-                            child: Material(
-                              color: colors.error.withValues(
-                                alpha: OpacityTokens.soft,
-                              ),
-                              child: InkWell(
-                                onTap: () {
-                                  context.gameHapticLight();
-                                  showGameForfeitFlow(
-                                    context,
-                                    ref,
-                                    game.localPlayerId,
-                                  );
-                                },
-                                child: Center(
-                                  child: Text(
-                                    AppLocalizations.of(context).forfeitConfirm,
-                                    style: TextStyle(
-                                      fontSize: FontTokens.title,
-                                      fontWeight: FontWeight.w700,
-                                      color: colors.error,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                        !game.gameOver)
+                      Align(
+                        alignment: Alignment.center,
+                        child: TextButton(
+                          onPressed: () {
+                            context.gameHapticLight();
+                            showGameForfeitFlow(
+                              context,
+                              ref,
+                              game.localPlayerId,
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: colors.error,
+                            minimumSize: const Size(
+                              LayoutTokens.minTapTarget,
+                              LayoutTokens.minTapTarget,
+                            ),
+                          ),
+                          child: Text(
+                            l10n.forfeitConfirm,
+                            style: const TextStyle(
+                              fontSize: FontTokens.hudSm,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -605,60 +589,55 @@ class _GameOverviewLifeBadge extends StatelessWidget {
         vertical: LayoutTokens.gr0 + 2,
       ),
       decoration: BoxDecoration(
-        color:
-            isActive && !eliminated
-                ? accent.withValues(alpha: OpacityTokens.subtle)
-                : colors.backgroundSecondary.withValues(
-                  alpha: OpacityTokens.half,
-                ),
+        color: isActive && !eliminated
+            ? accent.withValues(alpha: OpacityTokens.subtle)
+            : colors.backgroundSecondary.withValues(alpha: OpacityTokens.half),
         borderRadius: RadiusTokens.radiusControlSm,
       ),
       alignment: Alignment.center,
-      child:
-          eliminated
-              ? Text(
-                AppLocalizations.of(context).statusOut,
-                style: TextStyle(
-                  color: _textColor(colors),
-                  fontWeight: FontWeight.w700,
-                  fontSize: FontTokens.hudSm,
-                  height: 1,
-                ),
-              )
-              : showHeart
-              ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.favorite_rounded,
-                    size: 18,
-                    color: _textColor(
-                      colors,
-                    ).withValues(alpha: OpacityTokens.nearOpaque),
-                  ),
-                  SizedBox(width: LayoutTokens.gr0),
-                  Text(
-                    '$life',
-                    style: TextStyle(
-                      color: _textColor(colors),
-                      fontWeight: FontWeight.w700,
-                      fontSize: FontTokens.body,
-                      height: 1,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              )
-              : Text(
-                '$life',
-                style: TextStyle(
-                  color: _textColor(colors),
-                  fontWeight: FontWeight.w700,
-                  fontSize: FontTokens.body,
-                  height: 1,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+      child: eliminated
+          ? Text(
+              AppLocalizations.of(context).statusOut,
+              style: TextStyle(
+                color: _textColor(colors),
+                fontWeight: FontWeight.w700,
+                fontSize: FontTokens.hudSm,
+                height: 1,
               ),
+            )
+          : showHeart
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.favorite_rounded,
+                  size: 18,
+                  color: _textColor(colors)
+                      .withValues(alpha: OpacityTokens.nearOpaque),
+                ),
+                SizedBox(width: LayoutTokens.gr0),
+                Text(
+                  '$life',
+                  style: TextStyle(
+                    color: _textColor(colors),
+                    fontWeight: FontWeight.w700,
+                    fontSize: FontTokens.body,
+                    height: 1,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              '$life',
+              style: TextStyle(
+                color: _textColor(colors),
+                fontWeight: FontWeight.w700,
+                fontSize: FontTokens.body,
+                height: 1,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
     );
   }
 }
@@ -692,12 +671,9 @@ class _GameOverviewLifeStepper extends StatelessWidget {
     final colors = context.gameColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color:
-            isActive
-                ? accent.withValues(alpha: OpacityTokens.subtle)
-                : colors.backgroundSecondary.withValues(
-                  alpha: OpacityTokens.half,
-                ),
+        color: isActive
+            ? accent.withValues(alpha: OpacityTokens.subtle)
+            : colors.backgroundSecondary.withValues(alpha: OpacityTokens.half),
         borderRadius: RadiusTokens.radiusControlSm,
       ),
       child: Row(
@@ -707,77 +683,71 @@ class _GameOverviewLifeStepper extends StatelessWidget {
             icon: Icons.remove_rounded,
             enabled: enabled,
             semanticLabel: AppLocalizations.of(context).overviewDecreaseLife,
-            onTap:
-                enabled
-                    ? () {
-                      context.gameHapticLight();
-                      onDelta(-1);
-                    }
-                    : null,
-            onHoldStep:
-                enabled
-                    ? () {
-                      context.gameHapticLight();
-                      onDelta(-5);
-                    }
-                    : null,
+            onTap: enabled
+                ? () {
+                    context.gameHapticLight();
+                    onDelta(-1);
+                  }
+                : null,
+            onHoldStep: enabled
+                ? () {
+                    context.gameHapticLight();
+                    onDelta(-5);
+                  }
+                : null,
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr0),
-            child:
-                showHeart
-                    ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.favorite_rounded,
-                          size: 16,
-                          color: _textColor(
-                            colors,
-                          ).withValues(alpha: OpacityTokens.nearOpaque),
-                        ),
-                        SizedBox(width: LayoutTokens.gr0),
-                        Text(
-                          '$life',
-                          style: TextStyle(
-                            color: _textColor(colors),
-                            fontWeight: FontWeight.w700,
-                            fontSize: FontTokens.body,
-                            height: 1,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ],
-                    )
-                    : Text(
-                      '$life',
-                      style: TextStyle(
-                        color: _textColor(colors),
-                        fontWeight: FontWeight.w700,
-                        fontSize: FontTokens.body,
-                        height: 1,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+            child: showHeart
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.favorite_rounded,
+                        size: 16,
+                        color: _textColor(colors)
+                            .withValues(alpha: OpacityTokens.nearOpaque),
                       ),
+                      SizedBox(width: LayoutTokens.gr0),
+                      Text(
+                        '$life',
+                        style: TextStyle(
+                          color: _textColor(colors),
+                          fontWeight: FontWeight.w700,
+                          fontSize: FontTokens.body,
+                          height: 1,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    '$life',
+                    style: TextStyle(
+                      color: _textColor(colors),
+                      fontWeight: FontWeight.w700,
+                      fontSize: FontTokens.body,
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
+                  ),
           ),
           _LifeStepButton(
             icon: Icons.add_rounded,
             enabled: enabled,
             semanticLabel: AppLocalizations.of(context).overviewIncreaseLife,
-            onTap:
-                enabled
-                    ? () {
-                      context.gameHapticLight();
-                      onDelta(1);
-                    }
-                    : null,
-            onHoldStep:
-                enabled
-                    ? () {
-                      context.gameHapticLight();
-                      onDelta(5);
-                    }
-                    : null,
+            onTap: enabled
+                ? () {
+                    context.gameHapticLight();
+                    onDelta(1);
+                  }
+                : null,
+            onHoldStep: enabled
+                ? () {
+                    context.gameHapticLight();
+                    onDelta(5);
+                  }
+                : null,
           ),
         ],
       ),
@@ -819,10 +789,10 @@ class _LifeStepButtonState extends State<_LifeStepButton> {
   void _startHold() {
     if (!widget.enabled || widget.onHoldStep == null) return;
     _holding = true;
-    _holdTimer = Timer(MotionTokens.hero, () {
+    _holdTimer = Timer(MotionTokens.lifeHoldStep, () {
       if (!_holding || !mounted) return;
       widget.onHoldStep!();
-      _holdTimer = Timer.periodic(MotionTokens.fast, (_) {
+      _holdTimer = Timer.periodic(MotionTokens.lifeHoldStep, (_) {
         if (!_holding || !mounted) {
           _holdTimer?.cancel();
           return;
@@ -848,26 +818,24 @@ class _LifeStepButtonState extends State<_LifeStepButton> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
-        onLongPressStart:
-            widget.enabled && widget.onHoldStep != null
-                ? (_) => _startHold()
-                : null,
-        onLongPressEnd:
-            widget.enabled && widget.onHoldStep != null
-                ? (_) => _stopHold()
-                : null,
-        onLongPressCancel:
-            widget.enabled && widget.onHoldStep != null ? _stopHold : null,
+        onLongPressStart: widget.enabled && widget.onHoldStep != null
+            ? (_) => _startHold()
+            : null,
+        onLongPressEnd: widget.enabled && widget.onHoldStep != null
+            ? (_) => _stopHold()
+            : null,
+        onLongPressCancel: widget.enabled && widget.onHoldStep != null
+            ? _stopHold
+            : null,
         child: SizedBox(
           width: LayoutTokens.minTapTarget,
           height: LayoutTokens.minTapTarget,
           child: Icon(
             widget.icon,
             size: 20,
-            color:
-                widget.enabled
-                    ? colors.textPrimary
-                    : colors.textSecondary.withValues(alpha: 0.4),
+            color: widget.enabled
+                ? colors.textPrimary
+                : colors.textSecondary.withValues(alpha: 0.4),
           ),
         ),
       ),
@@ -979,8 +947,9 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
     final colors = context.gameColors;
     final isActive = p.playerId == game.activePlayerId;
     final isLocal = p.playerId == game.localPlayerId;
-    final teamIdx =
-        game.teamsEnabled ? (game.teamAssignments[p.playerId] ?? 0) : 0;
+    final teamIdx = game.teamsEnabled
+        ? (game.teamAssignments[p.playerId] ?? 0)
+        : 0;
     final local = game.localPlayer;
     final notifier = ref.read(gameProvider.notifier);
     final pendingLabel = pendingAllianceLabel(
@@ -1018,30 +987,28 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       margin: EdgeInsets.only(bottom: LayoutTokens.gr2),
       decoration: BoxDecoration(
-        gradient:
-            showAsActive
-                ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [borderColor.withValues(alpha: 0.24), colors.surface],
-                )
-                : null,
-        color:
-            p.isEliminated
-                ? colors.backgroundSecondary.withValues(
-                  alpha: OpacityTokens.half,
-                )
-                : showAsActive
-                ? null
-                : isLocal
-                ? colors.surface.withValues(alpha: OpacityTokens.nearOpaque)
-                : colors.surface,
-        borderRadius:
-            showAsActive ? RadiusTokens.radiusMd : RadiusTokens.radiusSm,
+        gradient: showAsActive
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [borderColor.withValues(alpha: 0.24), colors.surface],
+              )
+            : null,
+        color: p.isEliminated
+            ? colors.backgroundSecondary.withValues(alpha: OpacityTokens.half)
+            : showAsActive
+            ? null
+            : isLocal
+            ? colors.surface.withValues(alpha: OpacityTokens.nearOpaque)
+            : colors.surface,
+        borderRadius: showAsActive
+            ? RadiusTokens.radiusMd
+            : RadiusTokens.radiusSm,
       ),
       child: ClipRRect(
-        borderRadius:
-            showAsActive ? RadiusTokens.radiusMd : RadiusTokens.radiusSm,
+        borderRadius: showAsActive
+            ? RadiusTokens.radiusMd
+            : RadiusTokens.radiusSm,
         child: Stack(
           children: [
             OverviewCommanderArtBackdrop(player: p),
@@ -1109,15 +1076,13 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                                       TextSpan(
                                         text: p.username,
                                         style: TextStyle(
-                                          color:
-                                              p.isEliminated
-                                                  ? colors.textSecondary
-                                                  : colors.textPrimary,
+                                          color: p.isEliminated
+                                              ? colors.textSecondary
+                                              : colors.textPrimary,
                                           fontWeight: FontWeight.w700,
-                                          fontSize:
-                                              showAsActive
-                                                  ? FontTokens.title
-                                                  : FontTokens.hudSm,
+                                          fontSize: showAsActive
+                                              ? FontTokens.title
+                                              : FontTokens.hudSm,
                                           height: 1.2,
                                         ),
                                       ),
@@ -1203,8 +1168,8 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                           accent: borderColor,
                           enabled: true,
                           showHeart: showAsActive,
-                          onDelta:
-                              (delta) => notifier.adjustLife(p.playerId, delta),
+                          onDelta: (delta) =>
+                              notifier.adjustLife(p.playerId, delta),
                         ),
                       if (showMenu) ...[
                         SizedBox(width: LayoutTokens.gr0),
@@ -1320,10 +1285,9 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
 
     return Semantics(
       container: true,
-      label:
-          showAsActive
-              ? '${AppLocalizations.of(context).gameNowPlaying}: ${p.username}'
-              : null,
+      label: showAsActive
+          ? '${AppLocalizations.of(context).gameNowPlaying}: ${p.username}'
+          : null,
       child: card,
     );
   }
@@ -1348,21 +1312,19 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
               GameSheetHeader(title: sheetL10n.overviewAssignTeamTitle),
               SizedBox(height: LayoutTokens.gr2),
               ...[0, 1, 2, 3, 4].map((idx) {
-                final label =
-                    idx == 0
-                        ? sheetL10n.overviewTeamNone
-                        : sheetL10n.overviewTeamN('$idx');
+                final label = idx == 0
+                    ? sheetL10n.overviewTeamNone
+                    : sheetL10n.overviewTeamN('$idx');
                 final color = idx == 0 ? colors.textSecondary : teamColor(idx);
                 final isSelected = currentTeam == idx;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Material(
-                    color:
-                        isSelected
-                            ? (idx == 0
-                                ? colors.textSecondary.withValues(alpha: 0.15)
-                                : color.withValues(alpha: 0.15))
-                            : Colors.transparent,
+                    color: isSelected
+                        ? (idx == 0
+                              ? colors.textSecondary.withValues(alpha: 0.15)
+                              : color.withValues(alpha: 0.15))
+                        : Colors.transparent,
                     borderRadius: RadiusTokens.radiusControlSm,
                     child: InkWell(
                       onTap: () {
@@ -1392,15 +1354,13 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                             Text(
                               label,
                               style: TextStyle(
-                                color:
-                                    idx == 0
-                                        ? colors.textSecondary
-                                        : colors.textPrimary,
+                                color: idx == 0
+                                    ? colors.textSecondary
+                                    : colors.textPrimary,
                                 fontSize: FontTokens.hudSm,
-                                fontWeight:
-                                    isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                           ],

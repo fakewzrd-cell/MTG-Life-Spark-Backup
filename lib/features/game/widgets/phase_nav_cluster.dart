@@ -9,10 +9,10 @@ import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
 import '../../../ui/tokens/opacity_tokens.dart';
 import '../../../ui/tokens/radius_tokens.dart';
-import '../../../ui/tokens/color_tokens.dart';
+import 'end_turn_bar.dart';
 import 'phase_picker_sheet.dart';
 
-/// Play-tab bar: phase status · Back · Next · End turn.
+/// Play-tab controls: quiet phase steps, then a full-width End turn.
 class PhaseNavCluster extends StatelessWidget {
   const PhaseNavCluster({
     super.key,
@@ -23,7 +23,7 @@ class PhaseNavCluster extends StatelessWidget {
     this.onPickPhase,
     this.onEndTurn,
     this.endTurnEnabled = false,
-    this.onEndTurnLongPress,
+    this.onHostSkip,
     this.endTurnSkipName,
   });
 
@@ -34,34 +34,61 @@ class PhaseNavCluster extends StatelessWidget {
   final void Function(GamePhase phase)? onPickPhase;
   final VoidCallback? onEndTurn;
   final bool endTurnEnabled;
-  final VoidCallback? onEndTurnLongPress;
+
+  /// Host: visible Skip while another seat is active.
+  final VoidCallback? onHostSkip;
   final String? endTurnSkipName;
 
-  static const double barHeight = 52;
+  static const double phaseRowHeight = LayoutTokens.minTapTarget;
+
+  /// Phase row + gap + End turn, without the optional host Skip button.
+  static const double barHeight =
+      phaseRowHeight + LayoutTokens.gr1 + EndTurnBar.barHeight;
+
+  static double heightFor({required bool showSkip}) =>
+      phaseRowHeight +
+      LayoutTokens.gr1 +
+      EndTurnBar.heightFor(showSkip: showSkip);
 
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
+    final activeName = game.playerById(game.activePlayerId)?.username;
+    final waitingName = endTurnEnabled
+        ? null
+        : (endTurnSkipName != null && endTurnSkipName!.isNotEmpty
+              ? endTurnSkipName
+              : activeName);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.94),
-        borderRadius: RadiusTokens.radiusControlSm,
-      ),
-      child: ClipRRect(
-        borderRadius: RadiusTokens.radiusControlSm,
-        child: PhaseNavClusterStrip(
-          game: game,
-          accentColor: accentColor,
-          onBack: onBack,
-          onNext: onNext,
-          onPickPhase: onPickPhase,
-          onEndTurn: onEndTurn,
-          endTurnEnabled: endTurnEnabled,
-          onEndTurnLongPress: onEndTurnLongPress,
-          endTurnSkipName: endTurnSkipName,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surface.withValues(alpha: 0.94),
+            borderRadius: RadiusTokens.radiusControlSm,
+          ),
+          child: ClipRRect(
+            borderRadius: RadiusTokens.radiusControlSm,
+            child: PhaseNavClusterStrip(
+              game: game,
+              accentColor: accentColor,
+              onBack: onBack,
+              onNext: onNext,
+              onPickPhase: onPickPhase,
+            ),
+          ),
         ),
-      ),
+        SizedBox(height: LayoutTokens.gr1),
+        EndTurnBar(
+          accentColor: colors.primaryAccent,
+          enabled: endTurnEnabled && !game.timeoutActive,
+          onEndTurn: onEndTurn ?? () {},
+          waitingForName: waitingName,
+          onHostSkip: game.timeoutActive ? null : onHostSkip,
+        ),
+      ],
     );
   }
 }
@@ -74,10 +101,6 @@ class PhaseNavClusterStrip extends StatelessWidget {
     this.onBack,
     this.onNext,
     this.onPickPhase,
-    this.onEndTurn,
-    this.endTurnEnabled = false,
-    this.onEndTurnLongPress,
-    this.endTurnSkipName,
   });
 
   final GameState game;
@@ -85,13 +108,8 @@ class PhaseNavClusterStrip extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onNext;
   final void Function(GamePhase phase)? onPickPhase;
-  final VoidCallback? onEndTurn;
-  final bool endTurnEnabled;
-  final VoidCallback? onEndTurnLongPress;
-  final String? endTurnSkipName;
 
-  static const double _sideMinWidth = 64;
-  static const double _endTurnMinWidth = 104;
+  static const double _sideMinWidth = 72;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +118,7 @@ class PhaseNavClusterStrip extends StatelessWidget {
     final dividerColor = colors.textSecondary.withValues(alpha: 0.14);
 
     return SizedBox(
-      height: PhaseNavCluster.barHeight,
+      height: PhaseNavCluster.phaseRowHeight,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -137,120 +155,7 @@ class PhaseNavClusterStrip extends StatelessWidget {
               ),
             ),
           ],
-          if (onEndTurn != null) ...[
-            VerticalDivider(width: 1, thickness: 1, color: dividerColor),
-            SizedBox(
-              width: _endTurnMinWidth,
-              child: _PhaseNavEndTurnButton(
-                enabled: endTurnEnabled && !game.timeoutActive,
-                // Theme accent (settings color scheme), not commander tint.
-                accentColor: colors.primaryAccent,
-                onPressed: onEndTurn,
-                onLongPress: game.timeoutActive ? null : onEndTurnLongPress,
-                skipName: endTurnSkipName,
-              ),
-            ),
-          ],
         ],
-      ),
-    );
-  }
-}
-
-class _PhaseNavEndTurnButton extends StatelessWidget {
-  const _PhaseNavEndTurnButton({
-    required this.enabled,
-    required this.accentColor,
-    this.onPressed,
-    this.onLongPress,
-    this.skipName,
-  });
-
-  final bool enabled;
-  final Color accentColor;
-  final VoidCallback? onPressed;
-  final VoidCallback? onLongPress;
-  final String? skipName;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.gameColors;
-    final l10n = AppLocalizations.of(context);
-    final canSkip = onLongPress != null;
-    final name = skipName;
-    final skipHint =
-        canSkip && name != null && name.isNotEmpty
-            ? l10n.gameHoldToSkipPlayer(name)
-            : null;
-    final bg =
-        enabled
-            ? accentColor
-            : colors.backgroundSecondary.withValues(alpha: 0.35);
-    final fg =
-        enabled
-            ? ColorTokens.onColor(accentColor)
-            : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
-
-    return Semantics(
-      button: true,
-      enabled: enabled || canSkip,
-      label: l10n.gameEndTurn,
-      hint: skipHint,
-      child: Material(
-        color: bg,
-        child: InkWell(
-          onTap:
-              enabled
-                  ? () {
-                    context.gameHapticLight();
-                    onPressed?.call();
-                  }
-                  : null,
-          onLongPress:
-              canSkip
-                  ? () {
-                    context.gameHapticMedium();
-                    onLongPress!();
-                  }
-                  : null,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr1),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      l10n.gameEndTurn,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: FontTokens.body,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.02,
-                        color: fg,
-                        height: 1.1,
-                      ),
-                    ),
-                    if (skipHint != null)
-                      Text(
-                        skipHint,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: FontTokens.hudXs,
-                          fontWeight: FontWeight.w500,
-                          color: fg.withValues(alpha: 0.85),
-                          height: 1.1,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -274,10 +179,9 @@ class _PhaseNavSideButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
-    final fg =
-        enabled
-            ? colors.textPrimary
-            : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
+    final fg = enabled
+        ? colors.textPrimary
+        : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
     final iconWidget = Icon(icon, size: 20, color: fg);
     final labelWidget = Text(
       label,
@@ -299,30 +203,28 @@ class _PhaseNavSideButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap:
-              enabled
-                  ? () {
-                    context.gameHapticLight();
-                    onPressed?.call();
-                  }
-                  : null,
+          onTap: enabled
+              ? () {
+                  context.gameHapticLight();
+                  onPressed?.call();
+                }
+              : null,
           child: Center(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children:
-                    iconFirst
-                        ? [
-                          iconWidget,
-                          SizedBox(width: LayoutTokens.gr0),
-                          labelWidget,
-                        ]
-                        : [
-                          labelWidget,
-                          SizedBox(width: LayoutTokens.gr0),
-                          iconWidget,
-                        ],
+                children: iconFirst
+                    ? [
+                        iconWidget,
+                        SizedBox(width: LayoutTokens.gr0),
+                        labelWidget,
+                      ]
+                    : [
+                        labelWidget,
+                        SizedBox(width: LayoutTokens.gr0),
+                        iconWidget,
+                      ],
               ),
             ),
           ),
@@ -349,13 +251,15 @@ class _PhaseNavCenter extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    final phaseColor =
-        game.isLocalPlayersTurn ? accentColor : colors.textSecondary;
+    final phaseColor = game.isLocalPlayersTurn
+        ? accentColor
+        : colors.textSecondary;
 
     Widget buildLabel(BoxConstraints constraints) {
       final narrow = constraints.maxWidth < 108;
-      final phaseText =
-          narrow ? game.currentPhase.shortName : game.currentPhase.displayName;
+      final phaseText = narrow
+          ? game.currentPhase.shortName
+          : game.currentPhase.displayName;
       final fontSize = narrow ? FontTokens.hudXs : FontTokens.hudSm;
 
       return Row(
@@ -395,9 +299,8 @@ class _PhaseNavCenter extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr1),
           child: LayoutBuilder(
-            builder:
-                (context, constraints) =>
-                    Center(child: buildLabel(constraints)),
+            builder: (context, constraints) =>
+                Center(child: buildLabel(constraints)),
           ),
         ),
       );
@@ -421,13 +324,12 @@ class _PhaseNavCenter extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr1),
             child: LayoutBuilder(
-              builder:
-                  (context, constraints) => Center(
-                    child: Tooltip(
-                      message: l10n.gameChoosePhase,
-                      child: buildLabel(constraints),
-                    ),
-                  ),
+              builder: (context, constraints) => Center(
+                child: Tooltip(
+                  message: l10n.gameChoosePhase,
+                  child: buildLabel(constraints),
+                ),
+              ),
             ),
           ),
         ),
