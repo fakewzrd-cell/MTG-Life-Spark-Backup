@@ -35,6 +35,7 @@ class WsHostService implements BleService {
   int _seqNum = 0;
   int _nextClientId = 0;
   bool _ready = false;
+  bool _disposed = false;
 
   final String hostPlayerId;
   final String hostUsername;
@@ -44,7 +45,12 @@ class WsHostService implements BleService {
     required this.hostPlayerId,
     required this.hostUsername,
     required this.joinToken,
-  });
+    Duration? reconnectGrace,
+  }) : reconnectGrace = reconnectGrace ?? kSessionReconnectGrace;
+
+  /// How long a dropped seat stays "reconnecting" before the host is asked.
+  /// Production uses [kSessionReconnectGrace]; tests pass a short duration.
+  final Duration reconnectGrace;
 
   /// Port the server is bound to; available after [initialize].
   int get port => _server?.port ?? 0;
@@ -86,6 +92,7 @@ class WsHostService implements BleService {
 
   @override
   Future<void> dispose() async {
+    _disposed = true;
     for (final t in _reconnectGrace.values) {
       t.cancel();
     }
@@ -270,6 +277,7 @@ class WsHostService implements BleService {
   }
 
   void _onDisconnect(String clientKey) {
+    if (_disposed) return;
     _sockets.remove(clientKey);
     final playerId = _verified.remove(clientKey);
     if (playerId == null) return;
@@ -299,8 +307,9 @@ class WsHostService implements BleService {
 
   void _startReconnectGrace(String playerId) {
     _reconnectGrace.remove(playerId)?.cancel();
-    _reconnectGrace[playerId] = Timer(kSessionReconnectGrace, () {
+    _reconnectGrace[playerId] = Timer(reconnectGrace, () {
       _reconnectGrace.remove(playerId);
+      if (_disposed) return;
       // Player already re-bound on another socket.
       if (_verified.containsValue(playerId)) return;
       // Grace expired — UI asks host Keep waiting / Remove (no auto-eliminate).

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../bluetooth/ble_message.dart';
 import '../bluetooth/ble_service.dart';
+import 'session_link_status.dart';
 
 /// Web stub — hosting requires a native device with [dart:io] HttpServer.
 class WsHostService implements BleService {
@@ -9,7 +10,10 @@ class WsHostService implements BleService {
     required this.hostPlayerId,
     required this.hostUsername,
     required this.joinToken,
-  });
+    Duration? reconnectGrace,
+  }) : reconnectGrace = reconnectGrace ?? kSessionReconnectGrace;
+
+  final Duration reconnectGrace;
 
   final String hostPlayerId;
   final String hostUsername;
@@ -35,6 +39,7 @@ class WsHostService implements BleService {
 
   @override
   Future<void> initialize() async {
+    if (reconnectGrace.isNegative) return;
     _connectionController.add(const BleConnectionEvent(
       playerId: '',
       status: BleConnectionStatus.error,
