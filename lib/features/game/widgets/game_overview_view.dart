@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -177,7 +178,7 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
               child: CustomScrollView(
                 // Keep pod-sized rosters built so the active card key exists for
                 // ensureVisible (especially with host reorder / long lists).
-                cacheExtent: 2400,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(2400),
                 slivers: [
                   SliverAppBar(
                     pinned: true,
@@ -371,7 +372,7 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                     sliver: _canHostReorder(game)
                         ? SliverReorderableList(
                             itemCount: game.playersInTurnOrder.length,
-                            onReorder: _onHostReorder,
+                            onReorderItem: _onHostReorder,
                             itemBuilder: (context, index) {
                               final p = game.playersInTurnOrder[index];
                               return ReorderableDelayedDragStartListener(
