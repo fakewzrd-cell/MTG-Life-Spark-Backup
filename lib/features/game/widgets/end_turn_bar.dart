@@ -9,7 +9,7 @@ import '../../../ui/tokens/radius_tokens.dart';
 import '../../../ui/tokens/color_tokens.dart';
 import 'game_colors.dart';
 
-/// Full-width End turn control used when the phase tracker is off.
+/// Full-width End turn control. Host skip is a separate text button.
 class EndTurnBar extends StatelessWidget {
   const EndTurnBar({
     super.key,
@@ -25,10 +25,13 @@ class EndTurnBar extends StatelessWidget {
   final VoidCallback onEndTurn;
   final String? waitingForName;
 
-  /// Host: long-press to skip another player's turn. Looks inactive until then.
+  /// Host: tap to skip another player's turn. Shown only while waiting.
   final VoidCallback? onHostSkip;
 
   static const double barHeight = 60;
+
+  static double heightFor({required bool showSkip}) =>
+      barHeight + (showSkip ? LayoutTokens.minTapTarget : 0);
 
   @override
   Widget build(BuildContext context) {
@@ -37,25 +40,21 @@ class EndTurnBar extends StatelessWidget {
     final canSkip = onHostSkip != null;
     final name = waitingForName;
     // Solid theme accent fill so the control stays visible on light surfaces.
-    final bg =
-        enabled
-            ? accentColor
-            : colors.backgroundSecondary.withValues(
-              alpha: OpacityTokens.moderate,
-            );
-    final fg =
-        enabled
-            ? ColorTokens.onColor(accentColor)
-            : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
+    final bg = enabled
+        ? accentColor
+        : colors.backgroundSecondary.withValues(alpha: OpacityTokens.moderate);
+    final fg = enabled
+        ? ColorTokens.onColor(accentColor)
+        : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
     String? subtitle;
     if (!enabled && name != null && name.isNotEmpty) {
-      subtitle =
-          canSkip
-              ? l10n.gameHoldToSkipPlayer(name)
-              : l10n.gameWaitingForPlayer(name);
+      subtitle = l10n.gameWaitingForPlayer(name);
     }
+    final skipLabel = name != null && name.isNotEmpty
+        ? l10n.gameSkipPlayer(name)
+        : l10n.gameSkipTurn;
 
-    return DecoratedBox(
+    final bar = DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface.withValues(alpha: 0.94),
         borderRadius: RadiusTokens.radiusControlSm,
@@ -67,28 +66,16 @@ class EndTurnBar extends StatelessWidget {
           child: Material(
             color: bg,
             child: InkWell(
-              onTap:
-                  enabled
-                      ? () {
-                        context.gameHapticLight();
-                        onEndTurn();
-                      }
-                      : null,
-              onLongPress:
-                  canSkip
-                      ? () {
-                        context.gameHapticMedium();
-                        onHostSkip!();
-                      }
-                      : null,
+              onTap: enabled
+                  ? () {
+                      context.gameHapticLight();
+                      onEndTurn();
+                    }
+                  : null,
               child: Semantics(
                 button: true,
-                enabled: enabled || canSkip,
+                enabled: enabled,
                 label: l10n.gameEndTurn,
-                hint:
-                    canSkip && name != null && name.isNotEmpty
-                        ? l10n.gameHoldToSkipPlayer(name)
-                        : null,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -128,6 +115,34 @@ class EndTurnBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    if (!canSkip) return bar;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        bar,
+        TextButton(
+          onPressed: () {
+            context.gameHapticMedium();
+            onHostSkip!();
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: colors.textPrimary,
+            minimumSize: const Size(0, LayoutTokens.minTapTarget),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            skipLabel,
+            style: const TextStyle(
+              fontSize: FontTokens.hudSm,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

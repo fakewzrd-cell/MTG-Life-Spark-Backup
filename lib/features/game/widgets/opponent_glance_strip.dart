@@ -33,8 +33,8 @@ class OpponentGlanceStrip extends StatelessWidget {
     if (pod.isEmpty) return const SizedBox.shrink();
 
     return Semantics(
-      button: true,
-      label: l10n.glanceOpenTableA11y,
+      container: true,
+      explicitChildNodes: true,
       child: Material(
         color: colors.surface.withValues(alpha: OpacityTokens.nearOpaque),
         borderRadius: RadiusTokens.radiusControlMd,
@@ -69,10 +69,14 @@ class OpponentGlanceStrip extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: LayoutTokens.gr0),
-                Icon(
-                  Icons.grid_view_rounded,
-                  size: 18,
-                  color: colors.textSecondary,
+                Semantics(
+                  button: true,
+                  label: l10n.glanceOpenTableA11y,
+                  child: Icon(
+                    Icons.grid_view_rounded,
+                    size: 18,
+                    color: colors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -102,69 +106,79 @@ class _PodGlanceChip extends StatelessWidget {
     final lifeTone = eliminated
         ? colors.textSecondary
         : player.life <= 5
-            ? colors.error
-            : player.life <= 10
-                ? colors.emphasis
-                : colors.textPrimary;
+        ? colors.error
+        : player.life <= 10
+        ? colors.emphasis
+        : colors.textPrimary;
     final name = isLocal
         ? l10n.glanceYou
         : overviewShortPlayerName(player.username, maxChars: 8);
+    final chipLabel = eliminated
+        ? l10n.glanceChipOut(name)
+        : l10n.glanceChipLife(name, player.life);
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: LayoutTokens.gr1,
-        vertical: LayoutTokens.gr0,
-      ),
-      decoration: BoxDecoration(
-        color: eliminated
-            ? colors.backgroundSecondary.withValues(alpha: OpacityTokens.half)
-            : player.playerColor.withValues(alpha: isLocal ? 0.22 : 0.12),
-        borderRadius: RadiusTokens.radiusControlSm,
-        border: isActive
-            ? Border.all(
-                color: colors.primaryAccent.withValues(alpha: 0.85),
-                width: 1.5,
-              )
-            : isLocal
-                ? Border.all(
-                    color: player.playerColor.withValues(alpha: 0.55),
+    return Semantics(
+      label: chipLabel,
+      child: ExcludeSemantics(
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: LayoutTokens.gr1,
+            vertical: LayoutTokens.gr0,
+          ),
+          decoration: BoxDecoration(
+            color: eliminated
+                ? colors.backgroundSecondary.withValues(
+                    alpha: OpacityTokens.half,
                   )
+                : player.playerColor.withValues(alpha: isLocal ? 0.22 : 0.12),
+            borderRadius: RadiusTokens.radiusControlSm,
+            border: isActive
+                ? Border.all(
+                    color: colors.primaryAccent.withValues(alpha: 0.85),
+                    width: 1.5,
+                  )
+                : isLocal
+                ? Border.all(color: player.playerColor.withValues(alpha: 0.55))
                 : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: player.playerColor.withValues(
-                alpha: eliminated ? 0.4 : 1,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: player.playerColor.withValues(
+                    alpha: eliminated ? 0.4 : 1,
+                  ),
+                  shape: BoxShape.circle,
+                ),
               ),
-              shape: BoxShape.circle,
-            ),
+              SizedBox(width: LayoutTokens.gr0),
+              Text(
+                name,
+                style: TextStyle(
+                  color: eliminated ? colors.textSecondary : colors.textPrimary,
+                  fontSize: FontTokens.hudXs,
+                  fontWeight: FontWeight.w700,
+                  decoration: eliminated ? TextDecoration.lineThrough : null,
+                ),
+              ),
+              SizedBox(width: LayoutTokens.gr0),
+              Text(
+                eliminated
+                    ? AppLocalizations.of(context).statusOut
+                    : '${player.life}',
+                style: TextStyle(
+                  color: lifeTone,
+                  fontSize: FontTokens.hudSm,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: LayoutTokens.gr0),
-          Text(
-            name,
-            style: TextStyle(
-              color: eliminated ? colors.textSecondary : colors.textPrimary,
-              fontSize: FontTokens.hudXs,
-              fontWeight: FontWeight.w700,
-              decoration: eliminated ? TextDecoration.lineThrough : null,
-            ),
-          ),
-          SizedBox(width: LayoutTokens.gr0),
-          Text(
-            eliminated ? AppLocalizations.of(context).statusOut : '${player.life}',
-            style: TextStyle(
-              color: lifeTone,
-              fontSize: FontTokens.hudSm,
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

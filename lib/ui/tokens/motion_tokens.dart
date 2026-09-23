@@ -25,6 +25,10 @@ class MotionTokens {
   /// Life-change floating total — hold, then fade (1600 ms).
   static const Duration lifeDelta = Duration(milliseconds: 1600);
 
+  /// Gap before the first held ±5, and between later held steps.
+  /// Slow enough to read the running delta and let go.
+  static const Duration lifeHoldStep = Duration(milliseconds: 500);
+
   /// XP / progress bar emphasis (1100 ms).
   static const Duration emphasis = Duration(milliseconds: 1100);
 

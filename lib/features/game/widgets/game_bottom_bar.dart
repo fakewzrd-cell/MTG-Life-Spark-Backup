@@ -97,7 +97,7 @@ class GameBottomBar extends ConsumerWidget {
                         ? Icons.timer_off_outlined
                         : Icons.timer,
                     label: game.timeoutActive
-                        ? l10n.gameBarEnd
+                        ? l10n.gameBarStopTimeout
                         : l10n.gameBarTimeout,
                     iconSize: iconSize,
                     compact: compact,

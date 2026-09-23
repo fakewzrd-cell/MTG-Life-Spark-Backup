@@ -255,7 +255,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lobbyJoinGame => 'Join Game';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Scan for a nearby host';
+  String get lobbyJoinGameSubtitle =>
+      'Scan the host\'s QR code on the same Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Host Lobby';
@@ -461,7 +462,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'Camera access is needed to scan the host QR code.\\nIf you already allowed it in Settings, tap Try again.';
+      'Camera access is needed to scan the host QR code.\nIf you already allowed it in Settings, tap Try again.';
 
   @override
   String get joinOpenSettings => 'Open Settings';
@@ -532,21 +533,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      'One player hosts a game — others scan a QR code on the same Wi‑Fi network. No internet account needed. Works for 4 to 6 players at the same table.';
+      'One player hosts a game. Everyone else scans that player\'s QR code on the same Wi‑Fi. No account needed. Works for 1 to 6 players.';
 
   @override
   String get onboardingSlide3Title => 'Track Your Life';
 
   @override
   String get onboardingSlide3Body =>
-      'Tap +/- to change life by 1. Hold +/- for ±5. Drag left or right to adjust quickly. Double-tap the life total to set an exact number. Undo is on the bottom bar (or shake, if enabled).';
+      'Tap + or − to change life by 1. Hold to change by 5, then it keeps going slowly. Drag left or right to adjust quickly. Double-tap the life total to set an exact number. Undo is on the bottom bar.';
 
   @override
   String get onboardingSlide4Title => 'Phase Bar & Turns';
 
   @override
   String get onboardingSlide4Body =>
-      'Use the phase bar to step through the turn, or leave Phase tracker off in the lobby. Timeout pauses the whole game.';
+      'End turn is the large button. Back and Next step through phases, or leave Phase tracker off in the lobby. The host can tap Skip if a seat is stuck. Timeout pauses the whole game.';
 
   @override
   String get onboardingSlide5Title => 'Commander & Counters';
@@ -2954,4 +2955,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logTails => 'Tails';
+
+  @override
+  String get gameBarStopTimeout => 'Stop';
+
+  @override
+  String get gameSkipTurn => 'Skip turn';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return 'Skip $name';
+  }
+
+  @override
+  String get gameTabLookup => 'Rules';
+
+  @override
+  String get lookupRulingsError =>
+      'Could not load rulings. Check your connection.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Showing the first $count matches.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life life';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, out';
+  }
 }

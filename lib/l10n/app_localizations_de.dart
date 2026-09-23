@@ -255,7 +255,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get lobbyJoinGame => 'Beitreten';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Nach Host in der Nähe suchen';
+  String get lobbyJoinGameSubtitle =>
+      'QR-Code des Hosts im selben WLAN scannen';
 
   @override
   String get hostLobbyTitle => 'Host-Lobby';
@@ -461,7 +462,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'Kamerazugriff nötig, um den Host-QR zu scannen.\\nFalls schon in Einstellungen erlaubt: Erneut tippen.';
+      'Kamerazugriff wird gebraucht, um den QR-Code des Hosts zu scannen.\nWenn du das in den Einstellungen schon erlaubt hast, tippe auf Erneut versuchen.';
 
   @override
   String get joinOpenSettings => 'Einstellungen';
@@ -533,21 +534,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      'Ein Spieler hostet — andere scannen einen QR im gleichen Wi‑Fi. Kein Internet-Konto. Für 4 bis 6 Spieler am gleichen Tisch.';
+      'Eine Person hostet die Partie. Alle anderen scannen deren QR-Code im selben WLAN. Kein Konto nötig. Für 1 bis 6 Spieler.';
 
   @override
   String get onboardingSlide3Title => 'Leben tracken';
 
   @override
   String get onboardingSlide3Body =>
-      '+/- tippen: ±1 Leben. +/- halten: ±5. Links/rechts ziehen zum schnellen Anpassen. Doppeltippen für exakten Wert. Rückgängig unten (oder Schütteln, falls aktiv).';
+      'Tippe + oder −, um Leben um 1 zu ändern. Halten ändert um 5, danach geht es langsam weiter. Ziehe nach links oder rechts für schnelle Änderungen. Doppeltippe auf die Lebensanzeige für eine genaue Zahl. Rückgängig ist in der unteren Leiste.';
 
   @override
   String get onboardingSlide4Title => 'Phasen & Züge';
 
   @override
   String get onboardingSlide4Body =>
-      'Phasenleiste für den Zug nutzen oder Phasenanzeige in der Lobby aus. Eine Pause hält das ganze Spiel an.';
+      'Zug beenden ist der große Knopf. Zurück und Weiter gehen durch die Phasen, oder schalte die Phasenleiste in der Lobby aus. Der Host kann Überspringen tippen, wenn ein Platz hängt. Timeout pausiert das ganze Spiel.';
 
   @override
   String get onboardingSlide5Title => 'Commander & Counter';
@@ -2959,4 +2960,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get logTails => 'Zahl';
+
+  @override
+  String get gameBarStopTimeout => 'Stopp';
+
+  @override
+  String get gameSkipTurn => 'Zug überspringen';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return '$name überspringen';
+  }
+
+  @override
+  String get gameTabLookup => 'Regeln';
+
+  @override
+  String get lookupRulingsError =>
+      'Rulings konnten nicht geladen werden. Prüfe deine Verbindung.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Die ersten $count Treffer.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life Leben';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, ausgeschieden';
+  }
 }

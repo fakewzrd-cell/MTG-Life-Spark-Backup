@@ -217,7 +217,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                                 horizontal: LayoutTokens.gr2,
                               ),
                             ),
-                            child: Text(l10n.gameBarEnd),
+                            child: Text(l10n.gameBarStopTimeout),
                           ),
                         ],
                       ),

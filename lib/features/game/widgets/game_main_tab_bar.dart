@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_icons.dart';
 import '../../../shared/utils/game_haptics.dart';
+import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
 import '../../../ui/tokens/opacity_tokens.dart';
 import 'card_lookup_sheet.dart';
@@ -13,7 +14,7 @@ const String kGamePlayTabIconAsset = AppIcons.playTabCards;
 
 /// Play · Stack · Lookup row — use inside [GameHudHeader].
 ///
-/// Icon-only for space; [Semantics] keeps accessible names.
+/// Play and Stack stay icon-only; Lookup is labeled Rules.
 /// Lookup is a utility action (opens a sheet), not a peer tab.
 /// History lives on Table overview (sheet), not in this strip.
 class GameMainTabBarStrip extends StatelessWidget {
@@ -50,19 +51,19 @@ class GameMainTabBarStrip extends StatelessWidget {
     ];
 
     Widget tab(_GameMainTabSpec segment) => Expanded(
-          child: _GameMainTab(
-            label: segment.label,
-            icon: segment.icon,
-            iconAsset: segment.iconAsset,
-            selected: selectedIndex == segment.index,
-            accentColor: resolvedAccent,
-            onTap: () {
-              if (selectedIndex == segment.index) return;
-              context.gameHapticSelection();
-              onSelected(segment.index);
-            },
-          ),
-        );
+      child: _GameMainTab(
+        label: segment.label,
+        icon: segment.icon,
+        iconAsset: segment.iconAsset,
+        selected: selectedIndex == segment.index,
+        accentColor: resolvedAccent,
+        onTap: () {
+          if (selectedIndex == segment.index) return;
+          context.gameHapticSelection();
+          onSelected(segment.index);
+        },
+      ),
+    );
 
     Widget divider() =>
         VerticalDivider(width: 1, thickness: 1, color: dividerColor);
@@ -91,7 +92,7 @@ class _CardLookupTabAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    final fg = colors.textSecondary.withValues(alpha: OpacityTokens.mutedTextMin);
+    final fg = colors.textSecondary;
 
     return Semantics(
       button: true,
@@ -104,10 +105,23 @@ class _CardLookupTabAction extends StatelessWidget {
             showCardLookupSheet(context);
           },
           child: Center(
-            child: Icon(
-              Icons.menu_book_outlined,
-              size: GameMainTabBarStrip.iconSize,
-              color: fg,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.menu_book_outlined, size: 18, color: fg),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.gameTabLookup,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: FontTokens.hudXs,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -167,14 +181,12 @@ class _GameMainTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
-    final fg =
-        selected
-            ? accentColor
-            : colors.textSecondary.withValues(alpha: OpacityTokens.mutedTextMin);
-    final bg =
-        selected
-            ? accentColor.withValues(alpha: OpacityTokens.soft)
-            : Colors.transparent;
+    final fg = selected
+        ? accentColor
+        : colors.textSecondary.withValues(alpha: OpacityTokens.mutedTextMin);
+    final bg = selected
+        ? accentColor.withValues(alpha: OpacityTokens.soft)
+        : Colors.transparent;
 
     return Semantics(
       button: true,

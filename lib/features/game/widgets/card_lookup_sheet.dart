@@ -44,8 +44,13 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
   List<ScryfallRuling> _rulings = const [];
   bool _searching = false;
   bool _loadingDetail = false;
+  bool _networkError = false;
+  bool _truncated = false;
+  bool _rulingsFailed = false;
   String? _error;
   int _searchRequestId = 0;
+
+  static const int _resultCap = 20;
 
   /// Cap for the whole sheet — never force this height when content is short.
   static const double _maxSheetFraction = 0.88;
@@ -74,6 +79,8 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
       setState(() {
         _results = [];
         _error = null;
+        _networkError = false;
+        _truncated = false;
         _searching = false;
       });
       return;
@@ -82,12 +89,15 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
     setState(() {
       _searching = true;
       _error = null;
+      _networkError = false;
+      _truncated = false;
     });
     try {
       final cards = await ref.read(scryfallServiceProvider).searchCards(q);
       if (!mounted || requestId != _searchRequestId) return;
       setState(() {
-        _results = cards.take(20).toList();
+        _truncated = cards.length > _resultCap;
+        _results = cards.take(_resultCap).toList();
         _searching = false;
         if (_results.isEmpty) {
           _error = AppLocalizations.of(context).lookupNoResults(q);
@@ -99,6 +109,8 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
       setState(() {
         _searching = false;
         _results = [];
+        _truncated = false;
+        _networkError = true;
         _error = AppLocalizations.of(context).lookupNetworkError;
       });
     }
@@ -110,6 +122,7 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
       _selected = card;
       _rulings = const [];
       _loadingDetail = true;
+      _rulingsFailed = false;
       _error = null;
     });
     final service = ref.read(scryfallServiceProvider);
@@ -118,7 +131,8 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
     if (!mounted) return;
     setState(() {
       _selected = fresh;
-      _rulings = rulings;
+      _rulingsFailed = rulings == null;
+      _rulings = rulings ?? const [];
       _loadingDetail = false;
     });
   }
@@ -128,6 +142,7 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
       _selected = null;
       _rulings = const [];
       _loadingDetail = false;
+      _rulingsFailed = false;
     });
   }
 
@@ -162,8 +177,10 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
   }
 
   Widget _buildSearchLayout(AppColorTokens colors, double maxSheetH) {
-    final maxListH =
-        (maxSheetH - _searchChromeReserve).clamp(120.0, maxSheetH * 0.62);
+    final maxListH = (maxSheetH - _searchChromeReserve).clamp(
+      120.0,
+      maxSheetH * 0.62,
+    );
     final l10n = AppLocalizations.of(context);
 
     return Column(
@@ -175,15 +192,13 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
         TextField(
           controller: _searchController,
           focusNode: _searchFocus,
+          autofocus: true,
           onChanged: _onQueryChanged,
           textInputAction: TextInputAction.search,
           style: TextStyle(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: l10n.lookupHint,
-            prefixIcon: Icon(
-              Icons.search_rounded,
-              color: colors.textSecondary,
-            ),
+            prefixIcon: Icon(Icons.search_rounded, color: colors.textSecondary),
             suffixIcon: _searching
                 ? const Padding(
                     padding: EdgeInsets.all(12),
@@ -194,47 +209,66 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
                     ),
                   )
                 : (_searchController.text.isNotEmpty
-                    ? IconButton(
-                        tooltip: AppLocalizations.of(context).lookupClearTooltip,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                          _onQueryChanged('');
-                        },
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          color: colors.textSecondary,
-                        ),
-                      )
-                    : null),
+                      ? IconButton(
+                          tooltip: AppLocalizations.of(context)
+                              .lookupClearTooltip,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                            _onQueryChanged('');
+                          },
+                          icon: Icon(
+                            Icons.clear_rounded,
+                            color: colors.textSecondary,
+                          ),
+                        )
+                      : null),
           ),
         ),
         SizedBox(height: LayoutTokens.gr1),
-        Text(
-          l10n.lookupHelp,
-          style: GameModalChrome.dialogBodyStyle(context),
-        ),
+        Text(l10n.lookupHelp, style: GameModalChrome.dialogBodyStyle(context)),
         SizedBox(height: LayoutTokens.gr2),
-        LimitedBox(
-          maxHeight: maxListH,
-          child: _buildSearchBody(colors),
-        ),
+        if (_truncated) ...[
+          Text(
+            l10n.lookupFirstMatches(_results.length),
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: FontTokens.caption,
+              height: 1.3,
+            ),
+          ),
+          SizedBox(height: LayoutTokens.gr1),
+        ],
+        LimitedBox(maxHeight: maxListH, child: _buildSearchBody(colors)),
       ],
     );
   }
 
   Widget _buildSearchBody(AppColorTokens colors) {
     if (_error != null && _results.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       return Padding(
         padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr3),
-        child: Text(
-          _error!,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: colors.textSecondary,
-            fontSize: FontTokens.hudSm,
-            height: 1.4,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _networkError ? colors.error : colors.textSecondary,
+                fontSize: FontTokens.hudSm,
+                height: 1.4,
+              ),
+            ),
+            if (_networkError) ...[
+              SizedBox(height: LayoutTokens.gr2),
+              TextButton(
+                onPressed: () => _search(_searchController.text),
+                child: Text(l10n.commonTryAgain),
+              ),
+            ],
+          ],
         ),
       );
     }
@@ -306,8 +340,7 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
     // Sticky handle/back/title stay outside the list so the sheet can still
     // be dragged shut while reading oracle text / rulings.
     const chromeReserve = 120.0;
-    final maxBodyH =
-        (maxSheetH - chromeReserve).clamp(120.0, maxSheetH * 0.75);
+    final maxBodyH = (maxSheetH - chromeReserve).clamp(120.0, maxSheetH * 0.75);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -329,10 +362,7 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
             ),
           ),
         ),
-        GameSheetHeader(
-          title: card.name,
-          showHandle: false,
-        ),
+        GameSheetHeader(title: card.name, showHandle: false),
         SizedBox(height: LayoutTokens.gr2),
         LimitedBox(
           maxHeight: maxBodyH,
@@ -349,9 +379,8 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
                     child: CachedNetworkImage(
                       imageUrl: card.imageUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => ColoredBox(
-                        color: colors.backgroundSecondary,
-                      ),
+                      placeholder: (_, __) =>
+                          ColoredBox(color: colors.backgroundSecondary),
                       errorWidget: (_, __, ___) => ColoredBox(
                         color: colors.backgroundSecondary,
                         child: Icon(
@@ -425,6 +454,29 @@ class _CardLookupSheetState extends ConsumerState<_CardLookupSheet> {
                   child: Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
+                )
+              else if (_rulingsFailed)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.lookupRulingsError,
+                      style: TextStyle(
+                        color: colors.error,
+                        fontSize: FontTokens.hudSm,
+                        height: 1.4,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _openCard(card),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, LayoutTokens.minTapTarget),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(l10n.commonTryAgain),
+                    ),
+                  ],
                 )
               else if (_rulings.isEmpty)
                 Text(

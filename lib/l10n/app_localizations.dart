@@ -554,7 +554,7 @@ abstract class AppLocalizations {
   /// No description provided for @lobbyJoinGameSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Scan for a nearby host'**
+  /// **'Scan the host\'s QR code on the same Wi‑Fi'**
   String get lobbyJoinGameSubtitle;
 
   /// No description provided for @hostLobbyTitle.
@@ -920,7 +920,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinCameraDeniedBody.
   ///
   /// In en, this message translates to:
-  /// **'Camera access is needed to scan the host QR code.\\nIf you already allowed it in Settings, tap Try again.'**
+  /// **'Camera access is needed to scan the host QR code.\nIf you already allowed it in Settings, tap Try again.'**
   String get joinCameraDeniedBody;
 
   /// No description provided for @joinOpenSettings.
@@ -1052,7 +1052,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSlide2Body.
   ///
   /// In en, this message translates to:
-  /// **'One player hosts a game — others scan a QR code on the same Wi‑Fi network. No internet account needed. Works for 4 to 6 players at the same table.'**
+  /// **'One player hosts a game. Everyone else scans that player\'s QR code on the same Wi‑Fi. No account needed. Works for 1 to 6 players.'**
   String get onboardingSlide2Body;
 
   /// No description provided for @onboardingSlide3Title.
@@ -1064,7 +1064,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSlide3Body.
   ///
   /// In en, this message translates to:
-  /// **'Tap +/- to change life by 1. Hold +/- for ±5. Drag left or right to adjust quickly. Double-tap the life total to set an exact number. Undo is on the bottom bar (or shake, if enabled).'**
+  /// **'Tap + or − to change life by 1. Hold to change by 5, then it keeps going slowly. Drag left or right to adjust quickly. Double-tap the life total to set an exact number. Undo is on the bottom bar.'**
   String get onboardingSlide3Body;
 
   /// No description provided for @onboardingSlide4Title.
@@ -1076,7 +1076,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSlide4Body.
   ///
   /// In en, this message translates to:
-  /// **'Use the phase bar to step through the turn, or leave Phase tracker off in the lobby. Timeout pauses the whole game.'**
+  /// **'End turn is the large button. Back and Next step through phases, or leave Phase tracker off in the lobby. The host can tap Skip if a seat is stuck. Timeout pauses the whole game.'**
   String get onboardingSlide4Body;
 
   /// No description provided for @onboardingSlide5Title.
@@ -5313,6 +5313,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tails'**
   String get logTails;
+
+  /// No description provided for @gameBarStopTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get gameBarStopTimeout;
+
+  /// No description provided for @gameSkipTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip turn'**
+  String get gameSkipTurn;
+
+  /// No description provided for @gameSkipPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip {name}'**
+  String gameSkipPlayer(String name);
+
+  /// No description provided for @gameTabLookup.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get gameTabLookup;
+
+  /// No description provided for @lookupRulingsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load rulings. Check your connection.'**
+  String get lookupRulingsError;
+
+  /// No description provided for @lookupFirstMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the first {count} matches.'**
+  String lookupFirstMatches(int count);
+
+  /// No description provided for @glanceChipLife.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {life} life'**
+  String glanceChipLife(String name, int life);
+
+  /// No description provided for @glanceChipOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, out'**
+  String glanceChipOut(String name);
 }
 
 class _AppLocalizationsDelegate

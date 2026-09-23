@@ -257,7 +257,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get lobbyJoinGame => 'Rejoindre';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Scannez un hôte à proximité';
+  String get lobbyJoinGameSubtitle =>
+      'Scannez le QR de l’hôte sur le même Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Salon de l’hôte';
@@ -469,7 +470,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get joinCameraDeniedBody =>
-      'L’accès à la caméra est nécessaire pour scanner le QR de l’hôte.\\nSi vous l’avez déjà autorisé dans Réglages, appuyez sur Réessayer.';
+      'L’accès à la caméra est nécessaire pour scanner le QR de l’hôte.\nSi vous l’avez déjà autorisé dans Réglages, touchez Réessayer.';
 
   @override
   String get joinOpenSettings => 'Ouvrir Réglages';
@@ -541,21 +542,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboardingSlide2Body =>
-      'Un joueur héberge — les autres scannent un QR sur le même réseau Wi‑Fi. Pas de compte internet. Pour 4 à 6 joueurs à la même table.';
+      'Un joueur héberge la partie. Les autres scannent son QR sur le même Wi‑Fi. Aucun compte. Pour 1 à 6 joueurs.';
 
   @override
   String get onboardingSlide3Title => 'Suivez votre vie';
 
   @override
   String get onboardingSlide3Body =>
-      'Appuyez sur +/- pour changer la vie de 1. Maintenez +/- pour ±5. Glissez à gauche ou à droite pour ajuster vite. Double-tapez le total pour un nombre exact. Annuler est dans la barre du bas (ou secouez, si activé).';
+      'Touchez + ou − pour changer la vie de 1. Maintenez pour changer de 5, puis ça continue lentement. Glissez à gauche ou à droite pour ajuster vite. Double-touchez la vie pour un nombre exact. Annuler est dans la barre du bas.';
 
   @override
   String get onboardingSlide4Title => 'Phases et tours';
 
   @override
   String get onboardingSlide4Body =>
-      'Utilisez la barre de phases pour avancer le tour, ou laissez le suivi désactivé dans le salon. La pause met toute la partie en pause.';
+      'Fin du tour est le grand bouton. Retour et Suivant avancent les phases, ou désactivez le suivi dans le salon. L’hôte peut toucher Passer si un siège est bloqué. Le délai met toute la partie en pause.';
 
   @override
   String get onboardingSlide5Title => 'Commander et marqueurs';
@@ -2976,4 +2977,37 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get logTails => 'Pile';
+
+  @override
+  String get gameBarStopTimeout => 'Stop';
+
+  @override
+  String get gameSkipTurn => 'Passer le tour';
+
+  @override
+  String gameSkipPlayer(String name) {
+    return 'Passer $name';
+  }
+
+  @override
+  String get gameTabLookup => 'Règles';
+
+  @override
+  String get lookupRulingsError =>
+      'Impossible de charger les rulings. Vérifiez la connexion.';
+
+  @override
+  String lookupFirstMatches(int count) {
+    return 'Affichage des $count premiers résultats.';
+  }
+
+  @override
+  String glanceChipLife(String name, int life) {
+    return '$name, $life points de vie';
+  }
+
+  @override
+  String glanceChipOut(String name) {
+    return '$name, éliminé';
+  }
 }
