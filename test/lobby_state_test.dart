@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mgt_life_spark/core/bluetooth/ble_message.dart';
 import 'package:mgt_life_spark/core/bluetooth/ble_protocol.dart';
+import 'package:mgt_life_spark/core/bluetooth/ble_service.dart';
 import 'package:mgt_life_spark/core/game/game_format.dart';
+import 'package:mgt_life_spark/core/game/game_session_events.dart';
 import 'package:mgt_life_spark/core/network/session_providers.dart';
 import 'package:mgt_life_spark/core/game/lobby_state.dart';
 import 'package:mgt_life_spark/core/models/app_settings.dart';
@@ -13,6 +15,7 @@ import 'package:mgt_life_spark/core/models/player_slot.dart';
 import 'package:mgt_life_spark/core/persistence/providers.dart';
 
 import 'support/fake_ble_service.dart';
+import 'support/test_deck_repository.dart';
 import 'support/test_profile_repository.dart';
 import 'support/test_settings_repository.dart';
 
@@ -20,6 +23,7 @@ ProviderContainer _lobbyContainer({
   required FakeBleService ble,
   TestProfileRepository? profileRepo,
   TestSettingsRepository? settingsRepo,
+  TestDeckRepository? deckRepo,
 }) {
   return ProviderContainer(
     overrides: [
@@ -32,6 +36,9 @@ ProviderContainer _lobbyContainer({
       ),
       settingsRepositoryProvider.overrideWithValue(
         settingsRepo ?? TestSettingsRepository(),
+      ),
+      deckRepositoryProvider.overrideWithValue(
+        deckRepo ?? TestDeckRepository(),
       ),
     ],
   );
@@ -341,6 +348,208 @@ void main() {
       final lobby = container.read(lobbyProvider);
       expect(lobby.players, isEmpty);
       expect(lobby.isHost, isFalse);
+    });
+
+    test('leaving Commander drops a partner and an incompatible deck', () {
+      final deck = PlayerDeck(
+        id: 'edh',
+        displayName: 'EDH',
+        commanderName: 'Atraxa',
+        format: 'commander',
+      );
+      final ble = FakeBleService();
+      final container = _lobbyContainer(
+        ble: ble,
+        deckRepo: TestDeckRepository(decks: [deck]),
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(lobbyProvider.notifier);
+      notifier.initAsHost();
+      final hostId = container.read(lobbyProvider).players.single.playerId;
+      notifier.applyDeck(playerId: hostId, deck: deck);
+      notifier.setCommander(
+        playerId: hostId,
+        commanderName: 'Atraxa',
+        commanderImageUrl: '',
+        partnerCommanderName: 'Kamahl',
+        partnerCommanderImageUrl: 'https://example.com/kamahl.jpg',
+      );
+      expect(
+        container.read(lobbyProvider).players.single.selectedDeckId,
+        'edh',
+      );
+
+      notifier.updateConfig(
+        const LobbyConfig(format: GameFormat.standard, startingLife: 20),
+      );
+
+      final slot = container.read(lobbyProvider).players.single;
+      expect(slot.hasPartner, isFalse);
+      expect(slot.partnerCommanderName, isNull);
+      expect(slot.selectedDeckId, isNull);
+      expect(container.read(lobbyProvider).config.startingLife, 20);
+
+      notifier.setCommander(
+        playerId: hostId,
+        commanderName: 'Atraxa',
+        commanderImageUrl: '',
+        partnerCommanderName: 'Kamahl',
+      );
+      notifier.togglePartner(hostId);
+      expect(container.read(lobbyProvider).players.single.hasPartner, isFalse);
+    });
+
+    test('a full lobby rejects the next joiner', () async {
+      final ble = FakeBleService();
+      final container = _lobbyContainer(ble: ble);
+      addTearDown(container.dispose);
+
+      final notifier = container.read(lobbyProvider.notifier);
+      notifier.initAsHost();
+      notifier.updateConfig(const LobbyConfig(maxPlayers: 1));
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.lobbyPlayerJoined,
+          payload: {'pid': 'guest', 'username': 'Guest'},
+          seqNum: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(lobbyProvider).players, hasLength(1));
+      expect(ble.lastTargetPlayerId, 'guest');
+      expect(ble.sentMessages.last.type, BleMessageType.reject);
+      expect(ble.sentMessages.last.payload['reason'], 'lobbyFull');
+    });
+
+    test('host applies a ready update and drops a disconnected guest', () async {
+      final ble = FakeBleService();
+      final container = _lobbyContainer(ble: ble);
+      addTearDown(container.dispose);
+
+      final notifier = container.read(lobbyProvider.notifier);
+      notifier.initAsHost();
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.lobbyPlayerJoined,
+          payload: {'pid': 'guest', 'username': 'Guest'},
+          seqNum: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.lobbyPlayerReady,
+          payload: {'pid': 'guest', 'ready': true},
+          seqNum: 2,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        container.read(lobbyProvider).players.last.isReady,
+        isTrue,
+      );
+
+      ble.emitConnection(
+        const BleConnectionEvent(
+          playerId: 'guest',
+          status: BleConnectionStatus.disconnected,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(lobbyProvider).players, hasLength(1));
+    });
+
+    test('client follows the host snapshot, start, and session end', () async {
+      final ble = FakeBleService();
+      final container = _lobbyContainer(
+        ble: ble,
+        profileRepo: TestProfileRepository(
+          profile: PlayerProfile(username: 'joiner', playerId: 'joiner'),
+        ),
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(lobbyProvider.notifier);
+      notifier.initAsClient();
+      expect(container.read(lobbyProvider).isHost, isFalse);
+
+      notifier.updateConfig(const LobbyConfig(startingLife: 1));
+      expect(container.read(lobbyProvider).config.startingLife, isNot(1));
+
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.stateSnapshot,
+          payload: {
+            'config': const LobbyConfig(startingLife: 30).toJson(),
+            'players': [
+              PlayerSlot(
+                playerId: 'joiner',
+                username: 'joiner',
+                playerColor: Colors.green,
+              ).toJson(),
+            ],
+            'matchLabel': 'Pod night',
+          },
+          seqNum: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(lobbyProvider).config.startingLife, 30);
+      expect(container.read(lobbyProvider).matchLabel, 'Pod night');
+      expect(container.read(lobbyProvider).players.single.playerId, 'joiner');
+
+      notifier.sendReadyToHost(ready: true);
+      expect(container.read(lobbyProvider).players.single.isReady, isTrue);
+      expect(ble.sentMessages.last.type, BleMessageType.lobbyPlayerReady);
+
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.gameStart,
+          payload: {
+            'config': const LobbyConfig(startingLife: 40).toJson(),
+            'players': [
+              PlayerSlot(
+                playerId: 'joiner',
+                username: 'joiner',
+                playerColor: Colors.green,
+                isReady: true,
+              ).toJson(),
+            ],
+            'matchLabel': 'Pod night',
+          },
+          seqNum: 2,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(lobbyProvider).isGameStarted, isTrue);
+
+      ble.emit(
+        BleMessage(
+          type: BleMessageType.hostEndedSession,
+          payload: const {},
+          seqNum: 3,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(hostEndedSessionUiEventProvider), isTrue);
+    });
+
+    test('broadcastGameStart sends the lobby roster', () {
+      final ble = FakeBleService();
+      final container = _lobbyContainer(ble: ble);
+      addTearDown(container.dispose);
+
+      final notifier = container.read(lobbyProvider.notifier);
+      notifier.initAsHost();
+      notifier.setMatchLabel('Friday');
+      ble.sentMessages.clear();
+      notifier.broadcastGameStart();
+
+      expect(ble.sentMessages.single.type, BleMessageType.gameStart);
+      expect(ble.sentMessages.single.payload['matchLabel'], 'Friday');
     });
   });
 }
