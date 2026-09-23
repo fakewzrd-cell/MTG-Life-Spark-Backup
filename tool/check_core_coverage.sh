@@ -25,17 +25,36 @@ if grep -q '^SF:/.*/lib/core/' coverage/lcov.info 2>/dev/null; then
   PATTERNS+=('*/lib/core/*')
 fi
 
-lcov --ignore-errors empty,mismatch \
+# lcov 2.x may exit non-zero when function/branch data is missing even if lines
+# extracted cleanly — ignore that and judge coverage from the line records.
+set +e
+lcov --ignore-errors empty,mismatch,unused \
   --extract coverage/lcov.info "${PATTERNS[@]}" \
   -o coverage/core.lcov
-SUMMARY=$(lcov --summary --ignore-errors empty,mismatch coverage/core.lcov 2>&1)
-echo "$SUMMARY"
+extract_rc=$?
+set -e
 
-LINE_PCT=$(echo "$SUMMARY" | awk '/lines.*:/ { gsub(/%/, "", $2); print $2; exit }')
-if [[ -z "$LINE_PCT" ]]; then
-  echo "Could not parse line coverage from lcov summary"
+if [[ ! -s coverage/core.lcov ]]; then
+  echo "Core extract produced an empty coverage/core.lcov (lcov exit $extract_rc)"
   exit 1
 fi
+
+# Parse line hit/found totals from the extracted tracefile (stable across lcov versions).
+LINE_PCT=$(awk '
+  /^LF:/ { lf += substr($0, 4) + 0 }
+  /^LH:/ { lh += substr($0, 4) + 0 }
+  END {
+    if (lf <= 0) { print ""; exit 1 }
+    printf "%.1f", (100.0 * lh) / lf
+  }
+' coverage/core.lcov)
+
+if [[ -z "$LINE_PCT" ]]; then
+  echo "Could not parse line coverage from coverage/core.lcov"
+  exit 1
+fi
+
+echo "Core lines: ${LINE_PCT}% (from coverage/core.lcov)"
 
 awk -v pct="$LINE_PCT" -v min="$MIN_PCT" 'BEGIN {
   if (pct + 0 < min + 0) {
