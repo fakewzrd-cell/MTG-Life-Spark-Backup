@@ -86,8 +86,6 @@ Widget _playTabHarness({required bool hasExtraRows}) {
         final comfortableMin =
             (hasExtraRows ? extraRowEstimate * 2 : 0.0) +
             lifeBandH +
-            LayoutTokens.gr2 +
-            LayoutTokens.gr2 +
             dialStripH +
             PhaseNavCluster.barHeight;
 
@@ -96,12 +94,11 @@ Widget _playTabHarness({required bool hasExtraRows}) {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ...extraRows,
+              const Spacer(),
               lifeCounter,
-              playGapSm,
               const Spacer(),
               dialStrip,
               const Spacer(),
-              playGapSm,
               phaseBar,
             ],
           );

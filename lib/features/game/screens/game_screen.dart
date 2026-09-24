@@ -848,23 +848,22 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                       (variantsEnabled ? extraRowEstimate : 0.0) +
                       (showTurnTimer ? extraRowEstimate : 0.0) +
                       lifeBandH +
-                      playGapSm +
-                      playGapSm +
                       dialStripH +
                       turnChromeH;
 
                   if (playConstraints.maxHeight >= comfortableMin) {
-                    // Counters sit halfway between life and End turn.
+                    // End turn stays at the bottom. Life and Add counter
+                    // share the space under the commander status in three
+                    // equal gaps.
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         ...extraRows,
+                        const Spacer(),
                         lifeCounter,
-                        SizedBox(height: playGapSm),
                         const Spacer(),
                         dialStrip,
                         const Spacer(),
-                        SizedBox(height: playGapSm),
                         phaseBar,
                       ],
                     );

@@ -312,14 +312,22 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
                               ).animate(_deltaFade),
                               child: SlideTransition(
                                 position: _deltaSlide,
-                                child: Text(
-                                  _lastDelta! > 0
-                                      ? '+$_lastDelta'
-                                      : '$_lastDelta',
-                                  style: TextStyle(
-                                    fontSize: deltaFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: _deltaColor(colors),
+                                child: Transform.translate(
+                                  offset: Offset(
+                                    0,
+                                    -(baseFontSize / 2 +
+                                        deltaFontSize / 2 +
+                                        6),
+                                  ),
+                                  child: Text(
+                                    _lastDelta! > 0
+                                        ? '+$_lastDelta'
+                                        : '$_lastDelta',
+                                    style: TextStyle(
+                                      fontSize: deltaFontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: _deltaColor(colors),
+                                    ),
                                   ),
                                 ),
                               ),
