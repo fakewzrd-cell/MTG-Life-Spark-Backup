@@ -34,10 +34,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     final text = l10n.feedbackClipboardFallback(_kFeedbackEmail, msg);
     await Clipboard.setData(ClipboardData(text: text));
     if (!mounted) return;
-    showUiSnackBar(
-      context,
-      l10n.feedbackNoMailAppCopied(_kFeedbackEmail),
-    );
+    showUiSnackBar(context, l10n.feedbackNoMailAppCopied(_kFeedbackEmail));
   }
 
   Future<void> _sendFeedback() async {

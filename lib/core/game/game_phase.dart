@@ -27,8 +27,7 @@ enum GamePhase {
       'declareAttackers' ||
       'declareBlockers' ||
       'combatDamage' ||
-      'endOfCombat' =>
-        GamePhase.combat,
+      'endOfCombat' => GamePhase.combat,
       'endStep' || 'cleanup' => GamePhase.postCombatMain,
       _ => GamePhase.untap,
     };
@@ -37,30 +36,30 @@ enum GamePhase {
 
 extension GamePhaseX on GamePhase {
   String get displayName => switch (this) {
-        GamePhase.untap => 'Untap',
-        GamePhase.draw => 'Draw',
-        GamePhase.preCombatMain => 'Main 1',
-        GamePhase.combat => 'Combat',
-        GamePhase.postCombatMain => 'Main 2',
-      };
+    GamePhase.untap => 'Untap',
+    GamePhase.draw => 'Draw',
+    GamePhase.preCombatMain => 'Main 1',
+    GamePhase.combat => 'Combat',
+    GamePhase.postCombatMain => 'Main 2',
+  };
 
   String get shortName => switch (this) {
-        GamePhase.untap => 'Untap',
-        GamePhase.draw => 'Draw',
-        GamePhase.preCombatMain => 'M1',
-        GamePhase.combat => 'Combat',
-        GamePhase.postCombatMain => 'M2',
-      };
+    GamePhase.untap => 'Untap',
+    GamePhase.draw => 'Draw',
+    GamePhase.preCombatMain => 'M1',
+    GamePhase.combat => 'Combat',
+    GamePhase.postCombatMain => 'M2',
+  };
 
   String get streamlinedDisplayName => displayName;
 
   String get streamlinedShortLabel => switch (this) {
-        GamePhase.untap => 'Untap',
-        GamePhase.draw => 'Draw',
-        GamePhase.preCombatMain => 'Main',
-        GamePhase.combat => 'Combat',
-        GamePhase.postCombatMain => 'Main 2',
-      };
+    GamePhase.untap => 'Untap',
+    GamePhase.draw => 'Draw',
+    GamePhase.preCombatMain => 'Main',
+    GamePhase.combat => 'Combat',
+    GamePhase.postCombatMain => 'Main 2',
+  };
 
   bool get isCombatPhase => this == GamePhase.combat;
 

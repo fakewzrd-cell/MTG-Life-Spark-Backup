@@ -54,11 +54,12 @@ class PhaseNavCluster extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final activeName = game.playerById(game.activePlayerId)?.username;
-    final waitingName = endTurnEnabled
-        ? null
-        : (endTurnSkipName != null && endTurnSkipName!.isNotEmpty
-              ? endTurnSkipName
-              : activeName);
+    final waitingName =
+        endTurnEnabled
+            ? null
+            : (endTurnSkipName != null && endTurnSkipName!.isNotEmpty
+                ? endTurnSkipName
+                : activeName);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -67,10 +68,10 @@ class PhaseNavCluster extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             color: colors.surface.withValues(alpha: 0.94),
-            borderRadius: RadiusTokens.radiusControlSm,
+            borderRadius: RadiusTokens.radiusXl,
           ),
           child: ClipRRect(
-            borderRadius: RadiusTokens.radiusControlSm,
+            borderRadius: RadiusTokens.radiusXl,
             child: PhaseNavClusterStrip(
               game: game,
               accentColor: accentColor,
@@ -179,9 +180,10 @@ class _PhaseNavSideButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
-    final fg = enabled
-        ? colors.textPrimary
-        : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
+    final fg =
+        enabled
+            ? colors.textPrimary
+            : colors.textSecondary.withValues(alpha: OpacityTokens.disabled);
     final iconWidget = Icon(icon, size: 20, color: fg);
     final labelWidget = Text(
       label,
@@ -203,28 +205,30 @@ class _PhaseNavSideButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: enabled
-              ? () {
-                  context.gameHapticLight();
-                  onPressed?.call();
-                }
-              : null,
+          onTap:
+              enabled
+                  ? () {
+                    context.gameHapticLight();
+                    onPressed?.call();
+                  }
+                  : null,
           child: Center(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: iconFirst
-                    ? [
-                        iconWidget,
-                        SizedBox(width: LayoutTokens.gr0),
-                        labelWidget,
-                      ]
-                    : [
-                        labelWidget,
-                        SizedBox(width: LayoutTokens.gr0),
-                        iconWidget,
-                      ],
+                children:
+                    iconFirst
+                        ? [
+                          iconWidget,
+                          SizedBox(width: LayoutTokens.gr0),
+                          labelWidget,
+                        ]
+                        : [
+                          labelWidget,
+                          SizedBox(width: LayoutTokens.gr0),
+                          iconWidget,
+                        ],
               ),
             ),
           ),
@@ -251,15 +255,13 @@ class _PhaseNavCenter extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    final phaseColor = game.isLocalPlayersTurn
-        ? accentColor
-        : colors.textSecondary;
+    final phaseColor =
+        game.isLocalPlayersTurn ? accentColor : colors.textSecondary;
 
     Widget buildLabel(BoxConstraints constraints) {
       final narrow = constraints.maxWidth < 108;
-      final phaseText = narrow
-          ? game.currentPhase.shortName
-          : game.currentPhase.displayName;
+      final phaseText =
+          narrow ? game.currentPhase.shortName : game.currentPhase.displayName;
       final fontSize = narrow ? FontTokens.hudXs : FontTokens.hudSm;
 
       return Row(
@@ -299,8 +301,9 @@ class _PhaseNavCenter extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr1),
           child: LayoutBuilder(
-            builder: (context, constraints) =>
-                Center(child: buildLabel(constraints)),
+            builder:
+                (context, constraints) =>
+                    Center(child: buildLabel(constraints)),
           ),
         ),
       );
@@ -324,12 +327,13 @@ class _PhaseNavCenter extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr1),
             child: LayoutBuilder(
-              builder: (context, constraints) => Center(
-                child: Tooltip(
-                  message: l10n.gameChoosePhase,
-                  child: buildLabel(constraints),
-                ),
-              ),
+              builder:
+                  (context, constraints) => Center(
+                    child: Tooltip(
+                      message: l10n.gameChoosePhase,
+                      child: buildLabel(constraints),
+                    ),
+                  ),
             ),
           ),
         ),

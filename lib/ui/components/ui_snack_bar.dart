@@ -13,9 +13,7 @@ void showUiSnackBar(
     SnackBar(
       content: Text(
         message,
-        style: TextStyle(
-          color: isError ? colors.onError : colors.textPrimary,
-        ),
+        style: TextStyle(color: isError ? colors.onError : colors.textPrimary),
       ),
       backgroundColor: isError ? colors.error : colors.surfaceElevated,
     ),

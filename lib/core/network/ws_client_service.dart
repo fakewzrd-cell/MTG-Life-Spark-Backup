@@ -17,7 +17,8 @@ import 'ws_client_connect_stub.dart'
 /// then sends / receives [BleMessage] JSON frames.
 class WsClientService implements BleService {
   final _messageController = StreamController<BleMessage>.broadcast();
-  final _connectionController = StreamController<BleConnectionEvent>.broadcast();
+  final _connectionController =
+      StreamController<BleConnectionEvent>.broadcast();
 
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _sub;
@@ -93,13 +94,14 @@ class WsClientService implements BleService {
       await _openChannel(wsUri);
     } catch (e) {
       await disconnect();
-      _connectionController.add(BleConnectionEvent(
-        playerId: wsUri,
-        status: BleConnectionStatus.error,
-        errorMessage: e is TimeoutException
-            ? e.message
-            : 'Cannot reach host: $e',
-      ));
+      _connectionController.add(
+        BleConnectionEvent(
+          playerId: wsUri,
+          status: BleConnectionStatus.error,
+          errorMessage:
+              e is TimeoutException ? e.message : 'Cannot reach host: $e',
+        ),
+      );
     }
   }
 
@@ -164,11 +166,13 @@ class WsClientService implements BleService {
     _stopKeepAlive();
     _keepAliveTimer = Timer.periodic(const Duration(seconds: 18), (_) {
       if (!_ready) return;
-      _sendRaw(BleMessage(
-        type: BleMessageType.sessionPing,
-        payload: const {},
-        seqNum: _nextSeq(),
-      ));
+      _sendRaw(
+        BleMessage(
+          type: BleMessageType.sessionPing,
+          payload: const {},
+          seqNum: _nextSeq(),
+        ),
+      );
     });
   }
 
@@ -183,9 +187,7 @@ class WsClientService implements BleService {
     if (data is! String) return;
     BleMessage message;
     try {
-      message = BleMessage.fromJson(
-        jsonDecode(data) as Map<String, dynamic>,
-      );
+      message = BleMessage.fromJson(jsonDecode(data) as Map<String, dynamic>);
     } catch (e, st) {
       appLog('WsClientService: invalid message JSON', error: e, stackTrace: st);
       return;
@@ -202,11 +204,13 @@ class WsClientService implements BleService {
         _ =>
           'Protocol version mismatch. Required: ${message.payload['requiredVersion']}',
       };
-      _connectionController.add(BleConnectionEvent(
-        playerId: _hostUri ?? '',
-        status: BleConnectionStatus.rejected,
-        errorMessage: messageText,
-      ));
+      _connectionController.add(
+        BleConnectionEvent(
+          playerId: _hostUri ?? '',
+          status: BleConnectionStatus.rejected,
+          errorMessage: messageText,
+        ),
+      );
       return;
     }
 
@@ -216,26 +220,29 @@ class WsClientService implements BleService {
       // Host acknowledged → mark ready, notify UI, then join or resume.
       _ready = true;
       _startKeepAlive();
-      _connectionController.add(BleConnectionEvent(
-        playerId: _hostUri ?? '',
-        status: BleConnectionStatus.connected,
-      ));
+      _connectionController.add(
+        BleConnectionEvent(
+          playerId: _hostUri ?? '',
+          status: BleConnectionStatus.connected,
+        ),
+      );
       if (_sessionEstablished) {
-        _sendRaw(BleMessage.reconnectRequest(
-          _nextSeq(),
-          playerId: localPlayerId,
-          username: localUsername,
-        ));
+        _sendRaw(
+          BleMessage.reconnectRequest(
+            _nextSeq(),
+            playerId: localPlayerId,
+            username: localUsername,
+          ),
+        );
       } else {
         _sessionEstablished = true;
-        _sendRaw(BleMessage(
-          type: BleMessageType.lobbyPlayerJoined,
-          payload: {
-            'pid': localPlayerId,
-            'username': localUsername,
-          },
-          seqNum: _nextSeq(),
-        ));
+        _sendRaw(
+          BleMessage(
+            type: BleMessageType.lobbyPlayerJoined,
+            payload: {'pid': localPlayerId, 'username': localUsername},
+            seqNum: _nextSeq(),
+          ),
+        );
       }
       return;
     }
@@ -247,20 +254,24 @@ class WsClientService implements BleService {
     _ready = false;
     // Ignore closes while we are tearing down to reconnect.
     if (_intentionalDisconnect || _reconnecting) return;
-    _connectionController.add(BleConnectionEvent(
-      playerId: _hostUri ?? '',
-      status: BleConnectionStatus.disconnected,
-    ));
+    _connectionController.add(
+      BleConnectionEvent(
+        playerId: _hostUri ?? '',
+        status: BleConnectionStatus.disconnected,
+      ),
+    );
   }
 
   void _onError(Object error) {
     _ready = false;
     if (_intentionalDisconnect || _reconnecting) return;
-    _connectionController.add(BleConnectionEvent(
-      playerId: _hostUri ?? '',
-      status: BleConnectionStatus.error,
-      errorMessage: error.toString(),
-    ));
+    _connectionController.add(
+      BleConnectionEvent(
+        playerId: _hostUri ?? '',
+        status: BleConnectionStatus.error,
+        errorMessage: error.toString(),
+      ),
+    );
   }
 
   // ── Sending ───────────────────────────────────────────────────────────────

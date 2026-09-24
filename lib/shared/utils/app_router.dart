@@ -31,6 +31,7 @@ class AppRoutes {
   static const lobbyHost = '/lobby/host';
   static const lobbyJoin = '/lobby/join';
   static const settings = '/settings';
+
   /// Primary route for deck library (shell tab).
   static const decks = '/decks';
   static const profileAvatar = '/home/avatar';
@@ -38,6 +39,14 @@ class AppRoutes {
   static const commanderSelect = '/commander-select';
   static const game = '/game';
   static const endGame = '/end-game';
+}
+
+/// Browser Back must not leave an in-progress match. Intentional leaves
+/// (menu, host ended the session, failed seat) set this before navigating.
+final allowGameExitProvider = StateProvider<bool>((ref) => false);
+
+void allowNextGameExit(WidgetRef ref) {
+  ref.read(allowGameExitProvider.notifier).state = true;
 }
 
 Widget _buildCommanderSelect(GoRouterState state) {
@@ -116,8 +125,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'avatar',
                     parentNavigatorKey: _rootNavigatorKey,
-                    builder: (context, state) =>
-                        const ProfilePicturePickerScreen(),
+                    builder:
+                        (context, state) => const ProfilePicturePickerScreen(),
                   ),
                 ],
               ),
@@ -135,8 +144,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     routes: [
                       GoRoute(
                         path: 'commander',
-                        builder: (context, state) =>
-                            _buildCommanderSelect(state),
+                        builder:
+                            (context, state) => _buildCommanderSelect(state),
                       ),
                     ],
                   ),
@@ -178,6 +187,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.game,
+        onExit: (context, state) {
+          final game = ref.read(gameProvider);
+          if (game.gameOver) return true;
+          if (ref.read(allowGameExitProvider)) {
+            ref.read(allowGameExitProvider.notifier).state = false;
+            return true;
+          }
+          final inMatch =
+              game.localPlayer != null ||
+              ref.read(lobbyProvider).players.isNotEmpty;
+          return !inMatch;
+        },
         builder: (context, state) => const GameScreen(),
       ),
       GoRoute(
@@ -206,7 +227,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
         return AppRoutes.onboarding;
       }
-      if (path == AppRoutes.splash && hasProfile && settings.onboardingCompleted) {
+      if (path == AppRoutes.splash &&
+          hasProfile &&
+          settings.onboardingCompleted) {
         return AppRoutes.home;
       }
       final game = ref.read(gameProvider);

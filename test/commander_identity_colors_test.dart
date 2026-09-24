@@ -18,7 +18,7 @@ void main() {
   });
 
   test('gameChromeAccent follows primary accent token', () {
-    final palette = AppColorPalettes.fog;
+    final palette = AppColorPalettes.slate;
     final light = AppColorTokens.fromLightPalette(palette);
 
     expect(

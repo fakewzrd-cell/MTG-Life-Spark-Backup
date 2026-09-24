@@ -23,9 +23,7 @@ bool isLocalAvatarRef(String? ref) {
 /// Resolves a stored avatar ref to a [File], or null if not local / missing.
 File? localFileFromRef(String? ref) {
   if (!isLocalAvatarRef(ref)) return null;
-  final path = ref!.startsWith('file://')
-      ? Uri.parse(ref).toFilePath()
-      : ref;
+  final path = ref!.startsWith('file://') ? Uri.parse(ref).toFilePath() : ref;
   final file = File(path);
   return file.existsSync() ? file : null;
 }
@@ -51,15 +49,13 @@ Future<String> savePickedAvatar(XFile picked) async {
 }
 
 /// Writes raw image bytes as a new local avatar file. Returns absolute path.
-Future<String> saveAvatarBytes(
-  Uint8List bytes, {
-  String? suggestedName,
-}) async {
+Future<String> saveAvatarBytes(Uint8List bytes, {String? suggestedName}) async {
   if (bytes.isEmpty) {
     throw StateError('Avatar image bytes were empty.');
   }
   final dir = await _avatarDirectory();
-  final ext = _extensionFor(suggestedName) ?? _extensionFromMagic(bytes) ?? 'jpg';
+  final ext =
+      _extensionFor(suggestedName) ?? _extensionFromMagic(bytes) ?? 'jpg';
   final name = 'avatar_${const Uuid().v4()}.$ext';
   final file = File('${dir.path}/$name');
   await file.writeAsBytes(bytes, flush: true);

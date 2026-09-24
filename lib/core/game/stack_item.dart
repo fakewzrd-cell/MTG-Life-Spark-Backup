@@ -3,6 +3,7 @@ enum StackItemStatus {
   active,
   resolved,
   countered,
+
   /// Rules counter — spell/ability leaves the stack (illegal or missing target).
   fizzled,
 }
@@ -11,15 +12,18 @@ enum StackItemStatus {
 class StackItem {
   final String id;
   final String playerId;
+
   /// Canonical card name from Scryfall when picked via search.
   final String name;
   final String? parentId;
   final StackItemStatus status;
   final int createdAt;
+
   /// Scryfall oracle text (rules) when the card was added.
   final String? oracleText;
   final String? manaCost;
   final String? imageUrl;
+
   /// Scryfall type line, e.g. `Instant` or `Artifact — Equipment`.
   final String? typeLine;
 
@@ -81,33 +85,33 @@ class StackItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'playerId': playerId,
-        'name': name,
-        'parentId': parentId,
-        'status': status.name,
-        'createdAt': createdAt,
-        if (oracleText != null) 'oracleText': oracleText,
-        if (manaCost != null) 'manaCost': manaCost,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (typeLine != null) 'typeLine': typeLine,
-      };
+    'id': id,
+    'playerId': playerId,
+    'name': name,
+    'parentId': parentId,
+    'status': status.name,
+    'createdAt': createdAt,
+    if (oracleText != null) 'oracleText': oracleText,
+    if (manaCost != null) 'manaCost': manaCost,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    if (typeLine != null) 'typeLine': typeLine,
+  };
 
   factory StackItem.fromJson(Map<String, dynamic> json) => StackItem(
-        id: json['id'] as String,
-        playerId: json['playerId'] as String,
-        name: json['name'] as String,
-        parentId: json['parentId'] as String?,
-        status: StackItemStatus.values.firstWhere(
-          (s) => s.name == json['status'],
-          orElse: () => StackItemStatus.active,
-        ),
-        createdAt: (json['createdAt'] as num).toInt(),
-        oracleText: json['oracleText'] as String?,
-        manaCost: json['manaCost'] as String?,
-        imageUrl: json['imageUrl'] as String?,
-        typeLine: json['typeLine'] as String?,
-      );
+    id: json['id'] as String,
+    playerId: json['playerId'] as String,
+    name: json['name'] as String,
+    parentId: json['parentId'] as String?,
+    status: StackItemStatus.values.firstWhere(
+      (s) => s.name == json['status'],
+      orElse: () => StackItemStatus.active,
+    ),
+    createdAt: (json['createdAt'] as num).toInt(),
+    oracleText: json['oracleText'] as String?,
+    manaCost: json['manaCost'] as String?,
+    imageUrl: json['imageUrl'] as String?,
+    typeLine: json['typeLine'] as String?,
+  );
 }
 
 /// How the stack tab orders / groups visible items.

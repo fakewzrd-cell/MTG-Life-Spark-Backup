@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../ui/tokens/layout_tokens.dart';
+import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/theme/app_color_tokens.dart';
 
@@ -37,10 +39,13 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
   final AppColorTokens colors;
   final double size;
   final CommanderPortraitStyle portraitStyle;
+
   /// How card/circle art is scaled inside its frame.
   final BoxFit imageFit;
+
   /// Resolved art URL; falls back to [PlayerDeck.commanderImageUrl].
   final String? primaryImageUrl;
+
   /// Resolved partner art URL; falls back to [PlayerDeck.partnerCommanderImageUrl].
   final String? partnerImageUrl;
 
@@ -55,11 +60,7 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
 
     if (portraitStyle == CommanderPortraitStyle.card) {
       if (!hasPartner) {
-        return _cardPortraitTile(
-          url: primaryUrl,
-          height: size,
-          fit: imageFit,
-        );
+        return _cardPortraitTile(url: primaryUrl, height: size, fit: imageFit);
       }
       final small = size * 0.58;
       final bigW = size * _cardAspectWidthOverHeight;
@@ -97,12 +98,13 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(LayoutTokens.gr0),
                   child: _cardPortraitTile(
-                    url: partnerUrl != null && partnerUrl.isNotEmpty
-                        ? partnerUrl
-                        : null,
-                    height: small - 4,
+                    url:
+                        partnerUrl != null && partnerUrl.isNotEmpty
+                            ? partnerUrl
+                            : null,
+                    height: small - LayoutTokens.gr1,
                     fit: imageFit,
                     showSurround: true,
                   ),
@@ -116,13 +118,37 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
 
     Widget circleImage(String? url, double diameter) {
       return ClipOval(
-        child: url != null && url.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: url,
-                width: diameter,
-                height: diameter,
-                fit: imageFit,
-                placeholder: (_, __) => Container(
+        child:
+            url != null && url.isNotEmpty
+                ? CachedNetworkImage(
+                  imageUrl: url,
+                  width: diameter,
+                  height: diameter,
+                  fit: imageFit,
+                  placeholder:
+                      (_, __) => Container(
+                        width: diameter,
+                        height: diameter,
+                        color: colors.backgroundSecondary,
+                        child: Icon(
+                          Icons.person,
+                          size: diameter * 0.45,
+                          color: colors.textMuted,
+                        ),
+                      ),
+                  errorWidget:
+                      (_, __, ___) => Container(
+                        width: diameter,
+                        height: diameter,
+                        color: colors.backgroundSecondary,
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: diameter * 0.35,
+                          color: colors.textMuted,
+                        ),
+                      ),
+                )
+                : Container(
                   width: diameter,
                   height: diameter,
                   color: colors.backgroundSecondary,
@@ -132,27 +158,6 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
                     color: colors.textMuted,
                   ),
                 ),
-                errorWidget: (_, __, ___) => Container(
-                  width: diameter,
-                  height: diameter,
-                  color: colors.backgroundSecondary,
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    size: diameter * 0.35,
-                    color: colors.textMuted,
-                  ),
-                ),
-              )
-            : Container(
-                width: diameter,
-                height: diameter,
-                color: colors.backgroundSecondary,
-                child: Icon(
-                  Icons.person,
-                  size: diameter * 0.45,
-                  color: colors.textMuted,
-                ),
-              ),
       );
     }
 
@@ -177,9 +182,7 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
                 border: Border.all(color: colors.surface, width: 2),
               ),
               child: circleImage(
-                partnerUrl != null && partnerUrl.isNotEmpty
-                    ? partnerUrl
-                    : null,
+                partnerUrl != null && partnerUrl.isNotEmpty ? partnerUrl : null,
                 small,
               ),
             ),
@@ -212,30 +215,28 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
-          placeholder: (_, __) => Container(
-            width: width,
-            height: height,
-            color: colors.backgroundSecondary,
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: colors.textMuted,
+          placeholder:
+              (_, __) => Container(
+                width: width,
+                height: height,
+                color: colors.backgroundSecondary,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.textMuted,
+                  ),
+                ),
               ),
-            ),
-          ),
           errorWidget: (_, __, ___) => _cardPlaceholder(height: height),
         );
       }
       return _cardPlaceholder(height: height);
     }
 
-    final core = ClipRRect(
-      borderRadius: innerR,
-      child: content(),
-    );
+    final core = ClipRRect(borderRadius: innerR, child: content());
 
     if (!showSurround) {
       return SizedBox(width: width, height: height, child: core);
@@ -288,11 +289,7 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
       height: height,
       color: colors.backgroundSecondary,
       alignment: Alignment.center,
-      child: Icon(
-        Icons.person,
-        size: height * 0.32,
-        color: colors.textMuted,
-      ),
+      child: Icon(Icons.person, size: height * 0.32, color: colors.textMuted),
     );
   }
 }
@@ -329,7 +326,9 @@ class _ResolvedDeckCommanderAvatarClusterState
   void initState() {
     super.initState();
     _applySyncResolve();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchMissingFromScryfall());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _fetchMissingFromScryfall(),
+    );
   }
 
   @override
@@ -341,8 +340,9 @@ class _ResolvedDeckCommanderAvatarClusterState
             widget.deck.partnerCommanderImageUrl) {
       _fetchStarted = false;
       _applySyncResolve();
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _fetchMissingFromScryfall());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _fetchMissingFromScryfall(),
+      );
     }
   }
 
@@ -361,8 +361,8 @@ class _ResolvedDeckCommanderAvatarClusterState
   Future<void> _fetchMissingFromScryfall() async {
     if (_fetchStarted) return;
     final needPrimary = _primaryUrl == null || _primaryUrl!.isEmpty;
-    final needPartner = widget.deck.hasPartner &&
-        (_partnerUrl == null || _partnerUrl!.isEmpty);
+    final needPartner =
+        widget.deck.hasPartner && (_partnerUrl == null || _partnerUrl!.isEmpty);
     if (!needPrimary && !needPartner) return;
 
     _fetchStarted = true;
@@ -371,8 +371,7 @@ class _ResolvedDeckCommanderAvatarClusterState
     var partner = _partnerUrl;
 
     if (needPrimary) {
-      final card =
-          await service.fetchCardByName(widget.deck.commanderName);
+      final card = await service.fetchCardByName(widget.deck.commanderName);
       primary = card?.imageUrl?.trim();
     }
     if (needPartner && widget.deck.partnerCommanderName != null) {
@@ -393,10 +392,7 @@ class _ResolvedDeckCommanderAvatarClusterState
     }
   }
 
-  Future<void> _persistFetchedUrls({
-    String? primary,
-    String? partner,
-  }) async {
+  Future<void> _persistFetchedUrls({String? primary, String? partner}) async {
     if (isPreviewPlaceholderDeck(widget.deck)) return;
     final repo = ref.read(deckRepositoryProvider);
     final deck = repo.getById(widget.deck.id);
@@ -480,15 +476,14 @@ class DeckWinLossRatioBar extends StatelessWidget {
         child: Row(
           children: [
             if (w > 0)
-              Expanded(
-                flex: w,
-                child: Container(color: colors.success),
-              ),
+              Expanded(flex: w, child: Container(color: colors.success)),
             if (l > 0)
               Expanded(
                 flex: l,
                 child: Container(
-                  color: colors.error.withValues(alpha: OpacityTokens.nearOpaque),
+                  color: colors.error.withValues(
+                    alpha: OpacityTokens.nearOpaque,
+                  ),
                 ),
               ),
           ],
@@ -512,6 +507,7 @@ class DeckStatChips extends StatelessWidget {
   final PlayerDeck deck;
   final AppColorTokens colors;
   final bool compact;
+
   /// 2×2 equal-width grid for profile/My Decks carousel cards (240×360).
   final bool forCarousel;
   final bool scrollHorizontally;
@@ -529,10 +525,10 @@ class DeckStatChips extends StatelessWidget {
     }) {
       final carousel = forCarousel;
       final fs = carousel ? 11.0 : (compact ? 11.0 : 12.0);
-      final hPad = carousel ? 8.0 : (compact ? 8.0 : 10.0);
-      final vPad = carousel ? 5.0 : (compact ? 4.0 : 6.0);
+      final hPad = carousel || compact ? LayoutTokens.gr1 : LayoutTokens.gr2;
+      final vPad = LayoutTokens.gr0;
       final iconSize = carousel ? 13.0 : (compact ? 14.0 : 16.0);
-      final radius = carousel ? 10.0 : 8.0;
+      final radius = RadiusTokens.lgIncreased;
 
       final content = Row(
         mainAxisSize: carousel ? MainAxisSize.max : MainAxisSize.min,
@@ -540,7 +536,7 @@ class DeckStatChips extends StatelessWidget {
             carousel ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
           Icon(icon, size: iconSize, color: colors.textSecondary),
-          SizedBox(width: carousel ? 3 : 4),
+          SizedBox(width: LayoutTokens.gr0),
           Text(
             label,
             style: TextStyle(
@@ -549,7 +545,7 @@ class DeckStatChips extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(width: carousel ? 3 : 4),
+          SizedBox(width: LayoutTokens.gr0),
           Flexible(
             child: Text(
               value,
@@ -597,11 +593,7 @@ class DeckStatChips extends StatelessWidget {
         value: '${deck.losses}',
         valueColor: colors.error.withValues(alpha: OpacityTokens.nearOpaque),
       ),
-      chip(
-        icon: Icons.sports_esports_outlined,
-        label: 'GP',
-        value: '$gp',
-      ),
+      chip(icon: Icons.sports_esports_outlined, label: 'GP', value: '$gp'),
     ];
 
     if (forCarousel) {
@@ -630,15 +622,15 @@ class DeckStatChips extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemCount: chips.length,
-          separatorBuilder: (_, __) => SizedBox(width: compact ? 6 : 8),
+          separatorBuilder: (_, __) => const SizedBox(width: LayoutTokens.gr1),
           itemBuilder: (_, i) => chips[i],
         ),
       );
     }
 
     return Wrap(
-      spacing: compact ? 6 : 8,
-      runSpacing: 6,
+      spacing: LayoutTokens.gr1,
+      runSpacing: LayoutTokens.gr1,
       children: chips,
     );
   }

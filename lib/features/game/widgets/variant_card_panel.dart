@@ -33,9 +33,11 @@ class VariantQuickAccessChip extends ConsumerWidget {
       ),
     );
     final activeCount =
-        [variantFlags.$1, variantFlags.$2, variantFlags.$3]
-            .where((enabled) => enabled)
-            .length;
+        [
+          variantFlags.$1,
+          variantFlags.$2,
+          variantFlags.$3,
+        ].where((enabled) => enabled).length;
 
     if (activeCount == 0) return const SizedBox.shrink();
 
@@ -106,18 +108,19 @@ class VariantQuickAccessChip extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: false,
-      builder: (ctx) => GameSheetBody(
-        scrollable: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GameSheetHeader(title: l10n.variantDecksSheetTitle),
-            SizedBox(height: LayoutTokens.gr2),
-            const VariantCardPanel(),
-          ],
-        ),
-      ),
+      builder:
+          (ctx) => GameSheetBody(
+            scrollable: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GameSheetHeader(title: l10n.variantDecksSheetTitle),
+                SizedBox(height: LayoutTokens.gr2),
+                const VariantCardPanel(),
+              ],
+            ),
+          ),
     );
   }
 }
@@ -133,11 +136,7 @@ class VariantCardPanel extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final variantFlags = ref.watch(
       gameProvider.select(
-        (g) => (
-          g.planechaseEnabled,
-          g.archenemyEnabled,
-          g.bountyEnabled,
-        ),
+        (g) => (g.planechaseEnabled, g.archenemyEnabled, g.bountyEnabled),
       ),
     );
     ref.watch(
@@ -158,44 +157,47 @@ class VariantCardPanel extends ConsumerWidget {
     final game = ref.read(gameProvider);
 
     return decksAsync.when(
-      data: (decks) => _VariantContent(
-        game: game,
-        decks: decks,
-        notifier: ref.read(gameProvider.notifier),
-      ),
-      loading: () => Padding(
-        padding: SpacingTokens.horizontalMd.add(SpacingTokens.verticalXs),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: LayoutTokens.gr5 - LayoutTokens.gr0,
-              height: LayoutTokens.gr5 - LayoutTokens.gr0,
-              child: CircularProgressIndicator(
-                strokeWidth: LayoutTokens.gr0 / 2,
-              ),
-            ),
-            SizedBox(width: LayoutTokens.gr2),
-            Text(
-              l10n.variantLoading,
-              style: TextStyle(
-                color: colors.textSecondary,
-                fontSize: LayoutTokens.gr3,
-              ),
-            ),
-          ],
-        ),
-      ),
-      error: (_, __) => Padding(
-          padding: SpacingTokens.horizontalMd.add(SpacingTokens.verticalXs),
-          child: Text(
-            l10n.variantLoadFailed,
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: LayoutTokens.gr2,
+      data:
+          (decks) => _VariantContent(
+            game: game,
+            decks: decks,
+            notifier: ref.read(gameProvider.notifier),
+          ),
+      loading:
+          () => Padding(
+            padding: SpacingTokens.horizontalMd.add(SpacingTokens.verticalXs),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: LayoutTokens.gr5 - LayoutTokens.gr0,
+                  height: LayoutTokens.gr5 - LayoutTokens.gr0,
+                  child: CircularProgressIndicator(
+                    strokeWidth: LayoutTokens.gr0 / 2,
+                  ),
+                ),
+                SizedBox(width: LayoutTokens.gr2),
+                Text(
+                  l10n.variantLoading,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: LayoutTokens.gr3,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+      error:
+          (_, __) => Padding(
+            padding: SpacingTokens.horizontalMd.add(SpacingTokens.verticalXs),
+            child: Text(
+              l10n.variantLoadFailed,
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: LayoutTokens.gr2,
+              ),
+            ),
+          ),
     );
   }
 }
@@ -304,56 +306,59 @@ class _VariantTile extends StatelessWidget {
       margin: EdgeInsets.only(bottom: pad),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         border: Border.all(color: colors.backgroundSecondary, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showCardDetail(context),
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           child: Padding(
             padding: EdgeInsets.all(pad),
             child: Row(
               children: [
                 // Card thumbnail
                 ClipRRect(
-                  borderRadius: RadiusTokens.radiusSm,
+                  borderRadius: RadiusTokens.radiusXl,
                   child: SizedBox(
                     width: thumbW,
                     height: thumbH,
-                    child: card.imageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: card.imageUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: colors.backgroundSecondary,
-                              child: Center(
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  color: colors.textSecondary,
-                                  size: 24,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
+                    child:
+                        card.imageUrl != null
+                            ? CachedNetworkImage(
+                              imageUrl: card.imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (_, __) => Container(
+                                    color: colors.backgroundSecondary,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.image_outlined,
+                                        color: colors.textSecondary,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
+                              errorWidget:
+                                  (_, __, ___) => Container(
+                                    color: colors.backgroundSecondary,
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                      color: colors.textSecondary,
+                                    ),
+                                  ),
+                            )
+                            : Container(
                               color: colors.backgroundSecondary,
                               child: Icon(
-                                Icons.broken_image_outlined,
+                                Icons.help_outline,
                                 color: colors.textSecondary,
                               ),
                             ),
-                          )
-                        : Container(
-                            color: colors.backgroundSecondary,
-                            child: Icon(
-                              Icons.help_outline,
-                              color: colors.textSecondary,
-                            ),
-                          ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: LayoutTokens.gr3),
                 // Name + oracle
                 Expanded(
                   child: Column(
@@ -365,7 +370,7 @@ class _VariantTile extends StatelessWidget {
                             iconWidget!
                           else if (icon != null)
                             Icon(icon, size: 20, color: colors.primaryAccent),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: LayoutTokens.gr1),
                           Text(
                             title,
                             style: TextStyle(
@@ -376,7 +381,7 @@ class _VariantTile extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: LayoutTokens.gr1),
                       Text(
                         card.name,
                         style: TextStyle(
@@ -389,7 +394,7 @@ class _VariantTile extends StatelessWidget {
                       ),
                       if (card.oracleText != null &&
                           card.oracleText!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: LayoutTokens.gr1),
                         Text(
                           card.oracleText!,
                           style: TextStyle(
@@ -410,7 +415,9 @@ class _VariantTile extends StatelessWidget {
                   tooltip: AppLocalizations.of(context).variantNextCard,
                   color: colors.primaryAccent,
                   style: IconButton.styleFrom(
-                    backgroundColor: colors.primaryAccent.withValues(alpha: 0.2),
+                    backgroundColor: colors.primaryAccent.withValues(
+                      alpha: 0.2,
+                    ),
                   ),
                 ),
               ],
@@ -427,50 +434,49 @@ class _VariantTile extends StatelessWidget {
     showGameBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxH),
-        child: GameSheetBody(
-          child: LimitedBox(
-            maxHeight: (maxH - 48).clamp(160.0, maxH),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                const GameSheetHandle(),
-                SizedBox(height: LayoutTokens.gr2),
-                GameSheetHeader(
-                  title: card.name,
-                  showHandle: false,
-                ),
-                SizedBox(height: LayoutTokens.gr3),
-                if (card.imageUrl != null)
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: RadiusTokens.radiusSm,
-                      child: CachedNetworkImage(
-                        imageUrl: card.imageUrl!,
-                        width: (MediaQuery.sizeOf(context).width - 40)
-                            .clamp(200.0, 280.0),
-                        fit: BoxFit.contain,
+      builder:
+          (ctx) => ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxH),
+            child: GameSheetBody(
+              child: LimitedBox(
+                maxHeight: (maxH - 48).clamp(160.0, maxH),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    const GameSheetHandle(),
+                    SizedBox(height: LayoutTokens.gr2),
+                    GameSheetHeader(title: card.name, showHandle: false),
+                    SizedBox(height: LayoutTokens.gr3),
+                    if (card.imageUrl != null)
+                      Center(
+                        child: ClipRRect(
+                          borderRadius: RadiusTokens.radiusXl,
+                          child: CachedNetworkImage(
+                            imageUrl: card.imageUrl!,
+                            width: (MediaQuery.sizeOf(context).width - 40)
+                                .clamp(200.0, 280.0),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                if (card.oracleText != null && card.oracleText!.isNotEmpty) ...[
-                  SizedBox(height: LayoutTokens.gr3),
-                  Text(
-                    card.oracleText!,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: FontTokens.body,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-                SizedBox(height: LayoutTokens.gr2),
-              ],
+                    if (card.oracleText != null &&
+                        card.oracleText!.isNotEmpty) ...[
+                      SizedBox(height: LayoutTokens.gr3),
+                      Text(
+                        card.oracleText!,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: FontTokens.body,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: LayoutTokens.gr2),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 }

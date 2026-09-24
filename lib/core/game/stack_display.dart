@@ -36,8 +36,7 @@ abstract final class StackDisplay {
   static List<String> apnapPlayerOrder(GameState game) {
     if (game.turnOrder.isEmpty) return [];
     final n = game.turnOrder.length;
-    final anchorId =
-        game.stackApnapAnchorPlayerId ?? game.activePlayerId;
+    final anchorId = game.stackApnapAnchorPlayerId ?? game.activePlayerId;
     var start = game.turnOrder.indexOf(anchorId);
     if (start < 0) start = game.activePlayerIndex % n;
     return List.generate(n, (i) => game.turnOrder[(start + i) % n]);
@@ -51,8 +50,9 @@ abstract final class StackDisplay {
   /// Chronological stack order: 1 = first cast (oldest active), then 2, 3, …
   /// The newest active item has the highest number and resolves first (LIFO).
   static Map<String, int> resolveOrderNumbers(List<StackItem> items) {
-    final active = items.where((i) => i.isActive).toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    final active =
+        items.where((i) => i.isActive).toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     final map = <String, int>{};
     for (var i = 0; i < active.length; i++) {
       map[active[i].id] = i + 1;
@@ -64,9 +64,7 @@ abstract final class StackDisplay {
   static StackItem? resolvesNextItem(List<StackItem> items) {
     final active = items.where((i) => i.isActive).toList();
     if (active.isEmpty) return null;
-    return active.reduce(
-      (a, b) => a.createdAt > b.createdAt ? a : b,
-    );
+    return active.reduce((a, b) => a.createdAt > b.createdAt ? a : b);
   }
 
   static StackItem? parentOf(StackItem item, List<StackItem> items) {
@@ -97,9 +95,7 @@ abstract final class StackDisplay {
 
   /// Root items in stack order (newest first), active only.
   static List<StackItem> activeRootsNewestFirst(List<StackItem> items) {
-    return items
-        .where((i) => i.isActive && i.parentId == null)
-        .toList()
+    return items.where((i) => i.isActive && i.parentId == null).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
@@ -108,20 +104,19 @@ abstract final class StackDisplay {
     List<StackItem> items, {
     bool includeInactive = true,
   }) {
-    final visible = includeInactive
-        ? items
-        : items.where((i) => i.showsOnStack).toList();
+    final visible =
+        includeInactive ? items : items.where((i) => i.showsOnStack).toList();
     final byId = {for (final i in visible) i.id: i};
-    final roots = visible
-        .where((i) => i.parentId == null || !byId.containsKey(i.parentId))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final roots =
+        visible
+            .where((i) => i.parentId == null || !byId.containsKey(i.parentId))
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     StackDisplayNode build(StackItem item, int depth) {
-      final children = visible
-          .where((i) => i.parentId == item.id)
-          .toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      final children =
+          visible.where((i) => i.parentId == item.id).toList()
+            ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
       return StackDisplayNode(
         item: item,
         depth: depth,
@@ -135,17 +130,15 @@ abstract final class StackDisplay {
   /// Groups active items by controller in APNAP order.
   static List<StackApnapGroup> apnapGroups(GameState game) {
     final order = apnapPlayerOrder(game);
-    final activeItems =
-        game.stackItems.where((i) => i.showsOnStack).toList();
+    final activeItems = game.stackItems.where((i) => i.showsOnStack).toList();
     final groups = <StackApnapGroup>[];
 
     for (final pid in order) {
       final player = game.playerById(pid);
       if (player == null) continue;
-      final mine = activeItems
-          .where((i) => i.playerId == pid)
-          .toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      final mine =
+          activeItems.where((i) => i.playerId == pid).toList()
+            ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
       if (mine.isEmpty) continue;
       groups.add(
         StackApnapGroup(

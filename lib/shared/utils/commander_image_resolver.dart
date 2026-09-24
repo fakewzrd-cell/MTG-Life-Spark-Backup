@@ -52,8 +52,7 @@ String? resolveCommanderArtByName({
     if (url != null && url.isNotEmpty) return url;
   }
 
-  if (profile != null &&
-      _namesMatch(profile.selectedCommanderName, name)) {
+  if (profile != null && _namesMatch(profile.selectedCommanderName, name)) {
     final url = profile.selectedCommanderImageUrl?.trim();
     if (url != null && url.isNotEmpty) return url;
   }
@@ -114,7 +113,10 @@ String? resolvePlayerCommanderImageUrl({
   if (selectedDeckId != null && deckRepo != null) {
     final deck = deckRepo.getById(selectedDeckId);
     if (deck != null) {
-      final fromDeck = resolveDeckCommanderImageUrl(deck: deck, profile: profile);
+      final fromDeck = resolveDeckCommanderImageUrl(
+        deck: deck,
+        profile: profile,
+      );
       if (fromDeck != null && fromDeck.isNotEmpty) return fromDeck;
     }
   }
@@ -148,8 +150,7 @@ String? resolvePlayerPartnerImageUrl({
   if (selectedDeckId != null && deckRepo != null) {
     final deck = deckRepo.getById(selectedDeckId);
     if (deck != null && deck.hasPartner) {
-      final fromDeck =
-          resolveDeckPartnerImageUrl(deck: deck, profile: profile);
+      final fromDeck = resolveDeckPartnerImageUrl(deck: deck, profile: profile);
       if (fromDeck != null && fromDeck.isNotEmpty) return fromDeck;
     }
   }

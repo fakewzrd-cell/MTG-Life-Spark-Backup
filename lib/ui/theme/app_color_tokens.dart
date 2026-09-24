@@ -84,8 +84,8 @@ class AppColorTokens extends ThemeExtension<AppColorTokens> {
       success: ColorTokens.lightSuccess,
       warning: ColorTokens.lightWarning,
       error: ColorTokens.lightDanger,
-      // Dark [palette.emphasis] is a pale highlight for dark surfaces (Fog is
-      // nearly white). Light mode needs the dark accent so HUD icons read.
+      // Dark emphasis is a pale tint of the scheme color. Light mode uses the
+      // darker accent so HUD icons stay readable on white.
       emphasis: palette.lightPrimaryAccent,
     );
   }

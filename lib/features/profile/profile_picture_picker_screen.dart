@@ -60,7 +60,8 @@ class _ProfilePicturePickerScreenState
   @override
   void initState() {
     super.initState();
-    _currentAvatarRef = widget.initialImageRef ??
+    _currentAvatarRef =
+        widget.initialImageRef ??
         (widget.selectionMode
             ? null
             : ref
@@ -193,8 +194,7 @@ class _ProfilePicturePickerScreenState
     return focus != null && focus.context != null && focus.hasFocus;
   }
 
-  bool get _keyboardVisible =>
-      MediaQuery.viewInsetsOf(context).bottom > 0;
+  bool get _keyboardVisible => MediaQuery.viewInsetsOf(context).bottom > 0;
 
   /// System back / IME hide should not leave the picker while search is open.
   void _onSystemPop(bool didPop) {
@@ -264,9 +264,10 @@ class _ProfilePicturePickerScreenState
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: _pickingPhoto
-                          ? null
-                          : () => _pickFrom(ImageSource.gallery),
+                      onPressed:
+                          _pickingPhoto
+                              ? null
+                              : () => _pickFrom(ImageSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined, size: 18),
                       label: Text(l10n.profilePicUpload),
                     ),
@@ -274,9 +275,10 @@ class _ProfilePicturePickerScreenState
                   SizedBox(width: LayoutTokens.gr2),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: _pickingPhoto
-                          ? null
-                          : () => _pickFrom(ImageSource.camera),
+                      onPressed:
+                          _pickingPhoto
+                              ? null
+                              : () => _pickFrom(ImageSource.camera),
                       icon: const Icon(Icons.photo_camera_outlined, size: 18),
                       label: Text(l10n.profilePicTake),
                     ),
@@ -312,29 +314,27 @@ class _ProfilePicturePickerScreenState
                 controller: _searchController,
                 autofocus: false,
                 textInputAction: TextInputAction.search,
-                onTapOutside: (_) =>
-                    FocusManager.instance.primaryFocus?.unfocus(),
+                onTapOutside:
+                    (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 decoration: InputDecoration(
                   hintText: l10n.profilePicSearchHint,
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: colors.textSecondary,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.clear,
-                            color: colors.textSecondary,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              _results = [];
-                              _error = null;
-                            });
-                          },
-                        )
-                      : null,
+                  prefixIcon: Icon(Icons.search, color: colors.textSecondary),
+                  suffixIcon:
+                      _searchController.text.isNotEmpty
+                          ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: colors.textSecondary,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _results = [];
+                                _error = null;
+                              });
+                            },
+                          )
+                          : null,
                 ),
                 style: TextStyle(color: colors.textPrimary),
                 onChanged: _onSearchChanged,
@@ -399,10 +399,7 @@ class _ProfilePicturePickerScreenState
       itemCount: _results.length,
       itemBuilder: (context, i) {
         final card = _results[i];
-        return _CardArtTile(
-          card: card,
-          onTap: () => _onCardTap(card),
-        );
+        return _CardArtTile(card: card, onTap: () => _onCardTap(card));
       },
     );
   }
@@ -421,11 +418,11 @@ class _CardArtTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: card.imageUrl != null ? onTap : null,
-        borderRadius: RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
         child: Container(
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: RadiusTokens.radiusSm,
+            borderRadius: RadiusTokens.radiusXl,
             border: Border.all(
               color: colors.borderSubtle.withValues(alpha: 0.5),
             ),
@@ -436,20 +433,22 @@ class _CardArtTile extends StatelessWidget {
               Expanded(
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(RadiusTokens.sm - 1),
+                    top: Radius.circular(RadiusTokens.xl),
                   ),
-                  child: card.imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: card.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => _placeholder(context),
-                        )
-                      : _placeholder(context),
+                  child:
+                      card.imageUrl != null
+                          ? CachedNetworkImage(
+                            imageUrl: card.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => _placeholder(context),
+                          )
+                          : _placeholder(context),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(
-                    MediaQuery.sizeOf(context).width < 360 ? 6 : 8),
+                  MediaQuery.sizeOf(context).width < 360 ? 6 : 8,
+                ),
                 child: Text(
                   card.name,
                   style: TextStyle(

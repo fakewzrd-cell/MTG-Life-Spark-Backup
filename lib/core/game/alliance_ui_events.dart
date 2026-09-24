@@ -24,5 +24,4 @@ class AllianceUiEvent {
   });
 }
 
-final allianceUiEventProvider =
-    StateProvider<AllianceUiEvent?>((ref) => null);
+final allianceUiEventProvider = StateProvider<AllianceUiEvent?>((ref) => null);

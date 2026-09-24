@@ -22,6 +22,7 @@ class LobbyConfig {
   final GameFormat format;
   final int startingLife;
   final bool alliancesEnabled;
+
   /// When true, Table overview can assign team colors mid-game.
   final bool teamsEnabled;
   final int maxPlayers;
@@ -82,71 +83,70 @@ class LobbyConfig {
     Object? turnTimeLimitSeconds = _sentinel,
     bool? trackTurnDuration,
     bool? phasesEnabled,
-  }) =>
-      LobbyConfig(
-        format: format ?? this.format,
-        startingLife: startingLife ?? this.startingLife,
-        alliancesEnabled: alliancesEnabled ?? this.alliancesEnabled,
-        teamsEnabled: teamsEnabled ?? this.teamsEnabled,
-        maxPlayers: maxPlayers ?? this.maxPlayers,
-        planechaseEnabled: planechaseEnabled ?? this.planechaseEnabled,
-        archenemyEnabled: archenemyEnabled ?? this.archenemyEnabled,
-        bountyEnabled: bountyEnabled ?? this.bountyEnabled,
-        autoKoFromLife: autoKoFromLife ?? this.autoKoFromLife,
-        autoKoFromPoison: autoKoFromPoison ?? this.autoKoFromPoison,
-        autoKoFromCommanderDamage:
-            autoKoFromCommanderDamage ?? this.autoKoFromCommanderDamage,
-        commanderDamageReducesLife:
-            commanderDamageReducesLife ?? this.commanderDamageReducesLife,
-        turnTimeLimitSeconds: identical(turnTimeLimitSeconds, _sentinel)
+  }) => LobbyConfig(
+    format: format ?? this.format,
+    startingLife: startingLife ?? this.startingLife,
+    alliancesEnabled: alliancesEnabled ?? this.alliancesEnabled,
+    teamsEnabled: teamsEnabled ?? this.teamsEnabled,
+    maxPlayers: maxPlayers ?? this.maxPlayers,
+    planechaseEnabled: planechaseEnabled ?? this.planechaseEnabled,
+    archenemyEnabled: archenemyEnabled ?? this.archenemyEnabled,
+    bountyEnabled: bountyEnabled ?? this.bountyEnabled,
+    autoKoFromLife: autoKoFromLife ?? this.autoKoFromLife,
+    autoKoFromPoison: autoKoFromPoison ?? this.autoKoFromPoison,
+    autoKoFromCommanderDamage:
+        autoKoFromCommanderDamage ?? this.autoKoFromCommanderDamage,
+    commanderDamageReducesLife:
+        commanderDamageReducesLife ?? this.commanderDamageReducesLife,
+    turnTimeLimitSeconds:
+        identical(turnTimeLimitSeconds, _sentinel)
             ? this.turnTimeLimitSeconds
             : turnTimeLimitSeconds as int?,
-        trackTurnDuration: trackTurnDuration ?? this.trackTurnDuration,
-        phasesEnabled: phasesEnabled ?? this.phasesEnabled,
-      );
+    trackTurnDuration: trackTurnDuration ?? this.trackTurnDuration,
+    phasesEnabled: phasesEnabled ?? this.phasesEnabled,
+  );
 
   Map<String, dynamic> toJson() => {
-        'format': format.name,
-        'startingLife': startingLife,
-        'alliancesEnabled': alliancesEnabled,
-        'teamsEnabled': teamsEnabled,
-        'maxPlayers': maxPlayers,
-        'planechaseEnabled': planechaseEnabled,
-        'archenemyEnabled': archenemyEnabled,
-        'bountyEnabled': bountyEnabled,
-        'autoKoFromLife': autoKoFromLife,
-        'autoKoFromPoison': autoKoFromPoison,
-        'autoKoFromCommanderDamage': autoKoFromCommanderDamage,
-        'commanderDamageReducesLife': commanderDamageReducesLife,
-        'turnTimeLimitSeconds': turnTimeLimitSeconds,
-        'trackTurnDuration': trackTurnDuration,
-        'phasesEnabled': phasesEnabled,
-      };
+    'format': format.name,
+    'startingLife': startingLife,
+    'alliancesEnabled': alliancesEnabled,
+    'teamsEnabled': teamsEnabled,
+    'maxPlayers': maxPlayers,
+    'planechaseEnabled': planechaseEnabled,
+    'archenemyEnabled': archenemyEnabled,
+    'bountyEnabled': bountyEnabled,
+    'autoKoFromLife': autoKoFromLife,
+    'autoKoFromPoison': autoKoFromPoison,
+    'autoKoFromCommanderDamage': autoKoFromCommanderDamage,
+    'commanderDamageReducesLife': commanderDamageReducesLife,
+    'turnTimeLimitSeconds': turnTimeLimitSeconds,
+    'trackTurnDuration': trackTurnDuration,
+    'phasesEnabled': phasesEnabled,
+  };
 
   factory LobbyConfig.fromJson(Map<String, dynamic> json) => LobbyConfig(
-        format:
-            GameFormatDetails.fromName(json['format'] as String?) ??
-            GameFormat.commander,
-        startingLife: (json['startingLife'] as num?)?.toInt() ?? 40,
-        alliancesEnabled: json['alliancesEnabled'] as bool? ?? true,
-        teamsEnabled: json['teamsEnabled'] as bool? ?? false,
-        maxPlayers: LobbyConfig.clampMaxPlayers(
-          (json['maxPlayers'] as num?)?.toInt() ?? GameConstants.maxLobbyPlayers,
-        ),
-        planechaseEnabled: json['planechaseEnabled'] as bool? ?? false,
-        archenemyEnabled: json['archenemyEnabled'] as bool? ?? false,
-        bountyEnabled: json['bountyEnabled'] as bool? ?? false,
-        autoKoFromLife: json['autoKoFromLife'] as bool? ?? true,
-        autoKoFromPoison: json['autoKoFromPoison'] as bool? ?? true,
-        autoKoFromCommanderDamage:
-            json['autoKoFromCommanderDamage'] as bool? ?? true,
-        commanderDamageReducesLife:
-            json['commanderDamageReducesLife'] as bool? ?? true,
-        turnTimeLimitSeconds:
-            (json['turnTimeLimitSeconds'] as num?)?.toInt(),
-        trackTurnDuration: json['trackTurnDuration'] as bool? ?? false,
-        phasesEnabled: json['phasesEnabled'] as bool? ?? false,
-      );
+    format:
+        GameFormatDetails.fromName(json['format'] as String?) ??
+        GameFormat.commander,
+    startingLife: (json['startingLife'] as num?)?.toInt() ?? 40,
+    alliancesEnabled: json['alliancesEnabled'] as bool? ?? true,
+    teamsEnabled: json['teamsEnabled'] as bool? ?? false,
+    maxPlayers: LobbyConfig.clampMaxPlayers(
+      (json['maxPlayers'] as num?)?.toInt() ?? GameConstants.maxLobbyPlayers,
+    ),
+    planechaseEnabled: json['planechaseEnabled'] as bool? ?? false,
+    archenemyEnabled: json['archenemyEnabled'] as bool? ?? false,
+    bountyEnabled: json['bountyEnabled'] as bool? ?? false,
+    autoKoFromLife: json['autoKoFromLife'] as bool? ?? true,
+    autoKoFromPoison: json['autoKoFromPoison'] as bool? ?? true,
+    autoKoFromCommanderDamage:
+        json['autoKoFromCommanderDamage'] as bool? ?? true,
+    commanderDamageReducesLife:
+        json['commanderDamageReducesLife'] as bool? ?? true,
+    turnTimeLimitSeconds: (json['turnTimeLimitSeconds'] as num?)?.toInt(),
+    trackTurnDuration: json['trackTurnDuration'] as bool? ?? false,
+    phasesEnabled: json['phasesEnabled'] as bool? ?? false,
+  );
 
   /// Keeps lobby size within [GameConstants.maxLobbyPlayers].
   static int clampMaxPlayers(int value) =>
@@ -178,23 +178,22 @@ class LobbyState {
     bool? isHost,
     bool? isGameStarted,
     Object? matchLabel = _sentinelMatchLabel,
-  }) =>
-      LobbyState(
-        players: players ?? this.players,
-        config: config ?? this.config,
-        isHost: isHost ?? this.isHost,
-        isGameStarted: isGameStarted ?? this.isGameStarted,
-        matchLabel: identical(matchLabel, _sentinelMatchLabel)
+  }) => LobbyState(
+    players: players ?? this.players,
+    config: config ?? this.config,
+    isHost: isHost ?? this.isHost,
+    isGameStarted: isGameStarted ?? this.isGameStarted,
+    matchLabel:
+        identical(matchLabel, _sentinelMatchLabel)
             ? this.matchLabel
             : matchLabel as String?,
-      );
+  );
 
   static const Object _sentinelMatchLabel = Object();
 
   /// Host can start when at least 1 player is present and everyone (including
   /// host) has clicked ready.
-  bool get canStart =>
-      players.isNotEmpty && players.every((p) => p.isReady);
+  bool get canStart => players.isNotEmpty && players.every((p) => p.isReady);
 }
 
 // ── Notifier ───────────────────────────────────────────────────────────────
@@ -289,21 +288,22 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
     var players = state.players;
     if (wasCommander && !isCommander) {
       final deckRepo = _ref.read(deckRepositoryProvider);
-      players = players.map((p) {
-        var slot = p.copyWith(
-          hasPartner: false,
-          partnerCommanderName: null,
-          partnerCommanderImageUrl: null,
-        );
-        final deckId = slot.selectedDeckId;
-        if (deckId != null) {
-          final deck = deckRepo.getById(deckId);
-          if (deck == null || !deck.matchesLobbyFormat(newConfig.format)) {
-            slot = slot.copyWith(selectedDeckId: null);
-          }
-        }
-        return slot;
-      }).toList();
+      players =
+          players.map((p) {
+            var slot = p.copyWith(
+              hasPartner: false,
+              partnerCommanderName: null,
+              partnerCommanderImageUrl: null,
+            );
+            final deckId = slot.selectedDeckId;
+            if (deckId != null) {
+              final deck = deckRepo.getById(deckId);
+              if (deck == null || !deck.matchesLobbyFormat(newConfig.format)) {
+                slot = slot.copyWith(selectedDeckId: null);
+              }
+            }
+            return slot;
+          }).toList();
     }
     state = state.copyWith(config: newConfig, players: players);
     _broadcastLobbyUpdate();
@@ -326,18 +326,19 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
   }) {
     final partnerName = partnerCommanderName?.trim();
     final hasPartner = partnerName != null && partnerName.isNotEmpty;
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(
-        commanderName: commanderName,
-        commanderImageUrl: commanderImageUrl,
-        partnerCommanderName: hasPartner ? partnerName : null,
-        partnerCommanderImageUrl:
-            hasPartner ? (partnerCommanderImageUrl ?? '') : null,
-        hasPartner: hasPartner,
-        commanderColorIdentity: List<String>.from(commanderColorIdentity),
-      );
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(
+            commanderName: commanderName,
+            commanderImageUrl: commanderImageUrl,
+            partnerCommanderName: hasPartner ? partnerName : null,
+            partnerCommanderImageUrl:
+                hasPartner ? (partnerCommanderImageUrl ?? '') : null,
+            hasPartner: hasPartner,
+            commanderColorIdentity: List<String>.from(commanderColorIdentity),
+          );
+        }).toList();
     state = state.copyWith(players: players);
     _publishLobbyChange();
   }
@@ -345,88 +346,93 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
   /// Apply a saved deck: fills cover/commander fields and tags slot for W/L.
   void applyDeck({required String playerId, required PlayerDeck deck}) {
     final profile = _ref.read(profileRepositoryProvider).getProfile();
-    final commanderImageUrl = resolveDeckCommanderImageUrl(
-          deck: deck,
-          profile: profile,
-        ) ??
+    final commanderImageUrl =
+        resolveDeckCommanderImageUrl(deck: deck, profile: profile) ??
         deck.commanderImageUrl;
 
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      if (deck.isCommanderDeck) {
-        final partnerCommanderImageUrl = resolveDeckPartnerImageUrl(
-              deck: deck,
-              profile: profile,
-            ) ??
-            deck.partnerCommanderImageUrl;
-        return p.copyWith(
-          commanderName: deck.commanderName,
-          commanderImageUrl: commanderImageUrl,
-          partnerCommanderName: deck.partnerCommanderName,
-          partnerCommanderImageUrl: partnerCommanderImageUrl,
-          hasPartner: deck.hasPartner,
-          selectedDeckId: deck.id,
-          commanderColorIdentity:
-              List<String>.from(deck.commanderColorIdentity),
-        );
-      }
-      return p.copyWith(
-        commanderName: deck.commanderName,
-        commanderImageUrl: commanderImageUrl,
-        partnerCommanderName: null,
-        partnerCommanderImageUrl: null,
-        hasPartner: false,
-        selectedDeckId: deck.id,
-        commanderColorIdentity: List<String>.from(deck.commanderColorIdentity),
-      );
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          if (deck.isCommanderDeck) {
+            final partnerCommanderImageUrl =
+                resolveDeckPartnerImageUrl(deck: deck, profile: profile) ??
+                deck.partnerCommanderImageUrl;
+            return p.copyWith(
+              commanderName: deck.commanderName,
+              commanderImageUrl: commanderImageUrl,
+              partnerCommanderName: deck.partnerCommanderName,
+              partnerCommanderImageUrl: partnerCommanderImageUrl,
+              hasPartner: deck.hasPartner,
+              selectedDeckId: deck.id,
+              commanderColorIdentity: List<String>.from(
+                deck.commanderColorIdentity,
+              ),
+            );
+          }
+          return p.copyWith(
+            commanderName: deck.commanderName,
+            commanderImageUrl: commanderImageUrl,
+            partnerCommanderName: null,
+            partnerCommanderImageUrl: null,
+            hasPartner: false,
+            selectedDeckId: deck.id,
+            commanderColorIdentity: List<String>.from(
+              deck.commanderColorIdentity,
+            ),
+          );
+        }).toList();
     state = state.copyWith(players: players);
     _publishLobbyChange();
   }
 
   /// Stop attributing results to a registered deck (keeps current commanders).
   void clearSelectedDeck(String playerId) {
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(selectedDeckId: null);
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(selectedDeckId: null);
+        }).toList();
     state = state.copyWith(players: players);
     _publishLobbyChange();
   }
 
   void togglePartner(String playerId) {
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(
-        hasPartner: !p.hasPartner,
-        partnerCommanderName: null,
-        partnerCommanderImageUrl: null,
-        selectedDeckId: null,
-      );
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(
+            hasPartner: !p.hasPartner,
+            partnerCommanderName: null,
+            partnerCommanderImageUrl: null,
+            selectedDeckId: null,
+          );
+        }).toList();
     state = state.copyWith(players: players);
     _publishLobbyChange();
   }
 
   void setReady(String playerId, {required bool ready}) {
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(isReady: ready);
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(isReady: ready);
+        }).toList();
     state = state.copyWith(players: players);
     _broadcastLobbyUpdate();
   }
 
   Future<void> broadcastGameStart() async {
-    _send(BleMessage(
-      type: BleMessageType.gameStart,
-      payload: {
-        'config': state.config.toJson(),
-        'players': state.players.map((p) => p.toJson()).toList(),
-        'matchLabel': state.matchLabel,
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.gameStart,
+        payload: {
+          'config': state.config.toJson(),
+          'players': state.players.map((p) => p.toJson()).toList(),
+          'matchLabel': state.matchLabel,
+        },
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Client-only actions ──────────────────────────────────────────────────
@@ -437,10 +443,11 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
     if (profile == null) return;
 
     // Optimistically update local state
-    final players = state.players.map((p) {
-      if (p.playerId != profile.playerId) return p;
-      return p.copyWith(isReady: ready);
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != profile.playerId) return p;
+          return p.copyWith(isReady: ready);
+        }).toList();
     state = state.copyWith(players: players);
 
     _sendClientSlotToHost();
@@ -485,14 +492,14 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
     final playersJson = payload['players'] as List<dynamic>?;
 
     state = state.copyWith(
-      config: configJson != null
-          ? LobbyConfig.fromJson(configJson)
-          : state.config,
-      players: playersJson != null
-          ? playersJson
-              .map((e) => PlayerSlot.fromJson(e as Map<String, dynamic>))
-              .toList()
-          : state.players,
+      config:
+          configJson != null ? LobbyConfig.fromJson(configJson) : state.config,
+      players:
+          playersJson != null
+              ? playersJson
+                  .map((e) => PlayerSlot.fromJson(e as Map<String, dynamic>))
+                  .toList()
+              : state.players,
       matchLabel: MatchRecord.normalizeLabel(payload['matchLabel'] as String?),
     );
   }
@@ -525,14 +532,15 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
     final ready = payload['ready'] as bool? ?? false;
     final slotJson = payload['slot'] as Map<String, dynamic>?;
 
-    final players = state.players.map((p) {
-      if (p.playerId != pid) return p;
-      if (slotJson != null) {
-        final updated = PlayerSlot.fromJson(slotJson);
-        return updated.copyWith(isReady: ready);
-      }
-      return p.copyWith(isReady: ready);
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != pid) return p;
+          if (slotJson != null) {
+            final updated = PlayerSlot.fromJson(slotJson);
+            return updated.copyWith(isReady: ready);
+          }
+          return p.copyWith(isReady: ready);
+        }).toList();
 
     state = state.copyWith(players: players);
     _broadcastLobbyUpdate();
@@ -547,9 +555,10 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
 
     if (configJson != null) config = LobbyConfig.fromJson(configJson);
     if (playersJson != null) {
-      players = playersJson
-          .map((e) => PlayerSlot.fromJson(e as Map<String, dynamic>))
-          .toList();
+      players =
+          playersJson
+              .map((e) => PlayerSlot.fromJson(e as Map<String, dynamic>))
+              .toList();
     }
 
     state = state.copyWith(
@@ -601,28 +610,32 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
     if (slot == null) return;
 
     final synced = slot.copyWith(username: profile.username);
-    _send(BleMessage(
-      type: BleMessageType.lobbyPlayerReady,
-      payload: {
-        'pid': profile.playerId,
-        'ready': synced.isReady,
-        'slot': synced.toJson(),
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.lobbyPlayerReady,
+        payload: {
+          'pid': profile.playerId,
+          'ready': synced.isReady,
+          'slot': synced.toJson(),
+        },
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void _broadcastLobbyUpdate() {
     if (!state.isHost) return;
-    _send(BleMessage(
-      type: BleMessageType.stateSnapshot,
-      payload: {
-        'config': state.config.toJson(),
-        'players': state.players.map((p) => p.toJson()).toList(),
-        'matchLabel': state.matchLabel,
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.stateSnapshot,
+        payload: {
+          'config': state.config.toJson(),
+          'players': state.players.map((p) => p.toJson()).toList(),
+          'matchLabel': state.matchLabel,
+        },
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void _rejectLobbyJoin(String playerId) {
@@ -650,7 +663,6 @@ class LobbyNotifier extends StateNotifier<LobbyState> {
 
 // ── Provider ───────────────────────────────────────────────────────────────
 
-final lobbyProvider =
-    StateNotifierProvider<LobbyNotifier, LobbyState>((ref) {
+final lobbyProvider = StateNotifierProvider<LobbyNotifier, LobbyState>((ref) {
   return LobbyNotifier(ref);
 });

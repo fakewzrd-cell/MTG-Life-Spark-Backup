@@ -21,7 +21,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navDecks => 'Decks';
 
   @override
-  String get navSettings => 'Einstellungen';
+  String get navSettings => 'Optionen';
 
   @override
   String get settingsTitle => 'Einstellungen';
@@ -71,7 +71,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'Der helle Modus nutzt weiche Hintergründe — probiere Fog oder Slate';
+      'Dunkle Hintergründe. Ausschalten für eine helle Seite.';
 
   @override
   String get settingsLanguage => 'Sprache';
@@ -921,6 +921,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get lookupEmptyPrompt => 'Kartennamen tippen, um Regeln zu sehen.';
 
   @override
+  String get lookupRecentEmpty => 'Noch keine Karten nachgeschlagen.';
+
+  @override
+  String get lookupBack => 'Zurück';
+
+  @override
   String lookupNoResults(String query) {
     return 'Keine Karten für “$query”.';
   }
@@ -1748,7 +1754,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Tracker für deine Leiste wählen (max. $max). X tippen, um einen zu entfernen.';
+    return 'Tracker für deine Leiste wählen (max. $max). Öffne einen Zähler, um ihn zu entfernen.';
   }
 
   @override
@@ -1765,7 +1771,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dialsAddCounterTooltip => 'Zähler hinzufügen';
 
   @override
-  String get dialsRemoveFromStrip => 'Von Leiste entfernen';
+  String get dialsAddCounterChip => 'Zähler';
+
+  @override
+  String get dialsRemoveFromStrip => 'Zähler entfernen';
 
   @override
   String get hubGuideTitle => 'Kurz-Tour';
@@ -1787,18 +1796,25 @@ class AppLocalizationsDe extends AppLocalizations {
       'Leben und Zähler hier tracken. Zug beenden unter der Phasenleiste — oder Phasen-Tracker in der Lobby aus für großen Zug-beenden-Button.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Stack & Lookup';
+  String get hubGuideSlideStackTitle => 'Stack';
 
   @override
   String get hubGuideSlideStackBody =>
-      'Stack für Hold Priority und Verrechnen. Lookup öffnet Scryfall ohne deinen Platz zu verlassen — Orakeltext und Rulings.';
+      'Stack für Hold Priority und Verrechnen.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Lookup';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'Lookup öffnet Scryfall ohne deinen Platz zu verlassen — Orakeltext und Rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Tischübersicht';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Tisch für den ganzen Pod. Werkzeuge hat Würfel und Münzen für alle; Verlauf in der Kopfzeile. Zug beenden bleibt; Aufgeben darunter.';
+      'Tisch für den ganzen Pod. Werkzeuge hat Würfel und Münzen für alle; Verlauf in der Kopfzeile. Zug beenden und Aufgeben stehen nebeneinander.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Dein Zug & Commander';
@@ -2752,15 +2768,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get paletteSlate => 'Schiefer';
-
-  @override
-  String get paletteForest => 'Wald';
-
-  @override
-  String get paletteObsidian => 'Obsidian';
-
-  @override
-  String get paletteFog => 'Nebel';
 
   @override
   String networkCannotReachHost(String error) {

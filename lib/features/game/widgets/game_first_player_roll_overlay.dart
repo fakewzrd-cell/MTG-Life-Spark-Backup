@@ -19,7 +19,8 @@ class GameFirstPlayerRollOverlay extends StatefulWidget {
   final PlayerGameState local;
   final void Function(int roll) onRoll;
 
-  const GameFirstPlayerRollOverlay({super.key, 
+  const GameFirstPlayerRollOverlay({
+    super.key,
     required this.game,
     required this.local,
     required this.onRoll,
@@ -165,9 +166,10 @@ class _GameFirstPlayerRollOverlayState extends State<GameFirstPlayerRollOverlay>
                 enabled: !hasRolled && !_rolling,
                 excludeSemantics: true,
                 label: l10n.firstPlayerRollDieA11y,
-                value: _rolling
-                    ? l10n.firstPlayerRollingA11y
-                    : hasRolled
+                value:
+                    _rolling
+                        ? l10n.firstPlayerRollingA11y
+                        : hasRolled
                         ? l10n.firstPlayerRolledA11y('$_myRoll')
                         : l10n.firstPlayerNotRolledA11y,
                 child: GestureDetector(
@@ -182,10 +184,11 @@ class _GameFirstPlayerRollOverlayState extends State<GameFirstPlayerRollOverlay>
                       final scale = _rolling ? 1.0 : _landScale.value;
                       return Transform(
                         alignment: Alignment.center,
-                        transform: Matrix4.identity()
-                          ..setEntry(3, 2, 0.001)
-                          ..rotateX(tiltX)
-                          ..rotateZ(wobbleAngle),
+                        transform:
+                            Matrix4.identity()
+                              ..setEntry(3, 2, 0.001)
+                              ..rotateX(tiltX)
+                              ..rotateZ(wobbleAngle),
                         child: Transform.scale(scale: scale, child: child),
                       );
                     },
@@ -230,12 +233,13 @@ class _GameFirstPlayerRollOverlayState extends State<GameFirstPlayerRollOverlay>
               _RollProgressList(game: widget.game),
               const SizedBox(height: LayoutTokens.gr3),
               Semantics(
-                label: widget.game.isHost
-                    ? l10n.firstPlayerHostProgressA11y(
-                        '$othersRolled',
-                        '$totalPlayers',
-                      )
-                    : hasRolled
+                label:
+                    widget.game.isHost
+                        ? l10n.firstPlayerHostProgressA11y(
+                          '$othersRolled',
+                          '$totalPlayers',
+                        )
+                        : hasRolled
                         ? l10n.firstPlayerWaitingOthersA11y
                         : l10n.firstPlayerRollToContinueA11y,
                 excludeSemantics: true,
@@ -246,21 +250,18 @@ class _GameFirstPlayerRollOverlayState extends State<GameFirstPlayerRollOverlay>
                   ),
                   decoration: BoxDecoration(
                     color: colors.backgroundSecondary,
-                    borderRadius: RadiusTokens.radiusControlSm,
+                    borderRadius: RadiusTokens.radiusXl,
                   ),
                   child: Text(
                     widget.game.isHost
                         ? l10n.firstPlayerHostProgress(
-                            '$othersRolled',
-                            '$totalPlayers',
-                          )
+                          '$othersRolled',
+                          '$totalPlayers',
+                        )
                         : hasRolled
-                            ? l10n.firstPlayerWaitingOthers
-                            : l10n.firstPlayerTapDieAbove,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: 12,
-                    ),
+                        ? l10n.firstPlayerWaitingOthers
+                        : l10n.firstPlayerTapDieAbove,
+                    style: TextStyle(color: colors.textSecondary, fontSize: 12),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -292,39 +293,44 @@ class _DieFace extends StatelessWidget {
       height: 120,
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusLg,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(LayoutTokens.gr3),
         child: Column(
-          children: face
-              .map(
-                (row) => Expanded(
-                  child: Row(
-                    children: row
-                        .map(
-                          (pip) => Expanded(
-                            child: Center(
-                              child: pip
-                                  ? Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: highlighted
-                                            ? colors.emphasis
-                                            : colors.primaryAccent,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-              )
-              .toList(),
+          children:
+              face
+                  .map(
+                    (row) => Expanded(
+                      child: Row(
+                        children:
+                            row
+                                .map(
+                                  (pip) => Expanded(
+                                    child: Center(
+                                      child:
+                                          pip
+                                              ? Container(
+                                                width: 14,
+                                                height: 14,
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      highlighted
+                                                          ? colors.emphasis
+                                                          : colors
+                                                              .primaryAccent,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              )
+                                              : const SizedBox.shrink(),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                      ),
+                    ),
+                  )
+                  .toList(),
         ),
       ),
     );
@@ -342,49 +348,52 @@ class _RollProgressList extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: game.players.map((p) {
-        final roll = game.firstPlayerRolls[p.playerId];
-        final isLocal = p.playerId == game.localPlayerId;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: LayoutTokens.gr1),
-          child: Semantics(
-            container: true,
-            excludeSemantics: true,
-            label: '${isLocal ? l10n.firstPlayerSlotYou(p.username) : p.username}, '
-                '${roll == null ? l10n.firstPlayerNotRolledA11y : l10n.firstPlayerRolledDetail('$roll')}',
-            child: Row(
-              children: [
-                Icon(
-                  roll != null ? Icons.check_circle : Icons.hourglass_empty,
-                  size: 18,
-                  color: roll != null ? colors.success : colors.textMuted,
-                ),
-                const SizedBox(width: LayoutTokens.gr1),
-                Expanded(
-                  child: Text(
-                    isLocal
-                        ? l10n.firstPlayerYouSuffix(p.username)
-                        : p.username,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontWeight: isLocal ? FontWeight.w700 : FontWeight.w500,
+      children:
+          game.players.map((p) {
+            final roll = game.firstPlayerRolls[p.playerId];
+            final isLocal = p.playerId == game.localPlayerId;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: LayoutTokens.gr1),
+              child: Semantics(
+                container: true,
+                excludeSemantics: true,
+                label:
+                    '${isLocal ? l10n.firstPlayerSlotYou(p.username) : p.username}, '
+                    '${roll == null ? l10n.firstPlayerNotRolledA11y : l10n.firstPlayerRolledDetail('$roll')}',
+                child: Row(
+                  children: [
+                    Icon(
+                      roll != null ? Icons.check_circle : Icons.hourglass_empty,
+                      size: 18,
+                      color: roll != null ? colors.success : colors.textMuted,
                     ),
-                  ),
-                ),
-                if (roll != null)
-                  Text(
-                    '$roll',
-                    style: TextStyle(
-                      color: colors.emphasis,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                    const SizedBox(width: LayoutTokens.gr1),
+                    Expanded(
+                      child: Text(
+                        isLocal
+                            ? l10n.firstPlayerYouSuffix(p.username)
+                            : p.username,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontWeight:
+                              isLocal ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
+                    if (roll != null)
+                      Text(
+                        '$roll',
+                        style: TextStyle(
+                          color: colors.emphasis,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
     );
   }
 }
@@ -395,19 +404,20 @@ class TurnOrderRevealOverlay extends StatelessWidget {
   final GameState game;
   final VoidCallback onContinue;
 
-  const TurnOrderRevealOverlay({super.key, 
+  const TurnOrderRevealOverlay({
+    super.key,
     required this.game,
     required this.onContinue,
   });
 
   List<String> _placeLabels(AppLocalizations l10n) => [
-        l10n.firstPlayerOrdinal1,
-        l10n.firstPlayerOrdinal2,
-        l10n.firstPlayerOrdinal3,
-        l10n.firstPlayerOrdinal4,
-        l10n.firstPlayerOrdinal5,
-        l10n.firstPlayerOrdinal6,
-      ];
+    l10n.firstPlayerOrdinal1,
+    l10n.firstPlayerOrdinal2,
+    l10n.firstPlayerOrdinal3,
+    l10n.firstPlayerOrdinal4,
+    l10n.firstPlayerOrdinal5,
+    l10n.firstPlayerOrdinal6,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -450,9 +460,10 @@ class TurnOrderRevealOverlay extends StatelessWidget {
               ...List.generate(order.length, (index) {
                 final playerId = order[index];
                 final player = game.playerById(playerId);
-                final label = index < placeLabels.length
-                    ? placeLabels[index]
-                    : '${index + 1}';
+                final label =
+                    index < placeLabels.length
+                        ? placeLabels[index]
+                        : '${index + 1}';
                 final isFirst = playerId == firstId;
                 final isLocal = playerId == game.localPlayerId;
                 final roll = game.firstPlayerRolls[playerId];
@@ -499,11 +510,11 @@ class _TurnOrderSlotCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    final semanticName =
-        isLocal ? l10n.firstPlayerSlotYou(username) : username;
-    final semanticRoll = roll == null
-        ? l10n.firstPlayerRollUnavailable
-        : l10n.firstPlayerRolledDetail('$roll');
+    final semanticName = isLocal ? l10n.firstPlayerSlotYou(username) : username;
+    final semanticRoll =
+        roll == null
+            ? l10n.firstPlayerRollUnavailable
+            : l10n.firstPlayerRolledDetail('$roll');
     final slotLabel = l10n.firstPlayerSlotA11y(
       placeLabel,
       semanticName,
@@ -512,9 +523,7 @@ class _TurnOrderSlotCard extends StatelessWidget {
     return Semantics(
       container: true,
       excludeSemantics: true,
-      label: isFirst
-          ? '$slotLabel, ${l10n.firstPlayerGoesFirst}'
-          : slotLabel,
+      label: isFirst ? '$slotLabel, ${l10n.firstPlayerGoesFirst}' : slotLabel,
       child: Container(
         margin: const EdgeInsets.only(bottom: LayoutTokens.gr2),
         padding: const EdgeInsets.symmetric(
@@ -522,14 +531,16 @@ class _TurnOrderSlotCard extends StatelessWidget {
           vertical: LayoutTokens.gr2,
         ),
         decoration: BoxDecoration(
-          color: isFirst
-              ? colors.emphasis.withValues(alpha: 0.12)
-              : colors.surface,
-          borderRadius: RadiusTokens.radiusMd,
+          color:
+              isFirst
+                  ? colors.emphasis.withValues(alpha: 0.12)
+                  : colors.surface,
+          borderRadius: RadiusTokens.radiusXl,
           border: Border.all(
-            color: isFirst
-                ? colors.emphasis
-                : colors.borderSubtle.withValues(alpha: OpacityTokens.soft),
+            color:
+                isFirst
+                    ? colors.emphasis
+                    : colors.borderSubtle.withValues(alpha: OpacityTokens.soft),
             width: isFirst ? 2 : 1,
           ),
         ),
@@ -541,7 +552,7 @@ class _TurnOrderSlotCard extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.25),
-                borderRadius: RadiusTokens.radiusControlSm,
+                borderRadius: RadiusTokens.radiusXl,
               ),
               child: Text(
                 placeLabel,
@@ -558,9 +569,7 @@ class _TurnOrderSlotCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isLocal
-                        ? l10n.firstPlayerYouSuffix(username)
-                        : username,
+                    isLocal ? l10n.firstPlayerYouSuffix(username) : username,
                     style: TextStyle(
                       color: colors.textPrimary,
                       fontWeight: FontWeight.w700,
@@ -581,17 +590,19 @@ class _TurnOrderSlotCard extends StatelessWidget {
             ),
             if (roll != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: LayoutTokens.gr2,
+                  vertical: LayoutTokens.gr0,
+                ),
                 decoration: BoxDecoration(
                   color: colors.backgroundSecondary,
-                  borderRadius: RadiusTokens.radiusControlSm,
+                  borderRadius: RadiusTokens.radiusXl,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.casino, size: 14, color: colors.textSecondary),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: LayoutTokens.gr0),
                     Text(
                       '$roll',
                       style: TextStyle(

@@ -59,8 +59,7 @@ class CommanderSelectScreen extends ConsumerStatefulWidget {
       _CommanderSelectScreenState();
 }
 
-class _CommanderSelectScreenState
-    extends ConsumerState<CommanderSelectScreen> {
+class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
   final _searchController = TextEditingController();
   Timer? _debounce;
 
@@ -87,8 +86,7 @@ class _CommanderSelectScreenState
     final fromRoute = GameFormatDetails.fromName(widget.deckFormat);
     if (fromRoute != null) return fromRoute;
     if (widget.editDeckId != null) {
-      final deck =
-          ref.read(deckRepositoryProvider).getById(widget.editDeckId!);
+      final deck = ref.read(deckRepositoryProvider).getById(widget.editDeckId!);
       if (deck != null) return deck.gameFormat;
     }
     return GameFormat.commander;
@@ -103,17 +101,17 @@ class _CommanderSelectScreenState
   }
 
   void _loadEditDeck() {
-    final deck =
-        ref.read(deckRepositoryProvider).getById(widget.editDeckId!);
+    final deck = ref.read(deckRepositoryProvider).getById(widget.editDeckId!);
     if (deck == null || !mounted) return;
     setState(() {
       _primary = ScryfallCard(
         name: deck.commanderName,
         imageUrl: deck.commanderImageUrl,
         manaCost: deck.commanderManaCost,
-        colorIdentity: deck.hasPartner
-            ? const []
-            : List<String>.from(deck.commanderColorIdentity),
+        colorIdentity:
+            deck.hasPartner
+                ? const []
+                : List<String>.from(deck.commanderColorIdentity),
       );
       if (deck.hasPartner && deck.partnerCommanderName != null) {
         _partner = ScryfallCard(
@@ -175,18 +173,20 @@ class _CommanderSelectScreenState
     });
     try {
       final service = ref.read(scryfallServiceProvider);
-      final results = _isCommanderPick
-          ? await service.searchCommanders(query)
-          : await service.searchCards(query);
+      final results =
+          _isCommanderPick
+              ? await service.searchCommanders(query)
+              : await service.searchCards(query);
       if (!mounted || requestId != _searchRequestId) return;
       final l10n = AppLocalizations.of(context);
       setState(() {
         _results = results;
         _loading = false;
         if (results.isEmpty) {
-          _error = _isCommanderPick
-              ? l10n.commanderSelectNoCommanders(query)
-              : l10n.commanderSelectNoCards(query);
+          _error =
+              _isCommanderPick
+                  ? l10n.commanderSelectNoCommanders(query)
+                  : l10n.commanderSelectNoCards(query);
         }
       });
     } catch (e) {
@@ -277,7 +277,9 @@ class _CommanderSelectScreenState
       if (mounted) context.pop();
       return;
     }
-    ref.read(lobbyProvider.notifier).setCommander(
+    ref
+        .read(lobbyProvider.notifier)
+        .setCommander(
           playerId: widget.playerId,
           commanderName: _primary!.name,
           commanderImageUrl: _primary!.imageUrl ?? '',
@@ -316,102 +318,112 @@ class _CommanderSelectScreenState
     final l10n = AppLocalizations.of(context);
     return BlockSystemAppExit(
       child: Scaffold(
-      backgroundColor: colors.backgroundPrimary,
-      appBar: UiAppBar(
-        title: _pickingPartner
-            ? l10n.commanderSelectPartnerTitle
-            : _title(l10n),
-      ),
-      body: Column(
-        children: [
-          // After primary is chosen, show it + optional partner slot.
-          if (_primary != null)
-            _SelectionPreview(
-              primary: _primary,
-              partner: _offersPartnerSlot ? _partner : null,
-              showPartnerSlot: _offersPartnerSlot,
-              onPickPartner: _offersPartnerSlot
-                  ? () => setState(() => _pickingPartner = !_pickingPartner)
-                  : null,
-              onClearPartner: _offersPartnerSlot && _partner != null
-                  ? () => setState(() {
-                        _partner = null;
-                        _pickingPartner = false;
-                      })
-                  : null,
-              pickingPartner: _pickingPartner,
-            ),
-          if (widget._deckMode && !_isCommanderPick)
+        backgroundColor: colors.backgroundPrimary,
+        appBar: UiAppBar(
+          title:
+              _pickingPartner ? l10n.commanderSelectPartnerTitle : _title(l10n),
+        ),
+        body: Column(
+          children: [
+            // After primary is chosen, show it + optional partner slot.
+            if (_primary != null)
+              _SelectionPreview(
+                primary: _primary,
+                partner: _offersPartnerSlot ? _partner : null,
+                showPartnerSlot: _offersPartnerSlot,
+                onPickPartner:
+                    _offersPartnerSlot
+                        ? () =>
+                            setState(() => _pickingPartner = !_pickingPartner)
+                        : null,
+                onClearPartner:
+                    _offersPartnerSlot && _partner != null
+                        ? () => setState(() {
+                          _partner = null;
+                          _pickingPartner = false;
+                        })
+                        : null,
+                pickingPartner: _pickingPartner,
+              ),
+            if (widget._deckMode && !_isCommanderPick)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  LayoutTokens.gr3,
+                  LayoutTokens.gr1,
+                  LayoutTokens.gr3,
+                  0,
+                ),
+                child: Text(
+                  l10n.commanderSelectCoverHint,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: FontTokens.sm,
+                  ),
+                ),
+              ),
+
+            // Search bar
             Padding(
               padding: EdgeInsets.fromLTRB(
                 LayoutTokens.gr3,
-                LayoutTokens.gr1,
+                LayoutTokens.gr2,
                 LayoutTokens.gr3,
                 0,
               ),
-              child: Text(
-                l10n.commanderSelectCoverHint,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: FontTokens.sm,
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText:
+                      _pickingPartner
+                          ? l10n.commanderSelectSearchPartnerHint
+                          : _isCommanderPick
+                          ? l10n.commanderSelectSearchCommanderHint
+                          : l10n.commanderSelectSearchCardHint,
+                  prefixIcon: Icon(Icons.search, color: colors.textSecondary),
+                  suffixIcon:
+                      _searchController.text.isNotEmpty
+                          ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: colors.textSecondary,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _results = [];
+                                _error = null;
+                              });
+                            },
+                          )
+                          : null,
                 ),
+                onChanged: _onSearchChanged,
               ),
             ),
+            SizedBox(height: LayoutTokens.gr2),
 
-          // Search bar
-          Padding(
-            padding: EdgeInsets.fromLTRB(LayoutTokens.gr3, LayoutTokens.gr2, LayoutTokens.gr3, 0),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: _pickingPartner
-                    ? l10n.commanderSelectSearchPartnerHint
-                    : _isCommanderPick
-                        ? l10n.commanderSelectSearchCommanderHint
-                        : l10n.commanderSelectSearchCardHint,
-                prefixIcon:
-                    Icon(Icons.search, color: colors.textSecondary),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear,
-                            color: colors.textSecondary),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _results = [];
-                            _error = null;
-                          });
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: _onSearchChanged,
-            ),
-          ),
-          SizedBox(height: LayoutTokens.gr2),
-
-          // Results
-          Expanded(child: _buildResults()),
-          if (_canConfirm)
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  LayoutTokens.gr3,
-                  LayoutTokens.gr2,
-                  LayoutTokens.gr3,
-                  LayoutTokens.gr3,
-                ),
-                child: UiButton(
-                  label: l10n.commanderSelectConfirm,
-                  onPressed: _confirm,
+            // Results
+            Expanded(child: _buildResults()),
+            if (_canConfirm)
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    LayoutTokens.gr3,
+                    LayoutTokens.gr2,
+                    LayoutTokens.gr3,
+                    LayoutTokens.gr3,
+                  ),
+                  child: UiButton(
+                    label: l10n.commanderSelectConfirm,
+                    onPressed: _confirm,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -420,15 +432,18 @@ class _CommanderSelectScreenState
     final l10n = AppLocalizations.of(context);
     if (_loading) {
       return Center(
-          child: CircularProgressIndicator(color: colors.primaryAccent));
+        child: CircularProgressIndicator(color: colors.primaryAccent),
+      );
     }
     if (_error != null) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(LayoutTokens.gr4),
-          child: Text(_error!,
-              style: TextStyle(color: colors.textSecondary),
-              textAlign: TextAlign.center),
+          child: Text(
+            _error!,
+            style: TextStyle(color: colors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -444,7 +459,12 @@ class _CommanderSelectScreenState
       );
     }
     return GridView.builder(
-      padding: EdgeInsets.fromLTRB(LayoutTokens.gr3, 0, LayoutTokens.gr3, LayoutTokens.gr4),
+      padding: EdgeInsets.fromLTRB(
+        LayoutTokens.gr3,
+        0,
+        LayoutTokens.gr3,
+        LayoutTokens.gr4,
+      ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.72,
@@ -454,9 +474,10 @@ class _CommanderSelectScreenState
       itemCount: _results.length,
       itemBuilder: (_, i) {
         final card = _results[i];
-        final isSelected = _pickingPartner
-            ? card.name == _partner?.name
-            : card.name == _primary?.name;
+        final isSelected =
+            _pickingPartner
+                ? card.name == _partner?.name
+                : card.name == _primary?.name;
         return _CommanderCard(
           card: card,
           isSelected: isSelected,
@@ -509,7 +530,7 @@ class _SelectionPreview extends StatelessWidget {
                   label: l10n.commanderSelectLabelCommander,
                 ),
               if (showPartnerSlot) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: LayoutTokens.gr1),
                 if (partner != null)
                   GestureDetector(
                     onTap: onPickPartner,
@@ -531,7 +552,9 @@ class _SelectionPreview extends StatelessWidget {
                                 customBorder: const CircleBorder(),
                                 onTap: onClearPartner,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(2),
+                                  padding: const EdgeInsets.all(
+                                    LayoutTokens.gr0,
+                                  ),
                                   child: Icon(
                                     Icons.close,
                                     size: 14,
@@ -551,36 +574,32 @@ class _SelectionPreview extends StatelessWidget {
                       width: 56,
                       height: 78,
                       decoration: BoxDecoration(
-                        color: pickingPartner
-                            ? colors.primaryAccent.withValues(alpha: 0.15)
-                            : colors.surface,
-                        borderRadius: RadiusTokens.radiusControlMd,
+                        color:
+                            pickingPartner
+                                ? colors.primaryAccent.withValues(alpha: 0.15)
+                                : colors.surface,
+                        borderRadius: RadiusTokens.radiusXl,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.add,
-                            color: pickingPartner
-                                ? colors.primaryAccent
-                                : colors.textSecondary,
+                            color:
+                                pickingPartner
+                                    ? colors.primaryAccent
+                                    : colors.textSecondary,
                             size: 20,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: LayoutTokens.gr0),
                           Text(
                             l10n.commanderSelectLabelPartner,
                             style: TextStyle(
-                              color: pickingPartner
-                                  ? colors.primaryAccent
-                                  : colors.textSecondary,
+                              color:
+                                  pickingPartner
+                                      ? colors.primaryAccent
+                                      : colors.textSecondary,
                               fontSize: FontTokens.hudXs,
-                            ),
-                          ),
-                          Text(
-                            l10n.commanderSelectOptional,
-                            style: TextStyle(
-                              color: colors.textSecondary.withValues(alpha: 0.75),
-                              fontSize: 9,
                             ),
                           ),
                         ],
@@ -614,34 +633,36 @@ class _MiniCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ClipRRect(
-          borderRadius: RadiusTokens.radiusXs,
-          child: card.imageUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: card.imageUrl!,
-                  width: 56,
-                  height: 78,
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) => _placeholder(colors),
-                )
-              : _placeholder(colors),
+          borderRadius: RadiusTokens.radiusXl,
+          child:
+              card.imageUrl != null
+                  ? CachedNetworkImage(
+                    imageUrl: card.imageUrl!,
+                    width: 56,
+                    height: 78,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => _placeholder(colors),
+                  )
+                  : _placeholder(colors),
         ),
         SizedBox(height: LayoutTokens.gr0),
         Text(
           label,
-          style:
-              TextStyle(
-                  color: colors.textSecondary, fontSize: FontTokens.hudXs),
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: FontTokens.hudXs,
+          ),
         ),
       ],
     );
   }
 
   Widget _placeholder(AppColorTokens colors) => Container(
-        width: 56,
-        height: 78,
-        color: colors.surface,
-        child: Icon(Icons.style, color: colors.textSecondary),
-      );
+    width: 56,
+    height: 78,
+    color: colors.surface,
+    child: Icon(Icons.style, color: colors.textSecondary),
+  );
 }
 
 // ── Commander card grid item ──────────────────────────────────────────────
@@ -666,39 +687,49 @@ class _CommanderCard extends StatelessWidget {
         duration: MotionTokens.fast,
         curve: MotionTokens.easeOut,
         decoration: BoxDecoration(
-          color: isSelected
-              ? colors.primaryAccent.withValues(alpha: OpacityTokens.subtle)
-              : colors.surface,
-          borderRadius: RadiusTokens.radiusSm,
+          color:
+              isSelected
+                  ? colors.primaryAccent.withValues(alpha: OpacityTokens.subtle)
+                  : colors.surface,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(10)),
-                child: card.imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: card.imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Center(
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: colors.primaryAccent),
-                        ),
-                        errorWidget: (_, __, ___) => Image.asset(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(RadiusTokens.xl),
+                ),
+                child:
+                    card.imageUrl != null
+                        ? CachedNetworkImage(
+                          imageUrl: card.imageUrl!,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (_, __) => Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.primaryAccent,
+                                ),
+                              ),
+                          errorWidget:
+                              (_, __, ___) => Image.asset(
+                                ScryfallCard.offlineImageAsset,
+                                fit: BoxFit.cover,
+                              ),
+                        )
+                        : Image.asset(
                           ScryfallCard.offlineImageAsset,
                           fit: BoxFit.cover,
                         ),
-                      )
-                    : Image.asset(
-                        ScryfallCard.offlineImageAsset,
-                        fit: BoxFit.cover,
-                      ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(
+                horizontal: LayoutTokens.gr1,
+                vertical: LayoutTokens.gr1,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -716,7 +747,9 @@ class _CommanderCard extends StatelessWidget {
                     Text(
                       AppLocalizations.of(context).commanderSelectLabelPartner,
                       style: TextStyle(
-                          color: colors.emphasis, fontSize: FontTokens.hudXs),
+                        color: colors.emphasis,
+                        fontSize: FontTokens.hudXs,
+                      ),
                     ),
                 ],
               ),

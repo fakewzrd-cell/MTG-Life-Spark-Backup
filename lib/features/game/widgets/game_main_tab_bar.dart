@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/app_icons.dart';
 import '../../../shared/utils/game_haptics.dart';
-import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
 import '../../../ui/tokens/opacity_tokens.dart';
-import 'card_lookup_sheet.dart';
 import 'game_colors.dart';
 
 /// Asset for the Play tab (fanned cards) — replaces generic controller icon.
@@ -14,8 +12,7 @@ const String kGamePlayTabIconAsset = AppIcons.playTabCards;
 
 /// Play · Stack · Lookup row — use inside [GameHudHeader].
 ///
-/// Play and Stack stay icon-only; Lookup is labeled Rules.
-/// Lookup is a utility action (opens a sheet), not a peer tab.
+/// All three stay icon-only. Lookup is a section, same as Play and Stack.
 /// History lives on Table overview (sheet), not in this strip.
 class GameMainTabBarStrip extends StatelessWidget {
   const GameMainTabBarStrip({
@@ -48,6 +45,11 @@ class GameMainTabBarStrip extends StatelessWidget {
         label: l10n.gameTabStack,
         icon: Icons.layers_rounded,
       ),
+      _GameMainTabSpec(
+        index: 2,
+        label: l10n.gameTabLookupSemantics,
+        icon: Icons.menu_book_outlined,
+      ),
     ];
 
     Widget tab(_GameMainTabSpec segment) => Expanded(
@@ -73,58 +75,12 @@ class GameMainTabBarStrip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          tab(segments[0]), // Play
+          tab(segments[0]),
           divider(),
-          tab(segments[1]), // Stack
+          tab(segments[1]),
           divider(),
-          const Expanded(child: _CardLookupTabAction()),
+          tab(segments[2]),
         ],
-      ),
-    );
-  }
-}
-
-/// Opens Scryfall card lookup without changing the selected main tab.
-class _CardLookupTabAction extends StatelessWidget {
-  const _CardLookupTabAction();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.gameColors;
-    final l10n = AppLocalizations.of(context);
-    final fg = colors.textSecondary;
-
-    return Semantics(
-      button: true,
-      label: l10n.gameTabLookupSemantics,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            context.gameHapticSelection();
-            showCardLookupSheet(context);
-          },
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.menu_book_outlined, size: 18, color: fg),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.gameTabLookup,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: fg,
-                    fontSize: FontTokens.hudXs,
-                    fontWeight: FontWeight.w700,
-                    height: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -181,12 +137,16 @@ class _GameMainTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
-    final fg = selected
-        ? accentColor
-        : colors.textSecondary.withValues(alpha: OpacityTokens.mutedTextMin);
-    final bg = selected
-        ? accentColor.withValues(alpha: OpacityTokens.soft)
-        : Colors.transparent;
+    final fg =
+        selected
+            ? accentColor
+            : colors.textSecondary.withValues(
+              alpha: OpacityTokens.mutedTextMin,
+            );
+    final bg =
+        selected
+            ? accentColor.withValues(alpha: OpacityTokens.soft)
+            : Colors.transparent;
 
     return Semantics(
       button: true,
@@ -194,10 +154,7 @@ class _GameMainTab extends StatelessWidget {
       label: label,
       child: Material(
         color: bg,
-        child: InkWell(
-          onTap: onTap,
-          child: Center(child: _buildIcon(fg)),
-        ),
+        child: InkWell(onTap: onTap, child: Center(child: _buildIcon(fg))),
       ),
     );
   }

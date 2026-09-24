@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -193,48 +194,42 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
         ),
         body: SafeArea(
           bottom: false,
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(
-                child: ListView(
-                  padding: LayoutTokens.shellScrollPadding(context),
-                  children: [
-                    _QrHeader(
-                      qrData: _qrData,
-                      loadState: _qrLoadState,
-                      errorMessage: _qrErrorMessage,
-                      onRetry: _prepareHostQr,
-                      playerCount: lobby.players.length,
-                      maxPlayers: lobby.config.maxPlayers,
+              ListView(
+                padding: LayoutTokens.shellScrollPadding(context).copyWith(
+                  bottom: _startFooterHeight(
+                    context,
+                    showHint: lobby.players.isEmpty,
+                  ),
+                ),
+                children: [
+                  _QrHeader(
+                    qrData: _qrData,
+                    loadState: _qrLoadState,
+                    errorMessage: _qrErrorMessage,
+                    onRetry: _prepareHostQr,
+                    playerCount: lobby.players.length,
+                    maxPlayers: lobby.config.maxPlayers,
+                  ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  ...lobby.players.map((slot) => _PlayerSlotCard(slot: slot)),
+                  if (lobby.players.length < lobby.config.maxPlayers)
+                    _EmptySlotCard(
+                      remaining: lobby.config.maxPlayers - lobby.players.length,
                     ),
-                    SizedBox(height: LayoutTokens.shellSectionGap),
-                    ...lobby.players.map((slot) => _PlayerSlotCard(slot: slot)),
-                    if (lobby.players.length < lobby.config.maxPlayers)
-                      _EmptySlotCard(
-                        remaining:
-                            lobby.config.maxPlayers - lobby.players.length,
-                      ),
-                    SizedBox(height: LayoutTokens.shellSectionGap),
-                    const _MatchLabelSection(),
-                    SizedBox(height: LayoutTokens.shellSectionGap),
-                    _ConfigSection(config: lobby.config),
-                  ],
-                ),
+                  const _MatchLabelSection(),
+                  SizedBox(height: LayoutTokens.gr2),
+                  _ConfigSection(config: lobby.config),
+                ],
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  LayoutTokens.shellPageInset,
-                  LayoutTokens.gr2,
-                  LayoutTokens.shellPageInset,
-                  LayoutTokens.shellBottomInset(context),
-                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: _startGameDockClearance(context),
                 child: _StartGameButton(
                   canStart: lobby.canStart,
-                  hint: lobby.players.isEmpty
-                      ? l10n.hostNeedOnePlayer
-                      : lobby.players.any((p) => !p.isReady)
-                      ? l10n.hostEveryoneMustBeReady
-                      : null,
+                  hint: lobby.players.isEmpty ? l10n.hostNeedOnePlayer : null,
                 ),
               ),
             ],
@@ -286,7 +281,6 @@ class _MatchLabelSectionState extends ConsumerState<_MatchLabelSection> {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final compact = MediaQuery.sizeOf(context).width < 360;
     final recentLabels = ref
         .watch(matchRepositoryProvider)
         .recentLabels(limit: 6);
@@ -306,10 +300,10 @@ class _MatchLabelSectionState extends ConsumerState<_MatchLabelSection> {
     }
 
     return Container(
-      padding: EdgeInsets.all(compact ? LayoutTokens.gr3 : LayoutTokens.gr4),
+      padding: const EdgeInsets.all(LayoutTokens.gr2),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,26 +340,28 @@ class _MatchLabelSectionState extends ConsumerState<_MatchLabelSection> {
           if (recentLabels.isNotEmpty) ...[
             SizedBox(height: LayoutTokens.gr2),
             Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: LayoutTokens.gr1,
+              runSpacing: LayoutTokens.gr1,
               children: [
                 for (final label in recentLabels)
                   ActionChip(
                     label: Text(
                       label,
                       style: TextStyle(
-                        color: label == current
-                            ? colors.primaryAccent
-                            : colors.textPrimary,
+                        color:
+                            label == current
+                                ? colors.primaryAccent
+                                : colors.textPrimary,
                         fontSize: FontTokens.caption,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    backgroundColor: label == current
-                        ? colors.primaryAccent.withValues(
-                            alpha: OpacityTokens.soft,
-                          )
-                        : colors.backgroundSecondary,
+                    backgroundColor:
+                        label == current
+                            ? colors.primaryAccent.withValues(
+                              alpha: OpacityTokens.soft,
+                            )
+                            : colors.backgroundSecondary,
                     side: BorderSide.none,
                     onPressed: () => _applyLabel(label),
                   ),
@@ -403,15 +399,13 @@ class _QrHeader extends StatelessWidget {
     final w = MediaQuery.sizeOf(context).width;
     final compact = w < 360;
     final qrSize = compact ? 140.0 : 160.0;
-    final pad = compact ? LayoutTokens.gr3 : LayoutTokens.gr4;
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
-      padding: EdgeInsets.symmetric(vertical: pad, horizontal: pad),
+      padding: const EdgeInsets.all(LayoutTokens.gr2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -483,9 +477,9 @@ class _QrHeader extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: RadiusTokens.radiusSm,
+                borderRadius: RadiusTokens.radiusXl,
               ),
-              padding: EdgeInsets.all(compact ? 10 : 12),
+              padding: EdgeInsets.all(LayoutTokens.gr2),
               child: QrImageView(
                 data: qrData!,
                 version: QrVersions.auto,
@@ -526,18 +520,19 @@ class _PlayerSlotCard extends ConsumerWidget {
     final isMe = slot.playerId == isLocalHost;
     final lobbyFormat = ref.watch(lobbyProvider).config.format;
     final isCommanderLobby = lobbyFormat.isCommanderStyle;
-    final linkedDeck = isMe && slot.selectedDeckId != null
-        ? ref.read(deckRepositoryProvider).getById(slot.selectedDeckId!)
-        : null;
+    final linkedDeck =
+        isMe && slot.selectedDeckId != null
+            ? ref.read(deckRepositoryProvider).getById(slot.selectedDeckId!)
+            : null;
 
-    final borderColor = isMe
-        ? colors.primaryAccent
-        : slot.playerColor.withValues(alpha: 0.25);
+    final borderColor =
+        isMe ? colors.primaryAccent : slot.playerColor.withValues(alpha: 0.25);
 
     // Resolved once so the displayed text and its color never disagree.
-    final resolvedCommanderName = isCommanderLobby
-        ? slot.commanderName
-        : linkedDeck?.commanderName ?? slot.commanderName;
+    final resolvedCommanderName =
+        isCommanderLobby
+            ? slot.commanderName
+            : linkedDeck?.commanderName ?? slot.commanderName;
 
     final compact = MediaQuery.sizeOf(context).width < 360;
 
@@ -553,9 +548,10 @@ class _PlayerSlotCard extends ConsumerWidget {
             children: [
               LobbySlotAvatar(
                 slot: slot,
-                size: compact
-                    ? LayoutTokens.minTapTarget
-                    : LayoutTokens.gr6 + LayoutTokens.gr0,
+                size:
+                    compact
+                        ? LayoutTokens.minTapTarget
+                        : LayoutTokens.thumbTapTarget,
               ),
               SizedBox(width: LayoutTokens.gr2),
               Expanded(
@@ -575,9 +571,10 @@ class _PlayerSlotCard extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: resolvedCommanderName != null
-                            ? colors.textSecondary
-                            : colors.primaryAccent,
+                        color:
+                            resolvedCommanderName != null
+                                ? colors.textSecondary
+                                : colors.primaryAccent,
                         fontSize: FontTokens.caption,
                       ),
                     ),
@@ -670,10 +667,11 @@ class _SlotCommanderControls extends ConsumerWidget {
             label: l10n.hostSelectCommander,
             highlighted: slot.commanderName != null,
             filled: true,
-            onPressed: () => context.push(
-              AppRoutes.commanderSelect,
-              extra: {'playerId': slot.playerId},
-            ),
+            onPressed:
+                () => context.push(
+                  AppRoutes.commanderSelect,
+                  extra: {'playerId': slot.playerId},
+                ),
           ),
         ),
       ],
@@ -697,12 +695,12 @@ class _SlotReadyButton extends ConsumerWidget {
           LayoutTokens.minTapTarget,
           LayoutTokens.minTapTarget,
         ),
-        backgroundColor: slot.isReady
-            ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
-            : colors.backgroundSecondary,
-        foregroundColor: slot.isReady
-            ? colors.primaryAccent
-            : colors.textSecondary,
+        backgroundColor:
+            slot.isReady
+                ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
+                : colors.backgroundSecondary,
+        foregroundColor:
+            slot.isReady ? colors.primaryAccent : colors.textSecondary,
       ),
       onPressed: () {
         final notifier = ref.read(lobbyProvider.notifier);
@@ -725,24 +723,25 @@ class _EmptySlotCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Container(
       margin: EdgeInsets.only(bottom: LayoutTokens.gr2),
-      padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: LayoutTokens.gr2,
+        vertical: LayoutTokens.gr1,
+      ),
       decoration: BoxDecoration(
         color: colors.backgroundSecondary,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr2),
-        child: Text(
-          l10n.hostOpenSlots(remaining),
-          style: TextStyle(
-            color: colors.textSecondary,
-            fontSize: MediaQuery.sizeOf(context).width < 360
-                ? FontTokens.caption
-                : FontTokens.hudSm,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
+      child: Text(
+        l10n.hostOpenSlots(remaining),
+        style: TextStyle(
+          color: colors.textSecondary,
+          fontSize:
+              MediaQuery.sizeOf(context).width < 360
+                  ? FontTokens.caption
+                  : FontTokens.hudSm,
         ),
+        textAlign: TextAlign.center,
+        maxLines: 2,
       ),
     );
   }
@@ -760,13 +759,11 @@ class _ConfigSection extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final notifier = ref.read(lobbyProvider.notifier);
 
-    final compact = MediaQuery.sizeOf(context).width < 360;
-
     return Container(
-      padding: EdgeInsets.all(compact ? LayoutTokens.gr3 : LayoutTokens.gr4),
+      padding: const EdgeInsets.all(LayoutTokens.gr2),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,9 +777,13 @@ class _ConfigSection extends ConsumerWidget {
             label: l10n.hostFormat,
             child: _FormatDropdown(
               value: config.format,
-              onChanged: (f) => notifier.updateConfig(
-                config.copyWith(format: f, startingLife: f.defaultStartingLife),
-              ),
+              onChanged:
+                  (f) => notifier.updateConfig(
+                    config.copyWith(
+                      format: f,
+                      startingLife: f.defaultStartingLife,
+                    ),
+                  ),
             ),
           ),
           SizedBox(height: LayoutTokens.gr3),
@@ -790,11 +791,12 @@ class _ConfigSection extends ConsumerWidget {
             label: l10n.hostStartingLife,
             child: _StartingLifeDropdown(
               value: config.startingLife,
-              onChanged: (v) =>
-                  notifier.updateConfig(config.copyWith(startingLife: v)),
+              onChanged:
+                  (v) =>
+                      notifier.updateConfig(config.copyWith(startingLife: v)),
             ),
           ),
-          SizedBox(height: LayoutTokens.gr4),
+          SizedBox(height: LayoutTokens.gr2),
           // Gameplay settings
           Text(
             l10n.hostGameplay,
@@ -815,7 +817,7 @@ class _ConfigSection extends ConsumerWidget {
 InputDecoration _lobbyDropdownDecoration(BuildContext context) {
   final colors = AppColorTokens.of(context);
   final border = OutlineInputBorder(
-    borderRadius: RadiusTokens.radiusSm,
+    borderRadius: RadiusTokens.radiusXl,
     borderSide: BorderSide.none,
   );
   return InputDecoration(
@@ -828,7 +830,7 @@ InputDecoration _lobbyDropdownDecoration(BuildContext context) {
     border: border,
     enabledBorder: border,
     focusedBorder: OutlineInputBorder(
-      borderRadius: RadiusTokens.radiusSm,
+      borderRadius: RadiusTokens.radiusXl,
       borderSide: BorderSide(color: colors.primaryAccent, width: 1.5),
     ),
   );
@@ -881,11 +883,15 @@ class _FormatDropdown extends StatelessWidget {
       isExpanded: true,
       decoration: _lobbyDropdownDecoration(context),
       dropdownColor: colors.surface,
+      borderRadius: RadiusTokens.radiusXl,
       style: TextStyle(color: colors.textPrimary, fontSize: FontTokens.body),
       menuMaxHeight: 360,
-      items: GameFormatDetails.lobbyPickerOrder
-          .map((f) => DropdownMenuItem(value: f, child: Text(f.displayName)))
-          .toList(),
+      items:
+          GameFormatDetails.lobbyPickerOrder
+              .map(
+                (f) => DropdownMenuItem(value: f, child: Text(f.displayName)),
+              )
+              .toList(),
       onChanged: (f) {
         if (f != null) onChanged(f);
       },
@@ -958,6 +964,7 @@ class _StartingLifeDropdown extends StatelessWidget {
       isExpanded: true,
       decoration: _lobbyDropdownDecoration(context),
       dropdownColor: colors.surface,
+      borderRadius: RadiusTokens.radiusXl,
       style: TextStyle(color: colors.textPrimary, fontSize: FontTokens.body),
       items: items,
       onChanged: (v) {
@@ -1004,6 +1011,7 @@ class _TurnTimeLimitDropdown extends StatelessWidget {
       isExpanded: true,
       decoration: _lobbyDropdownDecoration(context),
       dropdownColor: colors.surface,
+      borderRadius: RadiusTokens.radiusXl,
       style: TextStyle(color: colors.textPrimary, fontSize: FontTokens.body),
       items: items,
       onChanged: onChanged,
@@ -1033,67 +1041,72 @@ class _GameplayToggles extends StatelessWidget {
           title: l10n.hostToggleTeams,
           subtitle: l10n.hostToggleTeamsSubtitle,
           value: config.teamsEnabled,
-          onChanged: (v) =>
-              notifier.updateConfig(config.copyWith(teamsEnabled: v)),
+          onChanged:
+              (v) => notifier.updateConfig(config.copyWith(teamsEnabled: v)),
         ),
         _GameplaySwitchTile(
           title: l10n.hostTogglePlanechase,
           subtitle: l10n.hostTogglePlanechaseSubtitle,
           value: config.planechaseEnabled,
-          onChanged: (v) =>
-              notifier.updateConfig(config.copyWith(planechaseEnabled: v)),
+          onChanged:
+              (v) =>
+                  notifier.updateConfig(config.copyWith(planechaseEnabled: v)),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleArchenemy,
           subtitle: l10n.hostToggleArchenemySubtitle,
           value: config.archenemyEnabled,
-          onChanged: (v) =>
-              notifier.updateConfig(config.copyWith(archenemyEnabled: v)),
+          onChanged:
+              (v) =>
+                  notifier.updateConfig(config.copyWith(archenemyEnabled: v)),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleBounty,
           subtitle: l10n.hostToggleBountySubtitle,
           value: config.bountyEnabled,
-          onChanged: (v) =>
-              notifier.updateConfig(config.copyWith(bountyEnabled: v)),
+          onChanged:
+              (v) => notifier.updateConfig(config.copyWith(bountyEnabled: v)),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleAutoKo,
           subtitle: l10n.hostToggleAutoKoSubtitle,
           value: _autoKoAll,
-          onChanged: (v) => notifier.updateConfig(
-            config.copyWith(
-              autoKoFromLife: v,
-              autoKoFromPoison: v,
-              autoKoFromCommanderDamage: v,
-            ),
-          ),
+          onChanged:
+              (v) => notifier.updateConfig(
+                config.copyWith(
+                  autoKoFromLife: v,
+                  autoKoFromPoison: v,
+                  autoKoFromCommanderDamage: v,
+                ),
+              ),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleCommanderDmgLife,
           subtitle: l10n.hostToggleCommanderDmgLifeSubtitle,
           value: config.commanderDamageReducesLife,
-          onChanged: (v) => notifier.updateConfig(
-            config.copyWith(commanderDamageReducesLife: v),
-          ),
+          onChanged:
+              (v) => notifier.updateConfig(
+                config.copyWith(commanderDamageReducesLife: v),
+              ),
         ),
         _GameplaySwitchTile(
           title: l10n.hostTogglePhaseTracker,
           subtitle: l10n.hostTogglePhaseTrackerSubtitle,
           value: config.phasesEnabled,
-          onChanged: (v) =>
-              notifier.updateConfig(config.copyWith(phasesEnabled: v)),
+          onChanged:
+              (v) => notifier.updateConfig(config.copyWith(phasesEnabled: v)),
         ),
         _GameplaySwitchTile(
           title: l10n.hostToggleTurnTimer,
           subtitle: l10n.hostToggleTurnTimerSubtitle,
           value: config.trackTurnDuration,
-          onChanged: (v) => notifier.updateConfig(
-            config.copyWith(
-              trackTurnDuration: v,
-              turnTimeLimitSeconds: v ? config.turnTimeLimitSeconds : null,
-            ),
-          ),
+          onChanged:
+              (v) => notifier.updateConfig(
+                config.copyWith(
+                  trackTurnDuration: v,
+                  turnTimeLimitSeconds: v ? config.turnTimeLimitSeconds : null,
+                ),
+              ),
         ),
         if (config.trackTurnDuration) ...[
           SizedBox(height: LayoutTokens.gr1),
@@ -1107,9 +1120,10 @@ class _GameplayToggles extends StatelessWidget {
               label: l10n.hostTurnLimit,
               child: _TurnTimeLimitDropdown(
                 value: config.turnTimeLimitSeconds,
-                onChanged: (v) => notifier.updateConfig(
-                  config.copyWith(turnTimeLimitSeconds: v),
-                ),
+                onChanged:
+                    (v) => notifier.updateConfig(
+                      config.copyWith(turnTimeLimitSeconds: v),
+                    ),
               ),
             ),
           ),
@@ -1176,7 +1190,25 @@ class _GameplaySwitchTile extends StatelessWidget {
   }
 }
 
-// ── Start game button ─────────────────────────────────────────────────────
+/// Distance from the screen bottom to the top of the tab bar.
+///
+/// With [Scaffold.extendBody], [MediaQuery.padding.bottom] already includes
+/// the dock. Adding [LayoutTokens.bottomNavHeight] again lifts Start Game
+/// a full bar above the nav.
+double _startGameDockClearance(BuildContext context) {
+  return MediaQuery.paddingOf(context).bottom;
+}
+
+/// Glass strip height so the last lobby row can scroll clear of Start Game.
+double _startFooterHeight(BuildContext context, {required bool showHint}) {
+  const buttonHeight = 52.0;
+  final hintBlock = showHint ? 20.0 + LayoutTokens.gr1 : 0.0;
+  return LayoutTokens.gr2 +
+      hintBlock +
+      buttonHeight +
+      LayoutTokens.gr2 +
+      _startGameDockClearance(context);
+}
 
 class _StartGameButton extends ConsumerStatefulWidget {
   final bool canStart;
@@ -1196,39 +1228,74 @@ class _StartGameButtonState extends ConsumerState<_StartGameButton> {
     final l10n = AppLocalizations.of(context);
     final colors = AppColorTokens.of(context);
     final hint = widget.hint;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (hint != null) ...[
-          Text(
-            hint,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: FontTokens.hudSm,
-              fontWeight: FontWeight.w600,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colors.backgroundPrimary.withValues(alpha: 0.02),
+                colors.backgroundPrimary.withValues(alpha: 0.55),
+                colors.backgroundPrimary.withValues(alpha: 0.78),
+              ],
+              stops: const [0.0, 0.22, 1.0],
+            ),
+            border: Border(
+              top: BorderSide(
+                color: colors.borderSubtle.withValues(alpha: 0.16),
+              ),
             ),
           ),
-          SizedBox(height: LayoutTokens.gr1),
-        ],
-        UiButton(
-          label: l10n.hostStartGame,
-          enabled: widget.canStart,
-          loading: _isStarting,
-          onPressed: canStart
-              ? () async {
-                  setState(() => _isStarting = true);
-                  try {
-                    await ref.read(lobbyProvider.notifier).broadcastGameStart();
-                    if (context.mounted) context.go(AppRoutes.game);
-                  } finally {
-                    if (mounted) setState(() => _isStarting = false);
-                  }
-                }
-              : null,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              LayoutTokens.shellPageInset,
+              LayoutTokens.gr2,
+              LayoutTokens.shellPageInset,
+              LayoutTokens.gr2,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (hint != null) ...[
+                  Text(
+                    hint,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: FontTokens.hudSm,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr1),
+                ],
+                UiButton(
+                  label: l10n.hostStartGame,
+                  enabled: widget.canStart,
+                  loading: _isStarting,
+                  onPressed:
+                      canStart
+                          ? () async {
+                            setState(() => _isStarting = true);
+                            try {
+                              await ref
+                                  .read(lobbyProvider.notifier)
+                                  .broadcastGameStart();
+                              if (context.mounted) context.go(AppRoutes.game);
+                            } finally {
+                              if (mounted) setState(() => _isStarting = false);
+                            }
+                          }
+                          : null,
+                ),
+              ],
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 }

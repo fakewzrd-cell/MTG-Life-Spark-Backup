@@ -12,6 +12,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/game_haptics.dart';
 import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
+import '../../../ui/tokens/opacity_tokens.dart';
 import '../../../ui/tokens/radius_tokens.dart';
 import '../../../ui/tokens/spacing_tokens.dart';
 import 'game_colors.dart';
@@ -30,7 +31,7 @@ class LifeCounterWidget extends StatefulWidget {
   final int life;
   final Color playerColor;
 
-  /// Optional WUBRG letters for halo / gradient chrome.
+  /// Optional WUBRG letters for the light surface wash.
   final List<String> commanderColorIdentity;
   final bool isEliminated;
   final void Function(int delta) onLifeChange;
@@ -193,161 +194,146 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: RadiusTokens.radiusBento,
-            gradient: LinearGradient(
-              colors: CommanderIdentityColors.gameplayGradient(
+    final wash =
+        widget.isEliminated
+            ? colors.surface
+            : Color.alphaBlend(
+              CommanderIdentityColors.gameChromeAccent(
                 colors,
                 widget.commanderColorIdentity,
+              ).withValues(alpha: OpacityTokens.soft),
+              colors.surface,
+            );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wBody = constraints.maxWidth;
+        final hBody = constraints.maxHeight;
+        final tapEdge = _kStepStripWidth;
+        final Widget body;
+        if (widget.isEliminated) {
+          body = Semantics(
+            label: l10n.lifeA11yEliminatedAt('${widget.life}'),
+            child: Center(
+              child: ExcludeSemantics(
+                child: Text(
+                  '☠',
+                  style: TextStyle(
+                    fontSize: (hBody * 0.45).clamp(40.0, 96.0),
+                    fontWeight: FontWeight.w700,
+                    color: colors.textSecondary,
+                  ),
+                ),
               ),
             ),
-          ),
-          padding: const EdgeInsets.all(LayoutTokens.gr0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              RadiusTokens.bento - LayoutTokens.gr0,
-            ),
-            child: Container(
-              color: colors.backgroundPrimary.withValues(alpha: 0.88),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final wBody = constraints.maxWidth;
-                  final hBody = constraints.maxHeight;
-                  final tapEdge = _kStepStripWidth;
+          );
+        } else {
+          final baseFontSize =
+              (wBody < 200 || hBody < 120)
+                  ? FontTokens.displayLife - 12
+                  : (wBody < 280 || hBody < 150)
+                  ? FontTokens.displayLife
+                  : (widget.life.abs() >= 100 ? 72.0 : 80.0);
+          final deltaFontSize = (baseFontSize * 0.27).clamp(18.0, 26.0);
 
-                  if (widget.isEliminated) {
-                    return Semantics(
-                      label: l10n.lifeA11yEliminatedAt('${widget.life}'),
-                      child: Center(
-                        child: ExcludeSemantics(
-                          child: Text(
-                            '☠',
-                            style: TextStyle(
-                              fontSize: (hBody * 0.45).clamp(40.0, 96.0),
-                              fontWeight: FontWeight.w700,
-                              color: colors.textSecondary,
+          body = Semantics(
+            label: l10n.lifeA11yLifeTotal('${widget.life}'),
+            value: '${widget.life}',
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SizedBox(
+                  height: hBody,
+                  width: double.infinity,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _LifeEdgeStepStrip(
+                        width: tapEdge,
+                        icon: Icons.remove_rounded,
+                        semanticsLabel: l10n.lifeA11yDecrease,
+                        onTap: () => _change(-1),
+                        onLongPressStart: () => _startHold(-1),
+                        onLongPressEnd: _stopHold,
+                        onLongPressCancel: _stopHold,
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onDoubleTap:
+                              widget.isEliminated ? null : _showNumberPad,
+                          onHorizontalDragUpdate:
+                              (d) => _feedHorizontalDrag(d.delta.dx),
+                          onHorizontalDragEnd: (_) => _wheelDragAccum = 0,
+                          onHorizontalDragCancel: () => _wheelDragAccum = 0,
+                          behavior: HitTestBehavior.translucent,
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.center,
+                              child: Text(
+                                '${widget.life}',
+                                maxLines: 1,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: baseFontSize,
+                                  fontWeight: FontWeight.w700,
+                                  color: _lifeColor(colors),
+                                  letterSpacing: -1,
+                                  height: 1.0,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    );
-                  }
-
-                  final baseFontSize = (wBody < 200 || hBody < 120)
-                      ? FontTokens.displayLife - 12
-                      : (wBody < 280 || hBody < 150)
-                      ? FontTokens.displayLife
-                      : (widget.life.abs() >= 100 ? 72.0 : 80.0);
-                  final deltaFontSize = (baseFontSize * 0.27).clamp(18.0, 26.0);
-
-                  return Semantics(
-                    label: l10n.lifeA11yLifeTotal('${widget.life}'),
-                    value: '${widget.life}',
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        SizedBox(
-                          height: hBody,
-                          width: double.infinity,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _LifeEdgeStepStrip(
-                                width: tapEdge,
-                                icon: Icons.remove_rounded,
-                                semanticsLabel: l10n.lifeA11yDecrease,
-                                onTap: () => _change(-1),
-                                onLongPressStart: () => _startHold(-1),
-                                onLongPressEnd: _stopHold,
-                                onLongPressCancel: _stopHold,
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onDoubleTap: widget.isEliminated
-                                      ? null
-                                      : _showNumberPad,
-                                  onHorizontalDragUpdate: (d) =>
-                                      _feedHorizontalDrag(d.delta.dx),
-                                  onHorizontalDragEnd: (_) =>
-                                      _wheelDragAccum = 0,
-                                  onHorizontalDragCancel: () =>
-                                      _wheelDragAccum = 0,
-                                  behavior: HitTestBehavior.translucent,
-                                  child: Container(
-                                    color: colors.backgroundPrimary.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    child: Center(
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          '${widget.life}',
-                                          maxLines: 1,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: baseFontSize,
-                                            fontWeight: FontWeight.w700,
-                                            color: _lifeColor(colors),
-                                            letterSpacing: -1,
-                                            height: 1.0,
-                                            fontFeatures: const [
-                                              FontFeature.tabularFigures(),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                      _LifeEdgeStepStrip(
+                        width: tapEdge,
+                        icon: Icons.add_rounded,
+                        semanticsLabel: l10n.lifeA11yIncrease,
+                        onTap: () => _change(1),
+                        onLongPressStart: () => _startHold(1),
+                        onLongPressEnd: _stopHold,
+                        onLongPressCancel: _stopHold,
+                      ),
+                    ],
+                  ),
+                ),
+                Center(
+                  child: IgnorePointer(
+                    child:
+                        _lastDelta == null
+                            ? const SizedBox.shrink()
+                            : FadeTransition(
+                              opacity: Tween(
+                                begin: 1.0,
+                                end: 0.0,
+                              ).animate(_deltaFade),
+                              child: SlideTransition(
+                                position: _deltaSlide,
+                                child: Text(
+                                  _lastDelta! > 0
+                                      ? '+$_lastDelta'
+                                      : '$_lastDelta',
+                                  style: TextStyle(
+                                    fontSize: deltaFontSize,
+                                    fontWeight: FontWeight.bold,
+                                    color: _deltaColor(colors),
                                   ),
                                 ),
                               ),
-                              _LifeEdgeStepStrip(
-                                width: tapEdge,
-                                icon: Icons.add_rounded,
-                                semanticsLabel: l10n.lifeA11yIncrease,
-                                onTap: () => _change(1),
-                                onLongPressStart: () => _startHold(1),
-                                onLongPressEnd: _stopHold,
-                                onLongPressCancel: _stopHold,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Center(
-                          child: IgnorePointer(
-                            child: _lastDelta == null
-                                ? const SizedBox.shrink()
-                                : FadeTransition(
-                                    opacity: Tween(
-                                      begin: 1.0,
-                                      end: 0.0,
-                                    ).animate(_deltaFade),
-                                    child: SlideTransition(
-                                      position: _deltaSlide,
-                                      child: Text(
-                                        _lastDelta! > 0
-                                            ? '+$_lastDelta'
-                                            : '$_lastDelta',
-                                        style: TextStyle(
-                                          fontSize: deltaFontSize,
-                                          fontWeight: FontWeight.bold,
-                                          color: _deltaColor(colors),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                            ),
+                  ),
+                ),
+              ],
             ),
-          ),
+          );
+        }
+
+        return ClipRRect(
+          borderRadius: RadiusTokens.radiusBento,
+          child: ColoredBox(color: wash, child: body),
         );
       },
     );
@@ -388,18 +374,8 @@ class _LifeEdgeStepStrip extends StatelessWidget {
           onLongPressEnd: (_) => onLongPressEnd(),
           onLongPressCancel: onLongPressCancel,
           behavior: HitTestBehavior.opaque,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: colors.surface.withValues(alpha: 0.72),
-            ),
-            child: Center(
-              child: Icon(
-                icon,
-                size: 28,
-                // Match gameplay dial ± step color.
-                color: colors.primaryAccent,
-              ),
-            ),
+          child: Center(
+            child: Icon(icon, size: 28, color: colors.primaryAccent),
           ),
         ),
       ),
@@ -451,7 +427,7 @@ class _LifeInputDialogState extends State<_LifeInputDialog> {
                 foregroundColor: colors.textPrimary,
                 minimumSize: const Size(0, LayoutTokens.gr6),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(RadiusTokens.sm),
+                  borderRadius: RadiusTokens.radiusXl,
                 ),
               ),
               onPressed: onTap ?? () => _press(label),
@@ -476,7 +452,7 @@ class _LifeInputDialogState extends State<_LifeInputDialog> {
     return AlertDialog(
       backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         side: BorderSide(color: colors.backgroundSecondary),
       ),
       title: GameDialogTitleRow(
@@ -502,36 +478,35 @@ class _LifeInputDialogState extends State<_LifeInputDialog> {
             ['⌫', '0', '✓'],
           ])
             Row(
-              children: row.map((label) {
-                if (label == '⌫') {
-                  return _key(label, onTap: _delete);
-                }
-                if (label == '✓') {
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(LayoutTokens.gr0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primaryAccent,
-                          minimumSize: const Size(0, LayoutTokens.gr6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              RadiusTokens.sm,
+              children:
+                  row.map((label) {
+                    if (label == '⌫') {
+                      return _key(label, onTap: _delete);
+                    }
+                    if (label == '✓') {
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(LayoutTokens.gr0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.primaryAccent,
+                              minimumSize: const Size(0, LayoutTokens.gr6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: RadiusTokens.radiusXl,
+                              ),
+                            ),
+                            onPressed: _input.isNotEmpty ? _confirm : null,
+                            child: Icon(
+                              Icons.check,
+                              color: colors.onAccent,
+                              size: LayoutTokens.gr3,
                             ),
                           ),
                         ),
-                        onPressed: _input.isNotEmpty ? _confirm : null,
-                        child: Icon(
-                          Icons.check,
-                          color: colors.onAccent,
-                          size: LayoutTokens.gr3,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return _key(label);
-              }).toList(),
+                      );
+                    }
+                    return _key(label);
+                  }).toList(),
             ),
         ],
       ),

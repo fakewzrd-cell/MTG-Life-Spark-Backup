@@ -15,7 +15,7 @@ class UiSurface extends StatelessWidget {
     this.padding,
     this.color,
     this.borderColor,
-    this.borderRadius = RadiusTokens.radiusMd,
+    this.borderRadius = RadiusTokens.radiusXl,
     this.elevation = 0,
     this.glass = false,
   });
@@ -23,6 +23,7 @@ class UiSurface extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final Color? color;
+
   /// When non-null, draws a 1px stroke. Default is borderless.
   final Color? borderColor;
   final BorderRadius? borderRadius;
@@ -32,8 +33,9 @@ class UiSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final radius = borderRadius ?? RadiusTokens.radiusMd;
-    final bg = color ??
+    final radius = borderRadius ?? RadiusTokens.radiusXl;
+    final bg =
+        color ??
         (glass
             ? scheme.surfaceContainer.withValues(alpha: 0.72)
             : scheme.surfaceContainer);
@@ -45,9 +47,10 @@ class UiSurface extends StatelessWidget {
       shadowColor: scheme.shadow,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: borderColor != null
-            ? BorderSide(color: borderColor!, width: 1)
-            : BorderSide.none,
+        side:
+            borderColor != null
+                ? BorderSide(color: borderColor!, width: 1)
+                : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(

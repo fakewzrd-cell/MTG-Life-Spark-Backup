@@ -54,10 +54,10 @@ class ProgressionService {
     required MatchRepository matchRepo,
     required FeedbackRepository feedbackRepo,
     required DeckRepository deckRepo,
-  })  : _profileRepo = profileRepo,
-        _matchRepo = matchRepo,
-        _feedbackRepo = feedbackRepo,
-        _deckRepo = deckRepo;
+  }) : _profileRepo = profileRepo,
+       _matchRepo = matchRepo,
+       _feedbackRepo = feedbackRepo,
+       _deckRepo = deckRepo;
 
   Future<ProgressResult> recordMatch({
     required GameState finalState,
@@ -107,9 +107,10 @@ class ProgressionService {
     }
 
     final won = finalState.winnerPlayerId == localId;
-    final result = won
-        ? 'win'
-        : (local.eliminationReason == 'concede' ? 'concede' : 'loss');
+    final result =
+        won
+            ? 'win'
+            : (local.eliminationReason == 'concede' ? 'concede' : 'loss');
     final oldLevel = profile.level;
 
     // ── Calculate XP ──────────────────────────────────────────────────────
@@ -123,21 +124,21 @@ class ProgressionService {
     final elapsed = DateTime.now().difference(startTime);
     final durationMinutes = elapsed.inMinutes;
     final durationSeconds = elapsed.inSeconds;
-    final opponentNames = finalState.players
-        .where((p) => p.playerId != localId)
-        .map((p) => p.username)
-        .toList();
+    final opponentNames =
+        finalState.players
+            .where((p) => p.playerId != localId)
+            .map((p) => p.username)
+            .toList();
 
     final winnerId = finalState.winnerPlayerId;
-    final ranked = List<PlayerGameState>.from(finalState.players)
-      ..sort((a, b) {
-        if (a.playerId == winnerId) return -1;
-        if (b.playerId == winnerId) return 1;
-        if (a.isEliminated != b.isEliminated) {
-          return a.isEliminated ? 1 : -1;
-        }
-        return b.life.compareTo(a.life);
-      });
+    final ranked = List<PlayerGameState>.from(finalState.players)..sort((a, b) {
+      if (a.playerId == winnerId) return -1;
+      if (b.playerId == winnerId) return 1;
+      if (a.isEliminated != b.isEliminated) {
+        return a.isEliminated ? 1 : -1;
+      }
+      return b.life.compareTo(a.life);
+    });
     final placementById = <String, int>{
       for (var i = 0; i < ranked.length; i++) ranked[i].playerId: i + 1,
     };
@@ -158,23 +159,25 @@ class ProgressionService {
       }).toList(),
     );
 
-    await _matchRepo.saveMatch(MatchRecord(
-      matchId: resolvedMatchId,
-      date: DateTime.now(),
-      commanderName: local.commanderName ?? 'Unknown',
-      partnerCommanderName: local.partnerCommanderName,
-      opponentNames: opponentNames,
-      result: result,
-      eliminationReason: local.eliminationReason ?? 'survived',
-      format: lobbyState.config.format.displayName,
-      durationMinutes: durationMinutes,
-      startingLifeTotal: lobbyState.config.startingLife,
-      playerCount: finalState.players.length,
-      durationSeconds: durationSeconds,
-      participantsJson: participantsJson,
-      labelSnapshot: lobbyState.matchLabel,
-      localDeckIdSnapshot: local.selectedDeckId,
-    ));
+    await _matchRepo.saveMatch(
+      MatchRecord(
+        matchId: resolvedMatchId,
+        date: DateTime.now(),
+        commanderName: local.commanderName ?? 'Unknown',
+        partnerCommanderName: local.partnerCommanderName,
+        opponentNames: opponentNames,
+        result: result,
+        eliminationReason: local.eliminationReason ?? 'survived',
+        format: lobbyState.config.format.displayName,
+        durationMinutes: durationMinutes,
+        startingLifeTotal: lobbyState.config.startingLife,
+        playerCount: finalState.players.length,
+        durationSeconds: durationSeconds,
+        participantsJson: participantsJson,
+        labelSnapshot: lobbyState.matchLabel,
+        localDeckIdSnapshot: local.selectedDeckId,
+      ),
+    );
 
     // ── Update profile / deck ─────────────────────────────────────────────
     await _profileRepo.recordMatchResult(

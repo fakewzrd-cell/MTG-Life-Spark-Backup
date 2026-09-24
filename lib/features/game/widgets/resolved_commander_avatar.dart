@@ -35,7 +35,8 @@ class ResolvedCommanderAvatar extends ConsumerStatefulWidget {
       _ResolvedCommanderAvatarState();
 }
 
-class _ResolvedCommanderAvatarState extends ConsumerState<ResolvedCommanderAvatar> {
+class _ResolvedCommanderAvatarState
+    extends ConsumerState<ResolvedCommanderAvatar> {
   String? _resolvedUrl;
   bool _fetchStarted = false;
 
@@ -99,10 +100,7 @@ class _ResolvedCommanderAvatarState extends ConsumerState<ResolvedCommanderAvata
         partnerCommanderImageUrl: url,
       );
     } else {
-      notifier.patchCommanderArt(
-        widget.playerId,
-        commanderImageUrl: url,
-      );
+      notifier.patchCommanderArt(widget.playerId, commanderImageUrl: url);
     }
   }
 
@@ -137,7 +135,7 @@ class CommanderAvatarImage extends StatelessWidget {
     final url = imageUrl?.trim();
     if (url != null && url.isNotEmpty) {
       return ClipRRect(
-        borderRadius: RadiusTokens.radiusControlMd,
+        borderRadius: RadiusTokens.radiusLgIncreased,
         child: CachedNetworkImage(
           imageUrl: url,
           width: size,
@@ -152,24 +150,25 @@ class CommanderAvatarImage extends StatelessWidget {
   }
 
   Widget _placeholder({bool showProgress = false}) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: playerColor.withValues(alpha: 0.15),
-          borderRadius: RadiusTokens.radiusControlMd,
-          border: Border.all(color: playerColor.withValues(alpha: 0.5)),
-        ),
-        child: showProgress
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: playerColor.withValues(alpha: 0.15),
+      borderRadius: RadiusTokens.radiusLgIncreased,
+      border: Border.all(color: playerColor.withValues(alpha: 0.5)),
+    ),
+    child:
+        showProgress
             ? Center(
-                child: SizedBox(
-                  width: size * 0.35,
-                  height: size * 0.35,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: playerColor,
-                  ),
+              child: SizedBox(
+                width: size * 0.35,
+                height: size * 0.35,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: playerColor,
                 ),
-              )
+              ),
+            )
             : Icon(Icons.style, color: playerColor, size: size * 0.5),
-      );
+  );
 }

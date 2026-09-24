@@ -107,22 +107,20 @@ class PlayerDeck extends HiveObject {
     String? commanderManaCost,
     String? partnerManaCost,
     List<String> commanderColorIdentity = const [],
-  }) =>
-      PlayerDeck(
-        id: const Uuid().v4(),
-        displayName: displayName,
-        commanderName: commanderName,
-        commanderImageUrl: commanderImageUrl,
-        partnerCommanderName:
-            format.isCommanderStyle ? partnerCommanderName : null,
-        partnerCommanderImageUrl:
-            format.isCommanderStyle ? partnerCommanderImageUrl : null,
-        commanderManaCost: commanderManaCost,
-        partnerManaCost: format.isCommanderStyle ? partnerManaCost : null,
-        commanderColorIdentity: commanderColorIdentity,
-        format: format.name,
-        deckStyleId: deckStyleId,
-      );
+  }) => PlayerDeck(
+    id: const Uuid().v4(),
+    displayName: displayName,
+    commanderName: commanderName,
+    commanderImageUrl: commanderImageUrl,
+    partnerCommanderName: format.isCommanderStyle ? partnerCommanderName : null,
+    partnerCommanderImageUrl:
+        format.isCommanderStyle ? partnerCommanderImageUrl : null,
+    commanderManaCost: commanderManaCost,
+    partnerManaCost: format.isCommanderStyle ? partnerManaCost : null,
+    commanderColorIdentity: commanderColorIdentity,
+    format: format.name,
+    deckStyleId: deckStyleId,
+  );
 
   /// Saved deck format must match the lobby host format for picker and W/L.
   bool matchesLobbyFormat(GameFormat lobbyFormat) => gameFormat == lobbyFormat;

@@ -50,10 +50,10 @@ class _TableToolsSheetState extends ConsumerState<_TableToolsSheet> {
   }
 
   String _actionLabel(AppLocalizations l10n) => switch (_kind) {
-        _ToolKind.d6 => l10n.tableToolsRollD6,
-        _ToolKind.d20 => l10n.tableToolsRollD20,
-        _ToolKind.coin => l10n.tableToolsFlipCoin,
-      };
+    _ToolKind.d6 => l10n.tableToolsRollD6,
+    _ToolKind.d20 => l10n.tableToolsRollD20,
+    _ToolKind.coin => l10n.tableToolsFlipCoin,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +121,7 @@ class _TableToolsSheetState extends ConsumerState<_TableToolsSheet> {
                 backgroundColor: colors.primaryAccent,
                 foregroundColor: colors.onAccent,
                 shape: RoundedRectangleBorder(
-                  borderRadius: RadiusTokens.radiusControlSm,
+                  borderRadius: RadiusTokens.radiusXl,
                 ),
               ),
               child: Text(
@@ -155,13 +155,14 @@ class _ToolChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     return Material(
-      color: selected
-          ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
-          : colors.backgroundSecondary.withValues(alpha: 0.55),
-      borderRadius: RadiusTokens.radiusControlSm,
+      color:
+          selected
+              ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
+              : colors.backgroundSecondary.withValues(alpha: 0.55),
+      borderRadius: RadiusTokens.radiusXl,
       child: InkWell(
         onTap: onTap,
-        borderRadius: RadiusTokens.radiusControlSm,
+        borderRadius: RadiusTokens.radiusXl,
         child: SizedBox(
           height: LayoutTokens.minTapTarget,
           child: Center(

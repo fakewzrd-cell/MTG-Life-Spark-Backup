@@ -179,11 +179,13 @@ class _JoinScanScreenState extends ConsumerState<JoinScanScreen>
         return;
       }
       _scanned = true;
-      unawaited(_stopScanner().then((_) {
-        if (mounted) {
-          _connectTo(parsed.wsUri, joinToken: parsed.token!);
-        }
-      }));
+      unawaited(
+        _stopScanner().then((_) {
+          if (mounted) {
+            _connectTo(parsed.wsUri, joinToken: parsed.token!);
+          }
+        }),
+      );
     } on FormatException {
       _showSnackbar(l10n.joinInvalidQr, isError: true);
     }
@@ -296,8 +298,8 @@ class _JoinScanScreenState extends ConsumerState<JoinScanScreen>
     if (_leaveInProgress) return;
     _leaveInProgress = true;
     try {
-      final needsConfirm = _phase == _JoinPhase.connecting ||
-          _phase == _JoinPhase.waitingRoom;
+      final needsConfirm =
+          _phase == _JoinPhase.connecting || _phase == _JoinPhase.waitingRoom;
       if (needsConfirm) {
         final ok = await confirmLeaveActiveSession(context);
         if (!ok || !mounted) return;
@@ -365,12 +367,12 @@ class _JoinScanScreenState extends ConsumerState<JoinScanScreen>
           _JoinPhase.scanning =>
             _cameraPermissionGranted && _scannerController != null
                 ? _QrScanView(
-                    controller: _scannerController!,
-                    onDetect: _onDetect,
-                  )
+                  controller: _scannerController!,
+                  onDetect: _onDetect,
+                )
                 : _PermissionDeniedView(
-                    onRetry: () => _syncCameraPermission(requestIfNeeded: true),
-                  ),
+                  onRetry: () => _syncCameraPermission(requestIfNeeded: true),
+                ),
           _JoinPhase.connecting => const _ConnectingView(),
           _JoinPhase.waitingRoom => const _WaitingRoomView(),
         },
@@ -444,22 +446,24 @@ class _QrScanOverlayPainter extends CustomPainter {
     );
     final cutout = RRect.fromRectAndRadius(
       cutoutRect,
-      const Radius.circular(RadiusTokens.md),
+      const Radius.circular(RadiusTokens.xl),
     );
 
-    final overlay = Path()
-      ..addRect(Offset.zero & size)
-      ..addRRect(cutout)
-      ..fillType = PathFillType.evenOdd;
+    final overlay =
+        Path()
+          ..addRect(Offset.zero & size)
+          ..addRRect(cutout)
+          ..fillType = PathFillType.evenOdd;
     canvas.drawPath(overlay, Paint()..color = dimColor);
 
     const arm = 28.0;
     const stroke = 4.0;
-    final paint = Paint()
-      ..color = accent
-      ..strokeWidth = stroke
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+    final paint =
+        Paint()
+          ..color = accent
+          ..strokeWidth = stroke
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round;
 
     void corner(Offset origin, double dx, double dy) {
       canvas.drawLine(origin, origin.translate(dx * arm, 0), paint);
@@ -494,14 +498,19 @@ class _PermissionDeniedView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.camera_alt_outlined,
-                size: 64, color: colors.textSecondary),
+            Icon(
+              Icons.camera_alt_outlined,
+              size: 64,
+              color: colors.textSecondary,
+            ),
             SizedBox(height: LayoutTokens.gr4),
             Text(
               l10n.joinCameraDeniedBody,
               textAlign: TextAlign.center,
-              style:
-                  TextStyle(color: colors.textSecondary, fontSize: FontTokens.body),
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: FontTokens.body,
+              ),
             ),
             SizedBox(height: LayoutTokens.gr4),
             UiButton(
@@ -538,7 +547,10 @@ class _ConnectingView extends StatelessWidget {
           SizedBox(height: LayoutTokens.gr4 + LayoutTokens.gr0),
           Text(
             l10n.joinConnecting,
-            style: TextStyle(color: colors.textSecondary, fontSize: FontTokens.bodyLg),
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: FontTokens.bodyLg,
+            ),
           ),
         ],
       ),
@@ -589,7 +601,9 @@ class _WaitingRoomViewState extends ConsumerState<_WaitingRoomView> {
               Text(
                 l10n.joinWaitingForHost,
                 style: TextStyle(
-                    color: colors.textSecondary, fontSize: FontTokens.label),
+                  color: colors.textSecondary,
+                  fontSize: FontTokens.label,
+                ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: LayoutTokens.gr3),
@@ -603,11 +617,12 @@ class _WaitingRoomViewState extends ConsumerState<_WaitingRoomView> {
                         child: LobbyActionButton(
                           label: l10n.joinSelectDeck,
                           highlighted: mySlot?.selectedDeckId != null,
-                          onPressed: () => showDeckPickerSheet(
-                            context,
-                            ref,
-                            profile.playerId,
-                          ),
+                          onPressed:
+                              () => showDeckPickerSheet(
+                                context,
+                                ref,
+                                profile.playerId,
+                              ),
                         ),
                       ),
                       SizedBox(width: LayoutTokens.gr2),
@@ -617,9 +632,10 @@ class _WaitingRoomViewState extends ConsumerState<_WaitingRoomView> {
                           highlighted: mySlot?.commanderName != null,
                           filled: true,
                           onPressed: () {
-                            context.push(AppRoutes.commanderSelect, extra: {
-                              'playerId': profile.playerId,
-                            });
+                            context.push(
+                              AppRoutes.commanderSelect,
+                              extra: {'playerId': profile.playerId},
+                            );
                           },
                         ),
                       ),
@@ -632,20 +648,22 @@ class _WaitingRoomViewState extends ConsumerState<_WaitingRoomView> {
                       label: l10n.joinSelectDeck,
                       highlighted: mySlot?.selectedDeckId != null,
                       filled: true,
-                      onPressed: () => showDeckPickerSheet(
-                        context,
-                        ref,
-                        profile.playerId,
-                      ),
+                      onPressed:
+                          () => showDeckPickerSheet(
+                            context,
+                            ref,
+                            profile.playerId,
+                          ),
                     ),
                   ),
                 SizedBox(height: LayoutTokens.gr2),
                 SizedBox(
                   width: double.infinity,
                   child: LobbyActionButton(
-                    label: mySlot?.isReady == true
-                        ? l10n.joinReady
-                        : l10n.joinMarkReady,
+                    label:
+                        mySlot?.isReady == true
+                            ? l10n.joinReady
+                            : l10n.joinMarkReady,
                     highlighted: mySlot?.isReady == true,
                     filled: true,
                     onPressed: () {

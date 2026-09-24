@@ -70,7 +70,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'Le mode clair utilise des fonds doux — essayez Fog ou Slate';
+      'Fonds sombres. Désactivez pour une page claire.';
 
   @override
   String get settingsLanguage => 'Langue';
@@ -931,6 +931,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get lookupEmptyPrompt => 'Tapez un nom de carte pour voir les règles.';
 
   @override
+  String get lookupRecentEmpty => 'Aucune carte consultée.';
+
+  @override
+  String get lookupBack => 'Retour';
+
+  @override
   String lookupNoResults(String query) {
     return 'Aucune carte trouvée pour “$query”.';
   }
@@ -1758,7 +1764,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Choisissez des trackers pour votre bande (max $max). Touchez le X d’un compteur pour le retirer.';
+    return 'Choisissez des trackers pour votre bande (max $max). Ouvrez un compteur pour le retirer.';
   }
 
   @override
@@ -1775,7 +1781,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get dialsAddCounterTooltip => 'Ajouter un compteur';
 
   @override
-  String get dialsRemoveFromStrip => 'Retirer de la bande';
+  String get dialsAddCounterChip => 'Compteur';
+
+  @override
+  String get dialsRemoveFromStrip => 'Retirer le compteur';
 
   @override
   String get hubGuideTitle => 'Visite rapide';
@@ -1797,18 +1806,25 @@ class AppLocalizationsFr extends AppLocalizations {
       'Suivez vie et compteurs ici. Fin de tour est sous la barre de phases — ou désactivez le suivi de phases au lobby pour un grand bouton Fin de tour.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Pile et recherche';
+  String get hubGuideSlideStackTitle => 'Pile';
 
   @override
   String get hubGuideSlideStackBody =>
-      'La pile sert à Hold Priority et à résoudre les effets. La recherche ouvre Scryfall sans quitter votre place — texte d’oracle et rulings.';
+      'La pile sert à Hold Priority et à résoudre les effets.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Recherche';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'La recherche ouvre Scryfall sans quitter votre place — texte d’oracle et rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Aperçu de table';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Ouvrez Table pour tout le pod. Outils a dés et pièces que tout le monde voit ; Historique est dans l’en-tête. Fin de tour reste épinglé ; Abandon est en dessous.';
+      'Ouvrez Table pour tout le pod. Outils a dés et pièces que tout le monde voit ; Historique est dans l’en-tête. Fin de tour et Abandon sont côte à côte.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Votre tour et Commander';
@@ -2767,15 +2783,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get paletteSlate => 'Ardoise';
-
-  @override
-  String get paletteForest => 'Forêt';
-
-  @override
-  String get paletteObsidian => 'Obsidienne';
-
-  @override
-  String get paletteFog => 'Brouillard';
 
   @override
   String networkCannotReachHost(String error) {

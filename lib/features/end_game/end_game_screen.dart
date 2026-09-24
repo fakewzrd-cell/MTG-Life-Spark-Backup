@@ -136,42 +136,50 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
     final game = ref.watch(gameProvider);
-    final winner = game.winnerPlayerId != null
-        ? game.playerById(game.winnerPlayerId!)
-        : null;
+    final winner =
+        game.winnerPlayerId != null
+            ? game.playerById(game.winnerPlayerId!)
+            : null;
     final isWinner = winner?.playerId == game.localPlayerId;
 
     return BlockSystemAppExit(
       child: Scaffold(
-      backgroundColor: colors.backgroundPrimary,
-      body: SafeArea(
-        child: _saving
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(color: colors.primaryAccent),
-                    SizedBox(height: LayoutTokens.gr3),
-                    Text(
-                      l10n.endGameSavingResults,
-                      style: TextStyle(color: colors.textSecondary),
+        backgroundColor: colors.backgroundPrimary,
+        body: SafeArea(
+          child:
+              _saving
+                  ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: colors.primaryAccent),
+                        SizedBox(height: LayoutTokens.gr3),
+                        Text(
+                          l10n.endGameSavingResults,
+                          style: TextStyle(color: colors.textSecondary),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )
-            : _saveFailed
-                ? Center(
+                  )
+                  : _saveFailed
+                  ? Center(
                     child: Padding(
                       padding: EdgeInsets.all(LayoutTokens.gr4),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.error_outline, color: colors.primaryAccent, size: 48),
+                          Icon(
+                            Icons.error_outline,
+                            color: colors.primaryAccent,
+                            size: 48,
+                          ),
                           SizedBox(height: LayoutTokens.gr3),
                           Text(
                             l10n.endGameSaveFailedTitle,
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
                               color: colors.textPrimary,
                               fontWeight: FontWeight.w700,
                             ),
@@ -197,119 +205,118 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
                       ),
                     ),
                   )
-                : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: LayoutTokens.gr4),
+                  : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: LayoutTokens.gr4),
 
-                    // ── Winner spotlight ──────────────────────────────────
-                    _WinnerBanner(
-                      winner: winner,
-                      isLocalWinner: isWinner,
-                      noWinnerHeadline: _noWinnerHeadline(game, l10n),
-                    ),
+                        // ── Winner spotlight ──────────────────────────────────
+                        _WinnerBanner(
+                          winner: winner,
+                          isLocalWinner: isWinner,
+                          noWinnerHeadline: _noWinnerHeadline(game, l10n),
+                        ),
 
-                    SizedBox(height: LayoutTokens.gr4),
+                        SizedBox(height: LayoutTokens.gr4),
 
-                    // ── Level-up animation ─────────────────────────────────
-                    if (_result != null && _result!.leveledUp)
-                      _LevelUpCard(result: _result!),
+                        // ── Level-up animation ─────────────────────────────────
+                        if (_result != null && _result!.leveledUp)
+                          _LevelUpCard(result: _result!),
 
-                    // ── XP earned (competitive matches only) ──────────────
-                    if (_result != null && _result!.awardsProgression)
-                      _XpCard(
-                        result: _result!,
-                        isWinner: isWinner,
-                      ),
+                        // ── XP earned (competitive matches only) ──────────────
+                        if (_result != null && _result!.awardsProgression)
+                          _XpCard(result: _result!, isWinner: isWinner),
 
-                    SizedBox(height: LayoutTokens.gr2),
+                        SizedBox(height: LayoutTokens.gr2),
 
-                    // ── Final standings ────────────────────────────────────
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: LayoutTokens.shellPageInset,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.endGameFinalStandings,
-                            style: TypographyTokens.sectionTitle(
-                              colors.textSecondary,
-                            ).copyWith(
-                              fontSize: FontTokens.label,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1,
-                            ),
+                        // ── Final standings ────────────────────────────────────
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: LayoutTokens.shellPageInset,
                           ),
-                          SizedBox(height: LayoutTokens.gr1),
-                          ...game.players.map((p) => _FinalPlayerRow(
-                                p: p,
-                                isWinner: p.playerId == game.winnerPlayerId,
-                                isLocal: p.playerId == game.localPlayerId,
-                              )),
-                        ],
-                      ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.endGameFinalStandings,
+                                style: TypographyTokens.sectionTitle(
+                                  colors.textSecondary,
+                                ).copyWith(
+                                  fontSize: FontTokens.label,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              SizedBox(height: LayoutTokens.gr1),
+                              ...game.players.map(
+                                (p) => _FinalPlayerRow(
+                                  p: p,
+                                  isWinner: p.playerId == game.winnerPlayerId,
+                                  isLocal: p.playerId == game.localPlayerId,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(height: LayoutTokens.gr4),
+
+                        // ── Post-game feedback (like/dislike + star) ─
+                        if (_result != null && _result!.matchId.isNotEmpty)
+                          _FeedbackCard(
+                            game: game,
+                            feedbackSubmitted: _feedbackSubmitted,
+                            likePlayerIds: _likePlayerIds,
+                            dislikePlayerIds: _dislikePlayerIds,
+                            starPlayerId: _starPlayerId,
+                            onLike:
+                                (pid) => setState(() {
+                                  togglePlayerLike(
+                                    likeIds: _likePlayerIds,
+                                    dislikeIds: _dislikePlayerIds,
+                                    playerId: pid,
+                                    apply: (likes, dislikes) {
+                                      _likePlayerIds
+                                        ..clear()
+                                        ..addAll(likes);
+                                      _dislikePlayerIds
+                                        ..clear()
+                                        ..addAll(dislikes);
+                                    },
+                                  );
+                                }),
+                            onDislike:
+                                (pid) => setState(() {
+                                  togglePlayerDislike(
+                                    likeIds: _likePlayerIds,
+                                    dislikeIds: _dislikePlayerIds,
+                                    playerId: pid,
+                                    apply: (likes, dislikes) {
+                                      _likePlayerIds
+                                        ..clear()
+                                        ..addAll(likes);
+                                      _dislikePlayerIds
+                                        ..clear()
+                                        ..addAll(dislikes);
+                                    },
+                                  );
+                                }),
+                            onStarChanged:
+                                (pid) => setState(() => _starPlayerId = pid),
+                            onSubmit: () => _submitFeedback(game),
+                          ),
+
+                        SizedBox(height: LayoutTokens.gr5),
+
+                        // ── Actions ────────────────────────────────────────────
+                        _ActionButtons(onHome: () => _leaveToHome(context)),
+
+                        SizedBox(height: LayoutTokens.gr5),
+                      ],
                     ),
-
-                    SizedBox(height: LayoutTokens.gr4),
-
-                    // ── Post-game feedback (like/dislike + star) ─
-                    if (_result != null && _result!.matchId.isNotEmpty)
-                      _FeedbackCard(
-                        game: game,
-                        feedbackSubmitted: _feedbackSubmitted,
-                        likePlayerIds: _likePlayerIds,
-                        dislikePlayerIds: _dislikePlayerIds,
-                        starPlayerId: _starPlayerId,
-                        onLike: (pid) => setState(() {
-                          togglePlayerLike(
-                            likeIds: _likePlayerIds,
-                            dislikeIds: _dislikePlayerIds,
-                            playerId: pid,
-                            apply: (likes, dislikes) {
-                              _likePlayerIds
-                                ..clear()
-                                ..addAll(likes);
-                              _dislikePlayerIds
-                                ..clear()
-                                ..addAll(dislikes);
-                            },
-                          );
-                        }),
-                        onDislike: (pid) => setState(() {
-                          togglePlayerDislike(
-                            likeIds: _likePlayerIds,
-                            dislikeIds: _dislikePlayerIds,
-                            playerId: pid,
-                            apply: (likes, dislikes) {
-                              _likePlayerIds
-                                ..clear()
-                                ..addAll(likes);
-                              _dislikePlayerIds
-                                ..clear()
-                                ..addAll(dislikes);
-                            },
-                          );
-                        }),
-                        onStarChanged: (pid) =>
-                            setState(() => _starPlayerId = pid),
-                        onSubmit: () => _submitFeedback(game),
-                      ),
-
-                    SizedBox(height: LayoutTokens.gr5),
-
-                    // ── Actions ────────────────────────────────────────────
-                    _ActionButtons(
-                      onHome: () => _leaveToHome(context),
-                    ),
-
-                    SizedBox(height: LayoutTokens.gr5),
-                  ],
-                ),
-              ),
+                  ),
+        ),
       ),
-    ),
     );
   }
 
@@ -339,8 +346,7 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
 String _noWinnerHeadline(GameState game, AppLocalizations l10n) {
   if (game.winnerPlayerId != null) return l10n.endGameOverNoWinner;
   final local = game.localPlayer;
-  if (game.players.length == 1 &&
-      local?.eliminationReason == 'concede') {
+  if (game.players.length == 1 && local?.eliminationReason == 'concede') {
     return l10n.endGamePracticeEnded;
   }
   return l10n.endGameOverNoWinner;
@@ -384,9 +390,9 @@ class _WinnerBanner extends StatelessWidget {
         children: [
           Text(
             isLocalWinner ? l10n.endGameYouWin : l10n.endGameWinner,
-            style: TypographyTokens.headline(context).copyWith(
-              color: colors.emphasis,
-            ),
+            style: TypographyTokens.headline(
+              context,
+            ).copyWith(color: colors.emphasis),
           ),
           SizedBox(height: LayoutTokens.gr3),
 
@@ -403,18 +409,20 @@ class _WinnerBanner extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: winner!.commanderImageUrl!,
                   fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) => CircleAvatar(
-                    backgroundColor: winner!.playerColor,
-                    child: Text(
-                      winner!.username.isNotEmpty
-                          ? winner!.username[0].toUpperCase()
-                          : '?',
-                      style: TextStyle(
-                          color: ColorTokens.onColor(winner!.playerColor),
-                          fontSize: FontTokens.displayCommander,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  errorWidget:
+                      (_, __, ___) => CircleAvatar(
+                        backgroundColor: winner!.playerColor,
+                        child: Text(
+                          winner!.username.isNotEmpty
+                              ? winner!.username[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            color: ColorTokens.onColor(winner!.playerColor),
+                            fontSize: FontTokens.displayCommander,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                 ),
               ),
             )
@@ -427,9 +435,10 @@ class _WinnerBanner extends StatelessWidget {
                     ? winner!.username[0].toUpperCase()
                     : '?',
                 style: TextStyle(
-                    color: ColorTokens.onColor(winner!.playerColor),
-                    fontSize: FontTokens.displayCommander,
-                    fontWeight: FontWeight.bold),
+                  color: ColorTokens.onColor(winner!.playerColor),
+                  fontSize: FontTokens.displayCommander,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
@@ -479,7 +488,7 @@ class _LevelUpCard extends StatelessWidget {
       padding: EdgeInsets.all(LayoutTokens.gr3),
       decoration: BoxDecoration(
         color: colors.emphasis.withValues(alpha: OpacityTokens.subtle),
-        borderRadius: RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         children: [
@@ -489,11 +498,12 @@ class _LevelUpCard extends StatelessWidget {
             child: Lottie.asset(
               'assets/animations/level_up.json',
               repeat: false,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.arrow_upward,
-                size: 48,
-                color: colors.emphasis,
-              ),
+              errorBuilder:
+                  (_, __, ___) => Icon(
+                    Icons.arrow_upward,
+                    size: 48,
+                    color: colors.emphasis,
+                  ),
             ),
           ),
           SizedBox(width: LayoutTokens.gr3),
@@ -554,7 +564,7 @@ class _XpCard extends StatelessWidget {
       padding: EdgeInsets.all(LayoutTokens.gr3),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         children: [
@@ -576,7 +586,9 @@ class _XpCard extends StatelessWidget {
                     ? l10n.endGameWinBonusIncluded
                     : l10n.endGameParticipationXp,
                 style: TextStyle(
-                    color: colors.textSecondary, fontSize: FontTokens.hudXs),
+                  color: colors.textSecondary,
+                  fontSize: FontTokens.hudXs,
+                ),
               ),
             ],
           ),
@@ -595,9 +607,10 @@ class _XpCard extends StatelessWidget {
               Text(
                 wizardRankTitle(l10n, result.newLevel),
                 style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: FontTokens.hudXs,
-                    fontWeight: FontWeight.w500),
+                  color: colors.textSecondary,
+                  fontSize: FontTokens.hudXs,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -636,9 +649,8 @@ class _FeedbackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final others = game.players
-        .where((p) => p.playerId != game.localPlayerId)
-        .toList();
+    final others =
+        game.players.where((p) => p.playerId != game.localPlayerId).toList();
 
     if (feedbackSubmitted) {
       return Container(
@@ -646,7 +658,7 @@ class _FeedbackCard extends StatelessWidget {
         padding: EdgeInsets.all(LayoutTokens.gr3),
         decoration: BoxDecoration(
           color: colors.success.withValues(alpha: 0.15),
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         child: Row(
           children: [
@@ -672,7 +684,7 @@ class _FeedbackCard extends StatelessWidget {
       padding: EdgeInsets.all(LayoutTokens.gr3),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -692,10 +704,7 @@ class _FeedbackCard extends StatelessWidget {
             voteSpacing: LayoutTokens.gr1,
           ),
           SizedBox(height: LayoutTokens.gr3),
-          UiButton(
-            label: l10n.endGameSubmitFeedback,
-            onPressed: onSubmit,
-          ),
+          UiButton(label: l10n.endGameSubmitFeedback, onPressed: onSubmit),
         ],
       ),
     );
@@ -726,10 +735,11 @@ class _FinalPlayerRow extends StatelessWidget {
         vertical: LayoutTokens.gr2,
       ),
       decoration: BoxDecoration(
-        color: isWinner
-            ? colors.emphasis.withValues(alpha: OpacityTokens.subtle)
-            : colors.surface,
-        borderRadius: RadiusTokens.radiusControlSm,
+        color:
+            isWinner
+                ? colors.emphasis.withValues(alpha: OpacityTokens.subtle)
+                : colors.surface,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         children: [
@@ -758,8 +768,7 @@ class _FinalPlayerRow extends StatelessWidget {
                     p.username,
                     style: TextStyle(
                       color: colors.textPrimary,
-                      fontWeight:
-                          isLocal ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isLocal ? FontWeight.bold : FontWeight.normal,
                       fontSize: FontTokens.hudSm,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -770,7 +779,7 @@ class _FinalPlayerRow extends StatelessWidget {
                     ' ${l10n.endGameYouSuffix}',
                     style: TextStyle(
                       color: colors.textSecondary,
-                      fontSize: FontTokens.xs,
+                      fontSize: FontTokens.sm,
                     ),
                   ),
               ],
@@ -782,7 +791,7 @@ class _FinalPlayerRow extends StatelessWidget {
                 p.commanderName!,
                 style: TextStyle(
                   color: colors.textSecondary,
-                  fontSize: FontTokens.xs,
+                  fontSize: FontTokens.sm,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
@@ -827,9 +836,7 @@ class _FinalPlayerRow extends StatelessWidget {
 class _ActionButtons extends StatelessWidget {
   final VoidCallback onHome;
 
-  const _ActionButtons({
-    required this.onHome,
-  });
+  const _ActionButtons({required this.onHome});
 
   @override
   Widget build(BuildContext context) {

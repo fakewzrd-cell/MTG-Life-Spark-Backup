@@ -9,17 +9,28 @@ import '../../../ui/tokens/layout_tokens.dart';
 import '../../../ui/tokens/radius_tokens.dart';
 import 'resolved_commander_avatar.dart';
 
+/// Commander art in the status row. Larger than a tap target, short of the
+/// 72dp dock so the name and damage count still share the row.
+const double _kCommanderAvatarSize = 64;
+
+/// Gap inside the name / tax / round stack. Tighter than the 8dp control gap.
+const double _kStatusLineGap = 4;
+
 /// Top bar of the personal view: commander avatar (tap to cast), tax, round.
 class CommanderInfoBar extends StatelessWidget {
   final PlayerGameState player;
   final VoidCallback onCastCommander;
   final VoidCallback onUncastCommander;
+
   /// When true, use tighter padding for embedding inside a parent card.
   final bool embeddedInCard;
+
   /// Optional round number to show under tax (extra info).
   final int? roundNumber;
+
   /// Optional trailing control (e.g. commander damage status).
   final Widget? statusTrailing;
+
   /// Resolved ally display name when [player.allyPlayerId] is set.
   final String? allyUsername;
 
@@ -40,11 +51,10 @@ class CommanderInfoBar extends StatelessWidget {
     final w = MediaQuery.sizeOf(context).width;
     final isCompact = w < GameLayoutBreakpoints.compact;
     final isVeryNarrow = w < GameLayoutBreakpoints.narrow;
-    final avatarSize = LayoutTokens.minTapTarget;
-    final partnerSize = LayoutTokens.minTapTarget;
-    final gap = isVeryNarrow
-        ? LayoutTokens.gr0
-        : (isCompact ? LayoutTokens.gr1 : LayoutTokens.gr3);
+    final avatarSize =
+        isVeryNarrow ? LayoutTokens.thumbTapTarget : _kCommanderAvatarSize;
+    final partnerSize = avatarSize;
+    final gap = LayoutTokens.gr1;
 
     return Container(
       padding:
@@ -52,9 +62,13 @@ class CommanderInfoBar extends StatelessWidget {
               ? EdgeInsets.zero
               : EdgeInsets.symmetric(
                 horizontal:
-                    isVeryNarrow ? LayoutTokens.gr1 : (isCompact ? LayoutTokens.gr2 : LayoutTokens.gr3),
+                    isVeryNarrow
+                        ? LayoutTokens.gr1
+                        : (isCompact ? LayoutTokens.gr2 : LayoutTokens.gr3),
                 vertical:
-                    isVeryNarrow ? LayoutTokens.gr1 : (isCompact ? LayoutTokens.gr2 : LayoutTokens.gr3),
+                    isVeryNarrow
+                        ? LayoutTokens.gr1
+                        : (isCompact ? LayoutTokens.gr2 : LayoutTokens.gr3),
               ),
       child: Row(
         children: [
@@ -95,9 +109,8 @@ class CommanderInfoBar extends StatelessWidget {
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w600,
-                    fontSize: isVeryNarrow
-                        ? FontTokens.hudXs
-                        : (isCompact ? FontTokens.hudSm : FontTokens.body),
+                    height: 1,
+                    fontSize: isVeryNarrow ? FontTokens.hudSm : FontTokens.body,
                   ),
                 ),
                 if (player.hasPartner && player.partnerCommanderName != null)
@@ -108,9 +121,10 @@ class CommanderInfoBar extends StatelessWidget {
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: FontTokens.hudXs,
+                      height: 1,
                     ),
                   ),
-                SizedBox(height: isVeryNarrow ? 3 : 4),
+                const SizedBox(height: _kStatusLineGap),
                 _CommanderTaxBadge(
                   castCount: player.commanderCastCount,
                   tax: player.commanderTax,
@@ -119,19 +133,20 @@ class CommanderInfoBar extends StatelessWidget {
                   onUncast: onUncastCommander,
                 ),
                 if (roundNumber != null) ...[
-                  SizedBox(height: LayoutTokens.gr0),
+                  const SizedBox(height: _kStatusLineGap),
                   Text(
                     AppLocalizations.of(context).overviewRound(roundNumber!),
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: FontTokens.hudXs,
+                      height: 1,
                     ),
                   ),
                 ],
                 // Keep ally status in the text column — never beside the
                 // commander-damage control (that reads as locking damage).
                 if (player.allyPlayerId != null) ...[
-                  SizedBox(height: LayoutTokens.gr0),
+                  const SizedBox(height: _kStatusLineGap),
                   Text(
                     AppLocalizations.of(context).infoBarAlly(
                       allyUsername ??
@@ -143,6 +158,7 @@ class CommanderInfoBar extends StatelessWidget {
                       color: colors.emphasis,
                       fontSize: FontTokens.hudXs,
                       fontWeight: FontWeight.w600,
+                      height: 1,
                     ),
                   ),
                 ],
@@ -184,7 +200,6 @@ class _CastableCommanderAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
     return Semantics(
       button: true,
@@ -195,55 +210,24 @@ class _CastableCommanderAvatar extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: enabled
-                ? () {
-                    context.gameHapticMedium();
-                    onCast();
-                  }
-                : null,
-            borderRadius: RadiusTokens.radiusControlMd,
+            onTap:
+                enabled
+                    ? () {
+                      context.gameHapticMedium();
+                      onCast();
+                    }
+                    : null,
+            borderRadius: RadiusTokens.radiusLgIncreased,
             child: SizedBox(
               width: size,
               height: size,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned.fill(
-                    child: ResolvedCommanderAvatar(
-                      playerId: playerId,
-                      commanderName: commanderName,
-                      imageUrl: imageUrl,
-                      selectedDeckId: selectedDeckId,
-                      playerColor: playerColor,
-                      size: size,
-                    ),
-                  ),
-                  if (enabled)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: IgnorePointer(
-                        child: Container(
-                          padding: const EdgeInsets.all(LayoutTokens.gr0),
-                          decoration: BoxDecoration(
-                            color: colors.primaryAccent,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colors.surface,
-                              width: 2,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.bolt_rounded,
-                            size: size >= LayoutTokens.minTapTarget
-                                ? LayoutTokens.gr2
-                                : LayoutTokens.gr0 * 2,
-                            color: colors.onAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              child: ResolvedCommanderAvatar(
+                playerId: playerId,
+                commanderName: commanderName,
+                imageUrl: imageUrl,
+                selectedDeckId: selectedDeckId,
+                playerColor: playerColor,
+                size: size,
               ),
             ),
           ),
@@ -272,11 +256,11 @@ class _CommanderTaxBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
-    final fs = compact ? 11.0 : 12.0;
+    final fs = FontTokens.hudXs;
     if (castCount == 0) {
       return Text(
         l10n.cmdBarNoTaxYet,
-        style: TextStyle(color: colors.textSecondary, fontSize: fs),
+        style: TextStyle(color: colors.textSecondary, fontSize: fs, height: 1),
       );
     }
 
@@ -288,23 +272,24 @@ class _CommanderTaxBadge extends StatelessWidget {
         Semantics(
           button: canUncast,
           enabled: canUncast,
-          label: canUncast
-              ? l10n.cmdBarRemoveLastCast
-              : l10n.cmdBarCommanderTax,
+          label:
+              canUncast ? l10n.cmdBarRemoveLastCast : l10n.cmdBarCommanderTax,
           child: Tooltip(
-            message: canUncast
-                ? l10n.cmdBarTapToRemoveLastCast
-                : l10n.cmdBarTaxPlus(tax),
+            message:
+                canUncast
+                    ? l10n.cmdBarTapToRemoveLastCast
+                    : l10n.cmdBarTaxPlus(tax),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: canUncast
-                    ? () {
-                        context.gameHapticLight();
-                        onUncast();
-                      }
-                    : null,
-                borderRadius: RadiusTokens.radiusControlMd,
+                onTap:
+                    canUncast
+                        ? () {
+                          context.gameHapticLight();
+                          onUncast();
+                        }
+                        : null,
+                borderRadius: RadiusTokens.radiusXl,
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: compact ? 6 : 8,
@@ -312,7 +297,7 @@ class _CommanderTaxBadge extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: colors.textSecondary.withValues(alpha: 0.15),
-                    borderRadius: RadiusTokens.radiusControlMd,
+                    borderRadius: RadiusTokens.radiusXl,
                   ),
                   child: Text(
                     l10n.cmdBarTaxPlus(tax),
@@ -327,7 +312,7 @@ class _CommanderTaxBadge extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: compact ? 3 : 4),
+        SizedBox(width: LayoutTokens.gr0),
         Flexible(
           child: Text(
             '(cast $castCount×)',

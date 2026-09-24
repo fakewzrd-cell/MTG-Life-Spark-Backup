@@ -2,8 +2,10 @@ import '../../l10n/app_localizations.dart';
 
 /// Wizard-themed display title for each band of 5 ranks (levels 1–100).
 String wizardRankTitle(AppLocalizations l10n, int level) {
-  final i =
-      ((level.clamp(1, 100) - 1) ~/ 5).clamp(0, kWizardRankBands.length - 1);
+  final i = ((level.clamp(1, 100) - 1) ~/ 5).clamp(
+    0,
+    kWizardRankBands.length - 1,
+  );
   return wizardRankTitleForBandIndex(l10n, i);
 }
 

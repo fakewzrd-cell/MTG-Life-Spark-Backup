@@ -23,11 +23,11 @@ class BackupService {
     required DeckRepository deckRepo,
     required MatchRepository matchRepo,
     required FeedbackRepository feedbackRepo,
-  })  : _profileRepo = profileRepo,
-        _settingsRepo = settingsRepo,
-        _deckRepo = deckRepo,
-        _matchRepo = matchRepo,
-        _feedbackRepo = feedbackRepo;
+  }) : _profileRepo = profileRepo,
+       _settingsRepo = settingsRepo,
+       _deckRepo = deckRepo,
+       _matchRepo = matchRepo,
+       _feedbackRepo = feedbackRepo;
 
   final ProfileRepository _profileRepo;
   final SettingsRepository _settingsRepo;
@@ -42,18 +42,19 @@ class BackupService {
   ];
 
   XTypeGroup _backupTypeGroup(String label) => XTypeGroup(
-        label: label,
-        extensions: _backupExtensions,
-        mimeTypes: _backupMimes,
-      );
+    label: label,
+    extensions: _backupExtensions,
+    mimeTypes: _backupMimes,
+  );
 
   Future<LifeSparkBackup> buildBackup({DateTime? exportedAt}) async {
     final profile = _profileRepo.getProfile();
     if (profile == null) {
       throw StateError('No profile to export.');
     }
-    final avatarBytes =
-        await encodeLocalAvatarForBackup(profile.profileAvatarImageUrl);
+    final avatarBytes = await encodeLocalAvatarForBackup(
+      profile.profileAvatarImageUrl,
+    );
     return LifeSparkBackup(
       version: kLifeSparkBackupVersion,
       exportedAt: exportedAt ?? DateTime.now().toUtc(),
@@ -71,9 +72,7 @@ class BackupService {
   /// Detached copy of current device data (safe to re-apply after failed restore).
   Future<LifeSparkBackup> captureDetachedBackup({DateTime? exportedAt}) async {
     final live = await buildBackup(exportedAt: exportedAt);
-    return LifeSparkBackup.fromJson(
-      Map<String, dynamic>.from(live.toJson()),
-    );
+    return LifeSparkBackup.fromJson(Map<String, dynamic>.from(live.toJson()));
   }
 
   String encodeBackup(LifeSparkBackup backup) =>
@@ -154,13 +153,19 @@ class BackupService {
       await _commitAll(incoming);
       return incoming;
     } catch (e, st) {
-      appLog('BackupService: restore failed; rolling back',
-          error: e, stackTrace: st);
+      appLog(
+        'BackupService: restore failed; rolling back',
+        error: e,
+        stackTrace: st,
+      );
       try {
         await _commitAll(rollback);
       } catch (rollbackError, rollbackSt) {
-        appLog('BackupService: rollback failed',
-            error: rollbackError, stackTrace: rollbackSt);
+        appLog(
+          'BackupService: rollback failed',
+          error: rollbackError,
+          stackTrace: rollbackSt,
+        );
       }
       rethrow;
     }

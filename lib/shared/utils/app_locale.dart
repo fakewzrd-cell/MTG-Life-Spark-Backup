@@ -5,14 +5,7 @@ import 'package:mgt_life_spark/l10n/app_localizations.dart';
 const kLocaleSystem = 'system';
 
 /// Phase 1 app locales (plus English template).
-const kSupportedLocaleCodes = <String>[
-  'en',
-  'es',
-  'pt_BR',
-  'fr',
-  'de',
-  'ja',
-];
+const kSupportedLocaleCodes = <String>['en', 'es', 'pt_BR', 'fr', 'de', 'ja'];
 
 /// Maps a stored locale code to a Flutter [Locale], or null for system default.
 Locale? localeFromPreference(String? code) {

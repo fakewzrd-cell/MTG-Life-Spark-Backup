@@ -60,16 +60,17 @@ class UiButton extends StatelessWidget {
         width: double.infinity,
         child: FilledButton.icon(
           onPressed: effectiveOnPressed,
-          icon: loading
-              ? SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colors.onAccent,
-                  ),
-                )
-              : (icon ?? const SizedBox.shrink()),
+          icon:
+              loading
+                  ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.onAccent,
+                    ),
+                  )
+                  : (icon ?? const SizedBox.shrink()),
           label: loading ? const SizedBox.shrink() : _label(context),
           style: FilledButton.styleFrom(
             backgroundColor: colors.primaryAccent,
@@ -80,9 +81,7 @@ class UiButton extends StatelessWidget {
             shadowColor: Colors.transparent,
             minimumSize: const Size(double.infinity, _minHeight),
             padding: buttonPadding,
-            shape: RoundedRectangleBorder(
-              borderRadius: RadiusTokens.radiusMd,
-            ),
+            shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
             textStyle: labelStyle,
           ),
         ),
@@ -94,22 +93,21 @@ class UiButton extends StatelessWidget {
         width: double.infinity,
         child: OutlinedButton.icon(
           onPressed: effectiveOnPressed,
-          icon: loading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : (icon ?? const SizedBox.shrink()),
+          icon:
+              loading
+                  ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : (icon ?? const SizedBox.shrink()),
           label: loading ? const SizedBox.shrink() : _label(context),
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.textPrimary,
             side: BorderSide(color: colors.borderSubtle),
             minimumSize: const Size(double.infinity, _minHeight),
             padding: buttonPadding,
-            shape: RoundedRectangleBorder(
-              borderRadius: RadiusTokens.radiusMd,
-            ),
+            shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
             textStyle: labelStyle,
           ),
         ),
@@ -120,13 +118,14 @@ class UiButton extends StatelessWidget {
       width: double.infinity,
       child: TextButton.icon(
         onPressed: effectiveOnPressed,
-        icon: loading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : (icon ?? const SizedBox.shrink()),
+        icon:
+            loading
+                ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : (icon ?? const SizedBox.shrink()),
         label: loading ? const SizedBox.shrink() : _label(context),
         style: TextButton.styleFrom(
           foregroundColor: colors.textPrimary,

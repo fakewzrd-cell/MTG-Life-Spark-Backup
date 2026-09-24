@@ -45,12 +45,9 @@ abstract final class CommanderIdentityColors {
     AppColorTokens colors, [
     List<String> identity = const [],
   ]) {
-    final soft = Color.lerp(colors.primaryAccent, colors.backgroundPrimary, 0.65)!;
-    return Color.lerp(
-      soft,
-      gameChromeAccent(colors, identity),
-      0.35,
-    )!;
+    final soft =
+        Color.lerp(colors.primaryAccent, colors.backgroundPrimary, 0.65)!;
+    return Color.lerp(soft, gameChromeAccent(colors, identity), 0.35)!;
   }
 
   /// Blended WUBRG tint for a commander (falls back to app accent when unknown).

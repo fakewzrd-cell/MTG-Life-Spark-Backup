@@ -15,6 +15,7 @@ class MatchParticipantSnapshot {
   final int teamIndex;
   final int? finalLife;
   final bool isWinner;
+
   /// 1 = winner / best placement; higher = further from winning.
   final int placementRank;
 
@@ -42,15 +43,15 @@ class MatchParticipantSnapshot {
       );
 
   Map<String, dynamic> toJson() => {
-        'playerId': playerId,
-        'username': username,
-        'commanderName': commanderName,
-        if (commanderImageUrl != null) 'commanderImageUrl': commanderImageUrl,
-        'teamIndex': teamIndex,
-        if (finalLife != null) 'finalLife': finalLife,
-        'isWinner': isWinner,
-        if (placementRank > 0) 'placementRank': placementRank,
-      };
+    'playerId': playerId,
+    'username': username,
+    'commanderName': commanderName,
+    if (commanderImageUrl != null) 'commanderImageUrl': commanderImageUrl,
+    'teamIndex': teamIndex,
+    if (finalLife != null) 'finalLife': finalLife,
+    'isWinner': isWinner,
+    if (placementRank > 0) 'placementRank': placementRank,
+  };
 }
 
 @HiveType(typeId: 1)
@@ -141,8 +142,9 @@ class MatchRecord extends HiveObject {
     try {
       final list = jsonDecode(raw) as List<dynamic>;
       return list
-          .map((e) =>
-              MatchParticipantSnapshot.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => MatchParticipantSnapshot.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
     } catch (e, st) {
       appLog('MatchRecord: invalid participantsJson', error: e, stackTrace: st);

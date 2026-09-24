@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../shared/constants/app_icons.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_color_tokens.dart';
 import '../tokens/font_tokens.dart';
@@ -49,26 +48,27 @@ class AppBottomNavBar extends StatelessWidget {
   final List<AppNavDestination> destinations;
 
   static List<AppNavDestination> shellDestinations(AppLocalizations l10n) => [
-        AppNavDestination(
-          icon: Icons.person_outline_rounded,
-          selectedIcon: Icons.person_rounded,
-          label: l10n.navProfile,
-        ),
-        AppNavDestination(
-          icon: Icons.groups_outlined,
-          selectedIcon: Icons.groups_rounded,
-          label: l10n.navLobby,
-        ),
-        AppNavDestination(
-          iconAsset: AppIcons.playTabCards,
-          label: l10n.navDecks,
-        ),
-        AppNavDestination(
-          icon: Icons.settings_outlined,
-          selectedIcon: Icons.settings_rounded,
-          label: l10n.navSettings,
-        ),
-      ];
+    AppNavDestination(
+      icon: Icons.person_outline_rounded,
+      selectedIcon: Icons.person_rounded,
+      label: l10n.navProfile,
+    ),
+    AppNavDestination(
+      icon: Icons.groups_outlined,
+      selectedIcon: Icons.groups_rounded,
+      label: l10n.navLobby,
+    ),
+    AppNavDestination(
+      icon: Icons.style_outlined,
+      selectedIcon: Icons.style_rounded,
+      label: l10n.navDecks,
+    ),
+    AppNavDestination(
+      icon: Icons.settings_outlined,
+      selectedIcon: Icons.settings_rounded,
+      label: l10n.navSettings,
+    ),
+  ];
 
   static const double barHeight = LayoutTokens.bottomNavHeight;
 
@@ -164,9 +164,11 @@ class _DockNavItem extends StatelessWidget {
                     progress: t,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: LayoutTokens.gr0),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: LayoutTokens.gr0,
+                  ),
                   child: Text(
                     destination.label,
                     textAlign: TextAlign.center,

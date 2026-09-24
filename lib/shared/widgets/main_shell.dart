@@ -29,10 +29,7 @@ void resetLobbyBranchThenGoTab({
 
 /// Shell scaffold with a floating dock-style bottom nav.
 class MainShell extends ConsumerWidget {
-  const MainShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -81,8 +78,8 @@ class MainShell extends ConsumerWidget {
           body: navigationShell,
           bottomNavigationBar: AppBottomNavBar(
             selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: (index) =>
-                _onDestinationSelected(context, ref, index),
+            onDestinationSelected:
+                (index) => _onDestinationSelected(context, ref, index),
             destinations: AppBottomNavBar.shellDestinations(l10n),
           ),
         ),

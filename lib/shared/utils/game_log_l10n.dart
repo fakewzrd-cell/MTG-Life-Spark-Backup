@@ -12,9 +12,7 @@ String localizeGameLogMessage(AppLocalizations l10n, String message) {
     return l10n.logLifeChange(match[1]!, match[2]!);
   }
 
-  match = RegExp(
-    r'^(.+): (.+) ([+-]?\d+) \(→ (\d+)\)$',
-  ).firstMatch(m);
+  match = RegExp(r'^(.+): (.+) ([+-]?\d+) \(→ (\d+)\)$').firstMatch(m);
   if (match != null) {
     return l10n.logCounterChange(
       match[1]!,
@@ -52,23 +50,17 @@ String localizeGameLogMessage(AppLocalizations l10n, String message) {
     return l10n.logEndsTurn(match[1]!);
   }
 
-  match = RegExp(
-    r'^(.+) dealt you ([+-]?\d+) commander damage$',
-  ).firstMatch(m);
+  match = RegExp(r'^(.+) dealt you ([+-]?\d+) commander damage$').firstMatch(m);
   if (match != null) {
     return l10n.logCmdDmgDealtYou(match[1]!, match[2]!);
   }
 
-  match = RegExp(
-    r'^You dealt (.+) ([+-]?\d+) commander damage$',
-  ).firstMatch(m);
+  match = RegExp(r'^You dealt (.+) ([+-]?\d+) commander damage$').firstMatch(m);
   if (match != null) {
     return l10n.logCmdDmgYouDealt(match[1]!, match[2]!);
   }
 
-  match = RegExp(
-    r'^(.+) → (.+): Commander damage ([+-]?\d+)$',
-  ).firstMatch(m);
+  match = RegExp(r'^(.+) → (.+): Commander damage ([+-]?\d+)$').firstMatch(m);
   if (match != null) {
     return l10n.logCmdDmgOther(match[1]!, match[2]!, match[3]!);
   }
@@ -91,9 +83,7 @@ String localizeGameLogMessage(AppLocalizations l10n, String message) {
     return l10n.logAllianceRevealed(match[1]!, match[2]!);
   }
 
-  match = RegExp(
-    r'^Alliance broken — betrayal: (.+) & (.+)$',
-  ).firstMatch(m);
+  match = RegExp(r'^Alliance broken — betrayal: (.+) & (.+)$').firstMatch(m);
   if (match != null) {
     return l10n.logAllianceBetrayal(match[1]!, match[2]!);
   }
@@ -135,9 +125,7 @@ String localizeGameLogMessage(AppLocalizations l10n, String message) {
     return l10n.logStackAdded(match[1]!, match[2]!);
   }
 
-  match = RegExp(
-    r'^(.+) renamed stack item to “(.+)”$',
-  ).firstMatch(m);
+  match = RegExp(r'^(.+) renamed stack item to “(.+)”$').firstMatch(m);
   if (match != null) {
     return l10n.logStackRenamed(match[1]!, match[2]!);
   }

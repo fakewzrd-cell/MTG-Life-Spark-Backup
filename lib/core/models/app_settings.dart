@@ -35,7 +35,7 @@ class AppSettings extends HiveObject {
   @HiveField(9, defaultValue: true)
   bool useDarkTheme;
 
-  /// Persisted color scheme id: `violet` | `crimson` | `slate` | `forest`.
+  /// Persisted color scheme id: `violet` | `slate` | `crimson`.
   @HiveField(10, defaultValue: 'violet')
   String colorSchemeId;
 

@@ -11,14 +11,14 @@ class GameLogEntry {
   final String message;
 
   Map<String, dynamic> toJson() => {
-        'turn': turnNumber,
-        'time': time.toIso8601String(),
-        'msg': message,
-      };
+    'turn': turnNumber,
+    'time': time.toIso8601String(),
+    'msg': message,
+  };
 
   factory GameLogEntry.fromJson(Map<String, dynamic> json) => GameLogEntry(
-        turnNumber: (json['turn'] as num).toInt(),
-        time: DateTime.parse(json['time'] as String),
-        message: json['msg'] as String,
-      );
+    turnNumber: (json['turn'] as num).toInt(),
+    time: DateTime.parse(json['time'] as String),
+    message: json['msg'] as String,
+  );
 }

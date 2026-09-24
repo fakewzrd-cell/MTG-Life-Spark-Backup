@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../ui/theme/app_color_tokens.dart';
+import '../../ui/tokens/layout_tokens.dart';
 import '../mana/mana_symbol_assets.dart';
 
 /// Single bundled PNG from `assets/mana/**` at [height] logical pixels.
@@ -37,9 +38,9 @@ class _BundledManaPip extends StatelessWidget {
             isAntiAlias: true,
             // Do not set cacheWidth/cacheHeight — on some targets it breaks PNG decode
             // and triggers errorBuilder (user sees `{W}` text instead of art).
-            errorBuilder: (_, __, ___) => Center(
-              child: Text(fallbackLabel, style: fallbackStyle),
-            ),
+            errorBuilder:
+                (_, __, ___) =>
+                    Center(child: Text(fallbackLabel, style: fallbackStyle)),
           ),
         ),
       ),
@@ -151,7 +152,9 @@ class DeckManaCostRows extends StatelessWidget {
     }
     if (hasP) {
       if (children.isNotEmpty) {
-        children.add(SizedBox(height: compact ? 4 : 6));
+        children.add(
+          SizedBox(height: compact ? LayoutTokens.gr0 : LayoutTokens.gr1),
+        );
       }
       children.add(ManaCostPips(manaCost: partnerManaCost, symbolHeight: h));
     }

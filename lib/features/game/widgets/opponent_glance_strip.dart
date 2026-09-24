@@ -12,7 +12,7 @@ import 'political_row_widget.dart';
 
 /// Compact pod strip on the Play tab — full turn order including you.
 ///
-/// Chips start at the active player and wrap clockwise. Tap opens Table.
+/// Chips start at the active player and wrap clockwise. The grid opens Table.
 class OpponentGlanceStrip extends StatelessWidget {
   const OpponentGlanceStrip({
     super.key,
@@ -37,49 +37,48 @@ class OpponentGlanceStrip extends StatelessWidget {
       explicitChildNodes: true,
       child: Material(
         color: colors.surface.withValues(alpha: OpacityTokens.nearOpaque),
-        borderRadius: RadiusTokens.radiusControlMd,
-        child: InkWell(
-          onTap: onOpenTable,
-          borderRadius: RadiusTokens.radiusControlMd,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: RadiusTokens.radiusControlMd,
-            ),
-            padding: EdgeInsets.symmetric(
-              horizontal: LayoutTokens.gr1,
-              vertical: LayoutTokens.gr1,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < pod.length; i++) ...[
-                          if (i > 0) SizedBox(width: LayoutTokens.gr1),
-                          _PodGlanceChip(
-                            player: pod[i],
-                            isLocal: pod[i].playerId == localPlayerId,
-                            isActive: pod[i].playerId == game.activePlayerId,
-                          ),
-                        ],
+        borderRadius: RadiusTokens.radiusXl,
+        child: Container(
+          decoration: BoxDecoration(borderRadius: RadiusTokens.radiusXl),
+          padding: EdgeInsets.symmetric(
+            horizontal: LayoutTokens.gr1,
+            vertical: LayoutTokens.gr1,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < pod.length; i++) ...[
+                        if (i > 0) SizedBox(width: LayoutTokens.gr1),
+                        _PodGlanceChip(
+                          player: pod[i],
+                          isLocal: pod[i].playerId == localPlayerId,
+                          isActive: pod[i].playerId == game.activePlayerId,
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
-                SizedBox(width: LayoutTokens.gr0),
-                Semantics(
-                  button: true,
-                  label: l10n.glanceOpenTableA11y,
-                  child: Icon(
-                    Icons.grid_view_rounded,
-                    size: 18,
-                    color: colors.textSecondary,
-                  ),
+              ),
+              SizedBox(width: LayoutTokens.gr0),
+              IconButton(
+                tooltip: l10n.glanceOpenTableA11y,
+                onPressed: onOpenTable,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: LayoutTokens.minTapTarget,
+                  minHeight: LayoutTokens.minTapTarget,
                 ),
-              ],
-            ),
+                icon: Icon(
+                  Icons.grid_view_rounded,
+                  size: 18,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -103,43 +102,52 @@ class _PodGlanceChip extends StatelessWidget {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
     final eliminated = player.isEliminated;
-    final lifeTone = eliminated
-        ? colors.textSecondary
-        : player.life <= 5
-        ? colors.error
-        : player.life <= 10
-        ? colors.emphasis
-        : colors.textPrimary;
-    final name = isLocal
-        ? l10n.glanceYou
-        : overviewShortPlayerName(player.username, maxChars: 8);
-    final chipLabel = eliminated
-        ? l10n.glanceChipOut(name)
-        : l10n.glanceChipLife(name, player.life);
+    final lifeTone =
+        eliminated
+            ? colors.textSecondary
+            : player.life <= 5
+            ? colors.error
+            : player.life <= 10
+            ? colors.emphasis
+            : colors.textPrimary;
+    final name =
+        isLocal
+            ? l10n.glanceYou
+            : overviewShortPlayerName(player.username, maxChars: 8);
+    final chipLabel =
+        eliminated
+            ? l10n.glanceChipOut(name)
+            : l10n.glanceChipLife(name, player.life);
 
     return Semantics(
       label: chipLabel,
       child: ExcludeSemantics(
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: LayoutTokens.gr1,
+            horizontal: LayoutTokens.gr2,
             vertical: LayoutTokens.gr0,
           ),
           decoration: BoxDecoration(
-            color: eliminated
-                ? colors.backgroundSecondary.withValues(
-                    alpha: OpacityTokens.half,
-                  )
-                : player.playerColor.withValues(alpha: isLocal ? 0.22 : 0.12),
-            borderRadius: RadiusTokens.radiusControlSm,
-            border: isActive
-                ? Border.all(
-                    color: colors.primaryAccent.withValues(alpha: 0.85),
-                    width: 1.5,
-                  )
-                : isLocal
-                ? Border.all(color: player.playerColor.withValues(alpha: 0.55))
-                : null,
+            color:
+                eliminated
+                    ? colors.backgroundSecondary.withValues(
+                      alpha: OpacityTokens.half,
+                    )
+                    : player.playerColor.withValues(
+                      alpha: isLocal ? 0.22 : 0.12,
+                    ),
+            borderRadius: RadiusTokens.radiusXl,
+            border:
+                isActive
+                    ? Border.all(
+                      color: colors.primaryAccent.withValues(alpha: 0.85),
+                      width: 1.5,
+                    )
+                    : isLocal
+                    ? Border.all(
+                      color: player.playerColor.withValues(alpha: 0.55),
+                    )
+                    : null,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

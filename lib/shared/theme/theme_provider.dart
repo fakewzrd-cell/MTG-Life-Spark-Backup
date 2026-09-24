@@ -9,13 +9,14 @@ import 'app_theme.dart';
 
 /// User's color scheme preference (persisted).
 final colorSchemePreferenceProvider =
-    StateNotifierProvider<ColorSchemePreferenceNotifier, AppColorSchemeId>(
-        (ref) {
-  final repo = ref.read(settingsRepositoryProvider);
-  final initial = AppColorPalettes.parse(repo.settings.colorSchemeId);
-  ColorTokens.applyScheme(initial);
-  return ColorSchemePreferenceNotifier(initial, repo);
-});
+    StateNotifierProvider<ColorSchemePreferenceNotifier, AppColorSchemeId>((
+      ref,
+    ) {
+      final repo = ref.read(settingsRepositoryProvider);
+      final initial = AppColorPalettes.parse(repo.settings.colorSchemeId);
+      ColorTokens.applyScheme(initial);
+      return ColorSchemePreferenceNotifier(initial, repo);
+    });
 
 class ColorSchemePreferenceNotifier extends StateNotifier<AppColorSchemeId> {
   ColorSchemePreferenceNotifier(super.initial, this._repo);

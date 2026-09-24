@@ -28,8 +28,7 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       hideSystemBars: fields[8] as bool,
       useDarkTheme: fields[9] == null ? true : fields[9] as bool,
       colorSchemeId: fields[10] == null ? 'violet' : fields[10] as String,
-      lifeGestureHintDismissed:
-          fields[11] == null ? false : fields[11] as bool,
+      lifeGestureHintDismissed: fields[11] == null ? false : fields[11] as bool,
       hubGuideCompleted: fields[12] == null ? false : fields[12] as bool,
       localeCode: fields[13] == null ? 'system' : fields[13] as String,
     );

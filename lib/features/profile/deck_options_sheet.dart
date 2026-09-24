@@ -95,9 +95,10 @@ class _DeckDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final coverLabel = deck.isCommanderDeck
-        ? l10n.deckOptionsEditCommanders
-        : l10n.deckOptionsEditCover;
+    final coverLabel =
+        deck.isCommanderDeck
+            ? l10n.deckOptionsEditCommanders
+            : l10n.deckOptionsEditCover;
     final wr = deck.gamesPlayed == 0 ? null : (deck.winRate * 100).round();
 
     return GameSheetBody(
@@ -178,9 +179,10 @@ class _DeckDetailSheet extends StatelessWidget {
               colors: colors,
               icon: Icons.palette_outlined,
               title: l10n.deckOptionsChangeStyle,
-              subtitle: deck.hasDeckStyle
-                  ? localizedDeckStyleName(l10n, deck.deckStyle!)
-                  : l10n.deckOptionsStyleRequired,
+              subtitle:
+                  deck.hasDeckStyle
+                      ? localizedDeckStyleName(l10n, deck.deckStyle!)
+                      : l10n.deckOptionsStyleRequired,
               titleColor:
                   deck.hasDeckStyle ? colors.textPrimary : colors.warning,
               onTap: () => _pick(context, DeckSheetAction.changeStyle),
@@ -236,7 +238,7 @@ class _DeckDetailCoverThumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = deck.commanderImageUrl;
     return ClipRRect(
-      borderRadius: RadiusTokens.radiusSm,
+      borderRadius: RadiusTokens.radiusXl,
       child: SizedBox(
         width: 56,
         height: 78,
@@ -366,7 +368,9 @@ class _RenameDeckDialogState extends State<_RenameDeckDialog> {
       content: TextField(
         controller: _controller,
         autofocus: true,
-        scrollPadding: const EdgeInsets.only(bottom: 120),
+        scrollPadding: const EdgeInsets.only(
+          bottom: LayoutTokens.gr6 * 2 + LayoutTokens.gr4,
+        ),
         textInputAction: TextInputAction.done,
         onSubmitted: (_) {
           if (_canSave) _submit();

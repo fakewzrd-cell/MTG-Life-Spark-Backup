@@ -19,6 +19,7 @@ import 'core/persistence/providers.dart';
 import 'core/debug/web_logo_splash.dart';
 import 'core/network/session_connection_guard.dart';
 import 'l10n/app_localizations.dart';
+import 'ui/tokens/layout_tokens.dart';
 import 'shared/theme/theme_provider.dart';
 import 'shared/utils/app_locale.dart';
 import 'shared/utils/app_router.dart';
@@ -28,29 +29,32 @@ import 'ui/tokens/color_tokens.dart';
 import 'ui/theme/app_system_ui.dart';
 
 Future<void> main() async {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await AppSystemUi.bootstrap();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await AppSystemUi.bootstrap();
 
-    FlutterError.onError = (details) {
-      FlutterError.presentError(details);
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        if (kDebugMode) {
+          debugPrint('FlutterError: ${details.exception}');
+          debugPrint('Stack: ${details.stack}');
+        }
+      };
+
+      runApp(
+        const ProviderScope(
+          child: AppAdaptiveOrientationScope(child: _AppBootstrap()),
+        ),
+      );
+    },
+    (error, stack) {
       if (kDebugMode) {
-        debugPrint('FlutterError: ${details.exception}');
-        debugPrint('Stack: ${details.stack}');
+        debugPrint('Zone error: $error');
+        debugPrint('Stack: $stack');
       }
-    };
-
-    runApp(
-      const ProviderScope(
-        child: AppAdaptiveOrientationScope(child: _AppBootstrap()),
-      ),
-    );
-  }, (error, stack) {
-    if (kDebugMode) {
-      debugPrint('Zone error: $error');
-      debugPrint('Stack: $stack');
-    }
-  });
+    },
+  );
 }
 
 /// Paints immediately so the HTML splash can dismiss, then finishes Hive init.
@@ -143,7 +147,7 @@ class _ErrorApp extends StatelessWidget {
         backgroundColor: ColorTokens.backgroundPrimary,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(LayoutTokens.gr4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -155,7 +159,7 @@ class _ErrorApp extends StatelessWidget {
                     color: ColorTokens.danger,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: LayoutTokens.gr3),
                 Text(
                   message,
                   style: TextStyle(
@@ -163,7 +167,7 @@ class _ErrorApp extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: LayoutTokens.gr4),
                 Text(
                   AppLocalizations.of(context).startupStackTrace,
                   style: TextStyle(
@@ -171,13 +175,10 @@ class _ErrorApp extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: LayoutTokens.gr1),
                 SelectableText(
                   stack,
-                  style: TextStyle(
-                    color: ColorTokens.textMuted,
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: ColorTokens.textMuted, fontSize: 10),
                 ),
               ],
             ),
@@ -189,10 +190,7 @@ class _ErrorApp extends StatelessWidget {
 }
 
 Future<void> _initHive() async {
-  await _withStartupTimeout(
-    'Opening local storage',
-    Hive.initFlutter(),
-  );
+  await _withStartupTimeout('Opening local storage', Hive.initFlutter());
 
   // Register all adapters
   Hive.registerAdapter(PlayerProfileAdapter());
@@ -236,16 +234,17 @@ Future<void> _openHiveBoxes() async {
 }
 
 Future<T> _withStartupTimeout<T>(String label, Future<T> future) {
-  final timeout = kIsWeb
-      ? const Duration(seconds: 20)
-      : const Duration(seconds: 45);
+  final timeout =
+      kIsWeb ? const Duration(seconds: 20) : const Duration(seconds: 45);
   return future.timeout(
     timeout,
-    onTimeout: () => throw TimeoutException(
-      '$label timed out after ${timeout.inSeconds}s. '
-      'Use the release dev server (not debug). '
-      'If this persists, clear site data for this URL in browser settings.',
-    ),
+    onTimeout:
+        () =>
+            throw TimeoutException(
+              '$label timed out after ${timeout.inSeconds}s. '
+              'Use the release dev server (not debug). '
+              'If this persists, clear site data for this URL in browser settings.',
+            ),
   );
 }
 
@@ -345,11 +344,10 @@ class MgtLifeSparkApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      builder: (context, child) => SessionConnectionGuard(
-        child: AppSystemUiScope(
-          child: child ?? const SizedBox.shrink(),
-        ),
-      ),
+      builder:
+          (context, child) => SessionConnectionGuard(
+            child: AppSystemUiScope(child: child ?? const SizedBox.shrink()),
+          ),
     );
   }
 }

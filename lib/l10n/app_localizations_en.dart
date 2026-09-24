@@ -70,7 +70,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'Light mode uses soft backgrounds — try Fog or Slate';
+      'Dark backgrounds. Turn off for a light page.';
 
   @override
   String get settingsLanguage => 'Language';
@@ -921,6 +921,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lookupEmptyPrompt => 'Type a card name to look up rules.';
 
   @override
+  String get lookupRecentEmpty => 'No cards looked up yet.';
+
+  @override
+  String get lookupBack => 'Back';
+
+  @override
   String lookupNoResults(String query) {
     return 'No cards found for “$query”.';
   }
@@ -1748,7 +1754,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Pick trackers for your strip (max $max). Tap the X on a counter to remove it from the strip.';
+    return 'Pick trackers for your strip (max $max). Open a counter to remove it.';
   }
 
   @override
@@ -1765,7 +1771,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialsAddCounterTooltip => 'Add counter';
 
   @override
-  String get dialsRemoveFromStrip => 'Remove from strip';
+  String get dialsAddCounterChip => 'Counter';
+
+  @override
+  String get dialsRemoveFromStrip => 'Remove counter';
 
   @override
   String get hubGuideTitle => 'Quick tour';
@@ -1787,18 +1796,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Track life and counters here. End turn sits under the phase bar — or leave Phase tracker off in the lobby for a large End turn control.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Stack & Lookup';
+  String get hubGuideSlideStackTitle => 'Stack';
 
   @override
   String get hubGuideSlideStackBody =>
-      'Stack is for Hold Priority and resolving effects. Lookup opens Scryfall without leaving your seat — oracle text and rulings.';
+      'Stack is for Hold Priority and resolving effects.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Lookup';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'Lookup opens Scryfall without leaving your seat — oracle text and rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Table overview';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn stays pinned; Forfeit sits below it.';
+      'Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn and Forfeit sit side by side.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Your turn & commander';
@@ -2748,15 +2764,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paletteSlate => 'Slate';
-
-  @override
-  String get paletteForest => 'Forest';
-
-  @override
-  String get paletteObsidian => 'Obsidian';
-
-  @override
-  String get paletteFog => 'Fog';
 
   @override
   String networkCannotReachHost(String error) {

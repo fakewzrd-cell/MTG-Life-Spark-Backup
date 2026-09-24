@@ -25,18 +25,18 @@ class UndoAction {
   }) : timestamp = timestamp ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
-        'playerId': playerId,
-        'field': field,
-        'previousValue': previousValue,
-        if (extra != null) 'extra': extra,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'playerId': playerId,
+    'field': field,
+    'previousValue': previousValue,
+    if (extra != null) 'extra': extra,
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   factory UndoAction.fromJson(Map<String, dynamic> json) => UndoAction(
-        playerId: json['playerId'] as String,
-        field: json['field'] as String,
-        previousValue: (json['previousValue'] as num).toInt(),
-        extra: json['extra'] as Map<String, dynamic>?,
-        timestamp: DateTime.parse(json['timestamp'] as String),
-      );
+    playerId: json['playerId'] as String,
+    field: json['field'] as String,
+    previousValue: (json['previousValue'] as num).toInt(),
+    extra: json['extra'] as Map<String, dynamic>?,
+    timestamp: DateTime.parse(json['timestamp'] as String),
+  );
 }

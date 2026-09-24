@@ -28,7 +28,8 @@ class TableToolResultOverlay extends ConsumerStatefulWidget {
       _TableToolResultOverlayState();
 }
 
-class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay> {
+class _TableToolResultOverlayState
+    extends ConsumerState<TableToolResultOverlay> {
   Timer? _timer;
 
   @override
@@ -69,9 +70,10 @@ class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay>
     final headline = a.localizedHeadline(l10n);
     final resultStyle = TextStyle(
       color: colors.onAccent,
-      fontSize: a.kind == TableToolKind.coin
-          ? FontTokens.displayCommander
-          : FontTokens.displayLife,
+      fontSize:
+          a.kind == TableToolKind.coin
+              ? FontTokens.displayCommander
+              : FontTokens.displayLife,
       fontWeight: FontWeight.w800,
       height: 1.05,
     );
@@ -89,11 +91,11 @@ class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay>
             ),
             child: Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr6),
+                padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr5),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: colors.primaryAccent,
-                    borderRadius: RadiusTokens.radiusLg,
+                    borderRadius: RadiusTokens.radiusXl,
                   ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(

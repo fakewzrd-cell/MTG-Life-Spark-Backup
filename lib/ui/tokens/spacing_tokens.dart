@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
-/// Strict **4dp** spacing system (multiples of 4). Prefer these or [LayoutTokens.gr*].
+/// Spacing steps: 8 tight, 16 normal, 24 page margin, 32 between sections.
+/// Prefer these or [LayoutTokens.gr*]. 48 is the tap target, not a gap.
 class SpacingTokens {
   SpacingTokens._();
 
-  static const double xxs = 4;
+  static const double xxs = 8;
   static const double xs = 8;
-  static const double sm = 12;
+  static const double sm = 16;
   static const double md = 16;
   static const double lg = 24;
   static const double xl = 32;
-  static const double xxl = 48;
+  static const double xxl = 32;
 
   static const EdgeInsets paddingXxs = EdgeInsets.all(xxs);
   static const EdgeInsets paddingXs = EdgeInsets.all(xs);

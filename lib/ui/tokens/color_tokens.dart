@@ -110,7 +110,8 @@ class ColorTokens {
   // ══════════════════════════════════════════════════════════════════════════
 
   static Color get lightBackgroundPrimary => _palette.lightBackgroundPrimary;
-  static Color get lightBackgroundSecondary => _palette.lightBackgroundSecondary;
+  static Color get lightBackgroundSecondary =>
+      _palette.lightBackgroundSecondary;
   static Color get lightSurface => _palette.lightSurface;
   static Color get lightSurfaceElevated => _palette.lightSurfaceElevated;
   static Color get lightBorderSubtle => _palette.lightBorderSubtle;
@@ -139,7 +140,8 @@ class ColorTokens {
   static const Color darkInverseSurface = Color(0xFFE8E8ED);
   static Color get darkOnInverseSurface => brandBlack;
   static Color get darkInversePrimary => _palette.darkInversePrimary;
-  static Color get darkSurfaceContainerLowest => _palette.darkSurfaceContainerLowest;
+  static Color get darkSurfaceContainerLowest =>
+      _palette.darkSurfaceContainerLowest;
   static Color get darkSurfaceContainerLow => _palette.darkSurfaceContainerLow;
   static Color get darkSurfaceContainerHighest => surfaceElevated;
 
@@ -152,7 +154,8 @@ class ColorTokens {
   static const Color lightSecondary = Color(0xFF52525E);
   static const Color lightOnSecondary = Color(0xFFFFFFFF);
   static Color get lightSecondaryContainer => _palette.lightSecondaryContainer;
-  static Color get lightOnSecondaryContainer => _palette.lightOnSecondaryContainer;
+  static Color get lightOnSecondaryContainer =>
+      _palette.lightOnSecondaryContainer;
   static const Color lightTertiary = Color(0xFF737380);
   static const Color lightOnTertiary = Color(0xFFFFFFFF);
   static const Color lightTertiaryContainer = Color(0xFFE0E0EA);
@@ -163,9 +166,11 @@ class ColorTokens {
   static Color get lightInverseSurface => _palette.surface;
   static Color get lightOnInverseSurface => lightBackgroundPrimary;
   static Color get lightInversePrimary => _palette.lightInversePrimary;
-  static Color get lightSurfaceContainerLow => _palette.lightSurfaceContainerLow;
+  static Color get lightSurfaceContainerLow =>
+      _palette.lightSurfaceContainerLow;
   static Color get lightSurfaceContainer => _palette.lightSurfaceContainer;
-  static Color get lightSurfaceContainerHigh => _palette.lightSurfaceContainerHigh;
+  static Color get lightSurfaceContainerHigh =>
+      _palette.lightSurfaceContainerHigh;
   static Color get lightSurfaceContainerHighest =>
       _palette.lightSurfaceContainerHighest;
 }

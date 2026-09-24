@@ -21,8 +21,10 @@ class SessionJoinUri {
     const alphabet =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final rand = Random.secure();
-    return List.generate(24, (_) => alphabet[rand.nextInt(alphabet.length)])
-        .join();
+    return List.generate(
+      24,
+      (_) => alphabet[rand.nextInt(alphabet.length)],
+    ).join();
   }
 
   static String buildQrPayload({
@@ -35,9 +37,10 @@ class SessionJoinUri {
 
   /// Parses a scanned QR into WebSocket URI and optional join token.
   static ({String wsUri, String? token}) parse(String raw) {
-    final usedScheme = raw.startsWith('$scheme://')
-        ? scheme
-        : raw.startsWith('$legacyScheme://')
+    final usedScheme =
+        raw.startsWith('$scheme://')
+            ? scheme
+            : raw.startsWith('$legacyScheme://')
             ? legacyScheme
             : null;
     if (usedScheme == null) {
@@ -47,7 +50,9 @@ class SessionJoinUri {
     final withoutScheme = raw.substring('$usedScheme://'.length);
     final queryIndex = withoutScheme.indexOf('?');
     final authority =
-        queryIndex == -1 ? withoutScheme : withoutScheme.substring(0, queryIndex);
+        queryIndex == -1
+            ? withoutScheme
+            : withoutScheme.substring(0, queryIndex);
     final wsUri = 'ws://$authority';
 
     String? token;

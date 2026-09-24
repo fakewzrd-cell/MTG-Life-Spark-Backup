@@ -78,11 +78,11 @@ class _PlayerWhisperOverlayState extends ConsumerState<PlayerWhisperOverlay> {
           color: Colors.transparent,
           child: InkWell(
             onTap: _dismiss,
-            borderRadius: RadiusTokens.radiusMd,
+            borderRadius: RadiusTokens.radiusXl,
             child: Ink(
               decoration: BoxDecoration(
                 color: colors.surface.withValues(alpha: 0.96),
-                borderRadius: RadiusTokens.radiusMd,
+                borderRadius: RadiusTokens.radiusXl,
                 border: Border.all(
                   color: colors.primaryAccent.withValues(alpha: 0.45),
                 ),

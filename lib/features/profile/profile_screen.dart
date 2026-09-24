@@ -126,10 +126,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
 
-    final allMatches = matchRepo
-        .getAllMatches()
-        .where((m) => !m.matchId.startsWith('__preview_placeholder'))
-        .toList();
+    final allMatches =
+        matchRepo
+            .getAllMatches()
+            .where((m) => !m.matchId.startsWith('__preview_placeholder'))
+            .toList();
 
     final colors = AppColorTokens.of(context);
     final heroMetrics = ProfileHeroLayoutMetrics.resolve(context);
@@ -137,9 +138,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final scrollBottomPad = LayoutTokens.shellBottomInset(context);
     final hasPlayedGames =
         profile.totalGamesPlayed > 0 || allMatches.isNotEmpty;
-    final firstPlayed = allMatches.isEmpty
-        ? null
-        : allMatches.map((m) => m.date).reduce((a, b) => a.isBefore(b) ? a : b);
+    final firstPlayed =
+        allMatches.isEmpty
+            ? null
+            : allMatches
+                .map((m) => m.date)
+                .reduce((a, b) => a.isBefore(b) ? a : b);
 
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
@@ -148,6 +152,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         bottom: false,
         child: CustomScrollView(
           key: ValueKey('${profileWatch.revision}-$_editing'),
+          clipBehavior: Clip.none,
           slivers: [
             SliverToBoxAdapter(
               child: _ProfileHeroCard(
@@ -167,21 +172,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: EdgeInsets.fromLTRB(hPad, 0, hPad, scrollBottomPad),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  ProfilePlayerStatsSection(
-                    profile: profile,
-                    colors: colors,
-                    hasPlayedGames: hasPlayedGames,
-                  ),
+                  ProfilePlayerStatsSection(profile: profile, colors: colors),
                   SizedBox(height: LayoutTokens.shellSectionGap),
                   ProfileDeckPerformanceSection(
                     colors: colors,
                     hasPlayedGames: hasPlayedGames,
                   ),
                   SizedBox(height: LayoutTokens.shellSectionGap),
-                  ProfileRecentGamesModule(
-                    matches: allMatches,
-                    colors: colors,
-                  ),
+                  ProfileRecentGamesModule(matches: allMatches, colors: colors),
                   SizedBox(height: LayoutTokens.gr4),
                 ]),
               ),
@@ -284,10 +282,7 @@ class _ProfileHeroCard extends StatelessWidget {
 
 /// Top-leading tenure caption — balances the action pill across the banner.
 class _ProfileHeroCaption extends StatelessWidget {
-  const _ProfileHeroCaption({
-    required this.firstPlayed,
-    required this.colors,
-  });
+  const _ProfileHeroCaption({required this.firstPlayed, required this.colors});
 
   final DateTime? firstPlayed;
   final AppColorTokens colors;
@@ -340,45 +335,41 @@ class _ProfileHeroActionPill extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onPressed,
-            customBorder: const StadiumBorder(),
+            customBorder:
+                editing ? const StadiumBorder() : const CircleBorder(),
             child: Center(
-              child: Container(
-                height: _visualHeight,
-                padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr2),
-                decoration: ShapeDecoration(
-                  color: colors.textPrimary.withValues(alpha: OpacityTokens.faint),
-                  shape: StadiumBorder(
-                    side: BorderSide(
-                      color: colors.textPrimary.withValues(
-                        alpha: OpacityTokens.soft,
-                      ),
-                    ),
-                  ),
-                ),
-                child: Center(
-                  child: ExcludeSemantics(
-                    child: editing
-                        ? Text(
-                            l10n.profileDone,
-                            style: TextStyle(
-                              fontSize: FontTokens.label,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
-                              color: colors.textPrimary.withValues(
-                                alpha: OpacityTokens.nearOpaque,
+              child:
+                  editing
+                      ? Container(
+                        height: _visualHeight,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: LayoutTokens.gr2,
+                        ),
+                        decoration: ShapeDecoration(
+                          color: colors.textPrimary.withValues(
+                            alpha: OpacityTokens.faint,
+                          ),
+                          shape: const StadiumBorder(),
+                        ),
+                        child: Center(
+                          child: ExcludeSemantics(
+                            child: Text(
+                              l10n.profileDone,
+                              style: TextStyle(
+                                fontSize: FontTokens.label,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                                color: colors.textSecondary,
                               ),
                             ),
-                          )
-                        : Icon(
-                            Icons.more_vert_rounded,
-                            size: 20,
-                            color: colors.textPrimary.withValues(
-                              alpha: OpacityTokens.nearOpaque,
-                            ),
                           ),
-                  ),
-                ),
-              ),
+                        ),
+                      )
+                      : Icon(
+                        Icons.more_vert_rounded,
+                        size: 20,
+                        color: colors.textSecondary,
+                      ),
             ),
           ),
         ),
@@ -448,7 +439,9 @@ class _ProfileHeroIdentityAndStats extends StatelessWidget {
                         IconButton(
                           onPressed: onEditName,
                           tooltip:
-                              AppLocalizations.of(context).profileEditNameTooltip,
+                              AppLocalizations.of(
+                                context,
+                              ).profileEditNameTooltip,
                           visualDensity: VisualDensity.compact,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
@@ -469,12 +462,13 @@ class _ProfileHeroIdentityAndStats extends StatelessWidget {
                     tier: profile.tier,
                     level: profile.level,
                     showInfoIcon: !editing,
-                    onTap: editing
-                        ? null
-                        : () => showRanksInfoSheet(
-                            context,
-                            currentLevel: profile.level,
-                          ),
+                    onTap:
+                        editing
+                            ? null
+                            : () => showRanksInfoSheet(
+                              context,
+                              currentLevel: profile.level,
+                            ),
                   ),
                 ],
               ),
@@ -617,7 +611,9 @@ class _ProfileHeroAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: showCameraBadge ? 1 : 0.9),
+                color: Colors.white.withValues(
+                  alpha: showCameraBadge ? 1 : 0.9,
+                ),
                 width: showCameraBadge ? 3.5 : ringWidth,
               ),
             ),
@@ -679,9 +675,8 @@ class _ProfileFloatingStatsPill extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final wins = profile.totalWins;
     final losses = profile.totalLosses;
-    final games = profile.totalGamesPlayed > 0
-        ? profile.totalGamesPlayed
-        : wins + losses;
+    final games =
+        profile.totalGamesPlayed > 0 ? profile.totalGamesPlayed : wins + losses;
 
     return Semantics(
       label:
@@ -693,7 +688,7 @@ class _ProfileFloatingStatsPill extends StatelessWidget {
         borderRadius: RadiusTokens.radiusPill,
         clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          padding: const EdgeInsets.all(LayoutTokens.gr1),
           child: Row(
             children: [
               Expanded(
@@ -736,7 +731,7 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 28,
-      margin: const EdgeInsets.symmetric(horizontal: 2),
+      margin: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr0),
       color: colors.borderSubtle.withValues(alpha: 0.55),
     );
   }
@@ -758,11 +753,11 @@ class _StatColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
-    final valueColor = emphasized
-        ? (accentColor ?? colors.textPrimary)
-        : colors.textPrimary.withValues(alpha: 0.88);
-    final labelColor =
-        emphasized ? colors.textSecondary : colors.textMuted;
+    final valueColor =
+        emphasized
+            ? (accentColor ?? colors.textPrimary)
+            : colors.textPrimary.withValues(alpha: 0.88);
+    final labelColor = emphasized ? colors.textSecondary : colors.textMuted;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

@@ -14,10 +14,11 @@ void listenForWebLogoSplashDone(void Function() onDone) {
   }
 
   late final web.EventListener listener;
-  listener = (web.Event _) {
-    web.window.removeEventListener(_splashDoneEvent, listener);
-    onDone();
-  }.toJS;
+  listener =
+      (web.Event _) {
+        web.window.removeEventListener(_splashDoneEvent, listener);
+        onDone();
+      }.toJS;
   web.window.addEventListener(_splashDoneEvent, listener);
 }
 

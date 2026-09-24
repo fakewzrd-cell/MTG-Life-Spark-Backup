@@ -13,7 +13,9 @@ import 'ws_host_service.dart';
 /// Which role this device is playing in the current session.
 enum SessionRole { none, host, client }
 
-final sessionRoleProvider = StateProvider<SessionRole>((ref) => SessionRole.none);
+final sessionRoleProvider = StateProvider<SessionRole>(
+  (ref) => SessionRole.none,
+);
 
 /// The active network service for the current session (host or client).
 /// Null when no game session is active.

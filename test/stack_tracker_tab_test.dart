@@ -62,57 +62,64 @@ class _FakeScryfallService extends ScryfallService {
 }
 
 void main() {
-  testWidgets('StackTrackerTab renders after addStackItem without layout errors',
-      (tester) async {
-    late GameStateNotifier notifier;
+  testWidgets(
+    'StackTrackerTab renders after addStackItem without layout errors',
+    (tester) async {
+      late GameStateNotifier notifier;
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          gameProvider.overrideWith((ref) {
-            notifier = GameStateNotifier(ref);
-            notifier.state = _gameWithLocalPlayer();
-            return notifier;
-          }),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.dark(),
-          localizationsDelegates: testLocalizationDelegates,
-          supportedLocales: testSupportedLocales,
-          home: Scaffold(
-            body: Consumer(
-              builder: (context, ref, _) {
-                final game = ref.watch(gameProvider);
-                return StackTrackerTab(game: game);
-              },
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            gameProvider.overrideWith((ref) {
+              notifier = GameStateNotifier(ref);
+              notifier.state = _gameWithLocalPlayer();
+              return notifier;
+            }),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.dark(),
+            localizationsDelegates: testLocalizationDelegates,
+            supportedLocales: testSupportedLocales,
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, _) {
+                  final game = ref.watch(gameProvider);
+                  return StackTrackerTab(game: game);
+                },
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pump();
+      await tester.pump();
 
-    notifier.addStackItem(name: 'Lightning Bolt');
-    await tester.pump();
+      notifier.addStackItem(name: 'Lightning Bolt');
+      await tester.pump();
 
-    expect(find.text('Lightning Bolt'), findsOneWidget);
-    expect(find.text('Resolves next'), findsOneWidget);
+      expect(find.text('Lightning Bolt'), findsOneWidget);
+      expect(find.text('Resolves next'), findsOneWidget);
 
-    notifier.addStackItem(name: 'Counterspell', parentId: notifier.state.stackItems.first.id);
-    await tester.pump();
+      notifier.addStackItem(
+        name: 'Counterspell',
+        parentId: notifier.state.stackItems.first.id,
+      );
+      await tester.pump();
 
-    expect(find.text('Counterspell'), findsOneWidget);
-    expect(find.text('In response to Lightning Bolt'), findsOneWidget);
+      expect(find.text('Counterspell'), findsOneWidget);
+      expect(find.text('In response to Lightning Bolt'), findsOneWidget);
 
-    notifier.addStackItem(name: 'Growth');
-    await tester.pumpAndSettle();
+      notifier.addStackItem(name: 'Growth');
+      await tester.pumpAndSettle();
 
-    expect(find.text('Growth'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Growth'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('StackTrackerTab empty then first item via notifier', (tester) async {
+  testWidgets('StackTrackerTab empty then first item via notifier', (
+    tester,
+  ) async {
     late GameStateNotifier notifier;
 
     await tester.pumpWidget(
@@ -149,8 +156,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('add via dialog does not dispose controller during route pop',
-      (tester) async {
+  testWidgets('add via dialog does not dispose controller during route pop', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -176,7 +184,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byTooltip('Add spell or ability'));
+    await tester.tap(find.text('Add spell'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Counterspell');

@@ -19,13 +19,9 @@ PlayerGameState _player({
 
 void main() {
   group('GameplayDialLimits', () {
-    test('allows up to 4 custom dials', () {
+    test('allows a custom dial below the cap', () {
       final p = _player(
-        customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-        },
+        customDialLabels: {'a': 'A', 'b': 'B', 'c': 'C'},
         visibleGameplayDials: ['a', 'b', 'c'],
       );
 
@@ -40,18 +36,20 @@ void main() {
       );
     });
 
-    test('blocks a 5th new custom dial', () {
+    test('blocks a 9th new custom dial', () {
       final p = _player(
         customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-          'd': 'D',
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i': 'C$i',
         },
-        visibleGameplayDials: ['a', 'b', 'c', 'd'],
+        visibleGameplayDials: [
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i',
+        ],
       );
 
-      expect(GameplayDialLimits.customDialCount(p), 4);
+      expect(
+        GameplayDialLimits.customDialCount(p),
+        GameplayDialIds.maxCustomDials,
+      );
       expect(GameplayDialLimits.canAddCustomDial(p), isFalse);
       expect(
         GameplayDialLimits.canRegisterCustomDial(
@@ -66,23 +64,34 @@ void main() {
     test('blocks new custom dial when strip is full even below custom max', () {
       final p = _player(
         customDialLabels: {'custom1': 'Mine'},
-        visibleGameplayDials: ['poison', 'energy', 'experience', 'rad'],
+        visibleGameplayDials: [
+          'poison',
+          'energy',
+          'experience',
+          'rad',
+          'blood',
+          'clue',
+          'map',
+          'treasure',
+        ],
       );
 
       expect(GameplayDialLimits.customDialCount(p), 1);
-      expect(GameplayDialLimits.stripDialCount(p), 4);
+      expect(
+        GameplayDialLimits.stripDialCount(p),
+        GameplayDialIds.maxStripDials,
+      );
       expect(GameplayDialLimits.canAddCustomDial(p), isFalse);
     });
 
     test('allows relabeling an existing custom dial at the limit', () {
       final p = _player(
         customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-          'd': 'D',
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i': 'C$i',
         },
-        visibleGameplayDials: ['a', 'b', 'c', 'd'],
+        visibleGameplayDials: [
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i',
+        ],
       );
 
       expect(
@@ -97,29 +106,27 @@ void main() {
 
     test('allows a new custom dial after dropping below the limit', () {
       final p = _player(
-        customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-        },
+        customDialLabels: {'a': 'A', 'b': 'B', 'c': 'C'},
         visibleGameplayDials: ['a', 'b', 'c'],
       );
 
       expect(GameplayDialLimits.canAddCustomDial(p), isTrue);
     });
 
-    test('hides add tile at 4 visible custom counters', () {
+    test('hides add tile when the custom-counter cap is showing', () {
       final p = _player(
         customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-          'd': 'D',
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i': 'C$i',
         },
-        visibleGameplayDials: ['a', 'b', 'c', 'd'],
+        visibleGameplayDials: [
+          for (var i = 0; i < GameplayDialIds.maxCustomDials; i++) 'c$i',
+        ],
       );
 
-      expect(GameplayDialLimits.visibleCustomDialCount(p), 4);
+      expect(
+        GameplayDialLimits.visibleCustomDialCount(p),
+        GameplayDialIds.maxCustomDials,
+      );
       expect(
         GameplayDialLimits.showAddCounterTile(p, isEliminated: false),
         isFalse,
@@ -128,11 +135,7 @@ void main() {
 
     test('shows add tile again after removing a custom counter', () {
       final p = _player(
-        customDialLabels: {
-          'a': 'A',
-          'b': 'B',
-          'c': 'C',
-        },
+        customDialLabels: {'a': 'A', 'b': 'B', 'c': 'C'},
         visibleGameplayDials: ['a', 'b', 'c'],
       );
 

@@ -14,18 +14,16 @@ abstract final class GameUiTokens {
       );
 
   static ButtonStyle sheetPrimaryButton(Color accent) => FilledButton.styleFrom(
-        minimumSize: const Size(0, LayoutTokens.minTapTarget),
-        backgroundColor: accent,
-        foregroundColor: ColorTokens.onColor(accent),
-      );
+    minimumSize: const Size(0, LayoutTokens.minTapTarget),
+    backgroundColor: accent,
+    foregroundColor: ColorTokens.onColor(accent),
+  );
 
   static ButtonStyle sheetCancelButton(AppColorTokens colors) =>
       OutlinedButton.styleFrom(
         minimumSize: const Size(0, LayoutTokens.minTapTarget),
         foregroundColor: colors.textSecondary,
-        side: BorderSide(
-          color: colors.textSecondary.withValues(alpha: 0.4),
-        ),
+        side: BorderSide(color: colors.textSecondary.withValues(alpha: 0.4)),
       );
 
   static ButtonStyle destructiveFilledButton(AppColorTokens colors) =>

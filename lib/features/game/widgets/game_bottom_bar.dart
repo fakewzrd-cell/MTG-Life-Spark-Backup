@@ -28,7 +28,8 @@ class GameBottomBar extends ConsumerWidget {
   final VoidCallback onToggleOverview;
   final bool compact;
 
-  const GameBottomBar({super.key, 
+  const GameBottomBar({
+    super.key,
     required this.game,
     required this.local,
     required this.onToggleOverview,
@@ -49,9 +50,9 @@ class GameBottomBar extends ConsumerWidget {
       right: false,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          LayoutTokens.gr3,
+          LayoutTokens.shellPageInset,
           compact ? LayoutTokens.gr1 : LayoutTokens.gr2,
-          LayoutTokens.gr3,
+          LayoutTokens.shellPageInset,
           LayoutTokens.gr3,
         ),
         child: Container(
@@ -61,7 +62,7 @@ class GameBottomBar extends ConsumerWidget {
           ),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: RadiusTokens.radiusMd,
+            borderRadius: RadiusTokens.radiusXl,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,12 +94,14 @@ class GameBottomBar extends ConsumerWidget {
               Expanded(
                 child: Center(
                   child: _GameBarButton(
-                    icon: game.timeoutActive
-                        ? Icons.timer_off_outlined
-                        : Icons.timer,
-                    label: game.timeoutActive
-                        ? l10n.gameBarStopTimeout
-                        : l10n.gameBarTimeout,
+                    icon:
+                        game.timeoutActive
+                            ? Icons.timer_off_outlined
+                            : Icons.timer,
+                    label:
+                        game.timeoutActive
+                            ? l10n.gameBarStopTimeout
+                            : l10n.gameBarTimeout,
                     iconSize: iconSize,
                     compact: compact,
                     onTap: () {
@@ -189,79 +192,84 @@ Future<void> _showPostForfeitFollowUp(
 
   final leave = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: RadiusTokens.radiusMd,
-        side: BorderSide(color: colors.backgroundSecondary),
-      ),
-      insetPadding: EdgeInsets.symmetric(
-        horizontal: LayoutTokens.gr3,
-        vertical: LayoutTokens.gr4,
-      ),
-      titlePadding: EdgeInsets.zero,
-      contentPadding: EdgeInsets.zero,
-      actionsPadding: EdgeInsets.zero,
-      title: Padding(
-        padding: EdgeInsets.fromLTRB(inset, LayoutTokens.gr3, inset, 0),
-        child: GameDialogTitleRow(
-          titleWidget: Text(l10n.forfeitYouForfeited, style: titleStyle),
-          onClose: () => Navigator.pop(dialogContext, false),
-        ),
-      ),
-      content: Padding(
-        padding: EdgeInsets.fromLTRB(inset, LayoutTokens.gr2, inset, 0),
-        child: Text(
-          l10n.forfeitStaySpectateBody,
-          style: bodyStyle,
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            inset,
-            LayoutTokens.gr2,
-            inset,
-            LayoutTokens.gr3,
+    builder:
+        (dialogContext) => AlertDialog(
+          backgroundColor: colors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: RadiusTokens.radiusXl,
+            side: BorderSide(color: colors.backgroundSecondary),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: LayoutTokens.minTapTarget,
-                child: FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext, false),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colors.primaryAccent,
-                    foregroundColor: colors.onAccent,
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Text(l10n.forfeitStaySpectate),
-                ),
-              ),
-              SizedBox(height: LayoutTokens.gr2),
-              SizedBox(
-                height: LayoutTokens.minTapTarget,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(dialogContext, true),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.textPrimary,
-                    side: BorderSide(color: colors.borderSubtle),
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Text(l10n.forfeitReturnToProfile),
-                ),
-              ),
-            ],
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: LayoutTokens.gr3,
+            vertical: LayoutTokens.gr4,
           ),
+          titlePadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.zero,
+          actionsPadding: EdgeInsets.zero,
+          title: Padding(
+            padding: EdgeInsets.fromLTRB(inset, LayoutTokens.gr3, inset, 0),
+            child: GameDialogTitleRow(
+              titleWidget: Text(l10n.forfeitYouForfeited, style: titleStyle),
+              onClose: () => Navigator.pop(dialogContext, false),
+            ),
+          ),
+          content: Padding(
+            padding: EdgeInsets.fromLTRB(inset, LayoutTokens.gr2, inset, 0),
+            child: Text(l10n.forfeitStaySpectateBody, style: bodyStyle),
+          ),
+          actions: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                inset,
+                LayoutTokens.gr2,
+                inset,
+                LayoutTokens.gr3,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    height: LayoutTokens.minTapTarget,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: colors.primaryAccent,
+                        foregroundColor: colors.onAccent,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: RadiusTokens.radiusXl,
+                        ),
+                      ),
+                      child: Text(l10n.forfeitStaySpectate),
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  SizedBox(
+                    height: LayoutTokens.minTapTarget,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.textPrimary,
+                        side: BorderSide(color: colors.borderSubtle),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: RadiusTokens.radiusXl,
+                        ),
+                      ),
+                      child: Text(l10n.forfeitReturnToProfile),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
   );
 
   if (leave != true || !context.mounted) return;
   await recordLocalConcedeBeforeExit(ref);
-  if (context.mounted) context.go(AppRoutes.home);
+  if (context.mounted) {
+    allowNextGameExit(ref);
+    context.go(AppRoutes.home);
+  }
   await quitActiveGame(ref);
 }
 
@@ -306,9 +314,8 @@ class _GameConcedeDialogState extends State<_GameConcedeDialog> {
     final l10n = AppLocalizations.of(context);
     final game = widget.game;
     final inset = GameModalChrome.horizontalInset(context);
-    final others = game.players
-        .where((p) => p.playerId != game.localPlayerId)
-        .toList();
+    final others =
+        game.players.where((p) => p.playerId != game.localPlayerId).toList();
 
     return Consumer(
       builder: (context, ref, _) {
@@ -326,7 +333,7 @@ class _GameConcedeDialogState extends State<_GameConcedeDialog> {
         return AlertDialog(
           backgroundColor: colors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
+            borderRadius: RadiusTokens.radiusXl,
             side: BorderSide(color: colors.backgroundSecondary),
           ),
           insetPadding: EdgeInsets.symmetric(
@@ -367,36 +374,38 @@ class _GameConcedeDialogState extends State<_GameConcedeDialog> {
                       likePlayerIds: _likePlayerIds,
                       dislikePlayerIds: _dislikePlayerIds,
                       rateOpponentsTitle: l10n.forfeitRateOpponents,
-                      onLike: (pid) => setState(() {
-                        togglePlayerLike(
-                          likeIds: _likePlayerIds,
-                          dislikeIds: _dislikePlayerIds,
-                          playerId: pid,
-                          apply: (likes, dislikes) {
-                            _likePlayerIds
-                              ..clear()
-                              ..addAll(likes);
-                            _dislikePlayerIds
-                              ..clear()
-                              ..addAll(dislikes);
-                          },
-                        );
-                      }),
-                      onDislike: (pid) => setState(() {
-                        togglePlayerDislike(
-                          likeIds: _likePlayerIds,
-                          dislikeIds: _dislikePlayerIds,
-                          playerId: pid,
-                          apply: (likes, dislikes) {
-                            _likePlayerIds
-                              ..clear()
-                              ..addAll(likes);
-                            _dislikePlayerIds
-                              ..clear()
-                              ..addAll(dislikes);
-                          },
-                        );
-                      }),
+                      onLike:
+                          (pid) => setState(() {
+                            togglePlayerLike(
+                              likeIds: _likePlayerIds,
+                              dislikeIds: _dislikePlayerIds,
+                              playerId: pid,
+                              apply: (likes, dislikes) {
+                                _likePlayerIds
+                                  ..clear()
+                                  ..addAll(likes);
+                                _dislikePlayerIds
+                                  ..clear()
+                                  ..addAll(dislikes);
+                              },
+                            );
+                          }),
+                      onDislike:
+                          (pid) => setState(() {
+                            togglePlayerDislike(
+                              likeIds: _likePlayerIds,
+                              dislikeIds: _dislikePlayerIds,
+                              playerId: pid,
+                              apply: (likes, dislikes) {
+                                _likePlayerIds
+                                  ..clear()
+                                  ..addAll(likes);
+                                _dislikePlayerIds
+                                  ..clear()
+                                  ..addAll(dislikes);
+                              },
+                            );
+                          }),
                       starPlayerId: _starPlayerId,
                       onStarChanged: (id) => setState(() => _starPlayerId = id),
                     ),
@@ -423,7 +432,9 @@ class _GameConcedeDialogState extends State<_GameConcedeDialog> {
                       style: FilledButton.styleFrom(
                         backgroundColor: colors.error,
                         foregroundColor: colors.onAccent,
-                        shape: const StadiumBorder(),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: RadiusTokens.radiusXl,
+                        ),
                       ),
                       child: Text(l10n.forfeitConfirm),
                     ),
@@ -436,7 +447,9 @@ class _GameConcedeDialogState extends State<_GameConcedeDialog> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colors.textPrimary,
                         side: BorderSide(color: colors.borderSubtle),
-                        shape: const StadiumBorder(),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: RadiusTokens.radiusXl,
+                        ),
                       ),
                       child: Text(l10n.commonCancel),
                     ),
@@ -480,13 +493,14 @@ class _GameBarButton extends StatelessWidget {
       child: Tooltip(
         message: compact ? label : '',
         child: InkWell(
-          onTap: enabled
-              ? () {
-                  context.gameHapticLight();
-                  onTap?.call();
-                }
-              : null,
-          borderRadius: RadiusTokens.radiusMd,
+          onTap:
+              enabled
+                  ? () {
+                    context.gameHapticLight();
+                    onTap?.call();
+                  }
+                  : null,
+          borderRadius: RadiusTokens.radiusXl,
           child: Semantics(
             button: true,
             enabled: enabled,

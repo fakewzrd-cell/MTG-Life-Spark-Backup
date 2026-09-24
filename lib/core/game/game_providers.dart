@@ -7,19 +7,20 @@ import 'game_state_notifier.dart';
 import 'scryfall_service.dart';
 
 /// The single source of truth for the active game session.
-final gameProvider =
-    StateNotifierProvider<GameStateNotifier, GameState>((ref) {
+final gameProvider = StateNotifierProvider<GameStateNotifier, GameState>((ref) {
   return GameStateNotifier(ref);
 });
 
 /// Feedback given when conceding, saved when game ends.
-final pendingFeedbackProvider =
-    StateProvider<PendingFeedbackData?>((ref) => null);
+final pendingFeedbackProvider = StateProvider<PendingFeedbackData?>(
+  (ref) => null,
+);
 
 /// Variant decks (planar, scheme, bounty) loaded from Scryfall when enabled.
 /// Returns null keys when not enabled or loading failed.
-final variantDecksProvider =
-    FutureProvider<Map<String, List<ScryfallCard>>>((ref) async {
+final variantDecksProvider = FutureProvider<Map<String, List<ScryfallCard>>>((
+  ref,
+) async {
   final flags = ref.watch(
     gameProvider.select(
       (g) => (

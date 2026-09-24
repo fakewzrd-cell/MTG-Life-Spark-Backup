@@ -12,11 +12,8 @@ import 'deck_style_picker_sheet.dart';
 import 'game_format_picker_sheet.dart';
 
 /// Result of the new-deck builder (name + format + style).
-typedef NewDeckSheetResult = ({
-  String name,
-  GameFormat format,
-  String deckStyleId,
-});
+typedef NewDeckSheetResult =
+    ({String name, GameFormat format, String deckStyleId});
 
 /// Bottom sheet for creating a deck — matches style/format picker chrome.
 Future<NewDeckSheetResult?> showNewDeckSheet(BuildContext context) {
@@ -60,14 +57,11 @@ class _NewDeckSheetState extends State<_NewDeckSheet> {
     }
     final style = _style;
     if (style == null) return;
-    Navigator.pop(
-      context,
-      (
-        name: _nameCtrl.text.trim(),
-        format: _format,
-        deckStyleId: style.id,
-      ),
-    );
+    Navigator.pop(context, (
+      name: _nameCtrl.text.trim(),
+      format: _format,
+      deckStyleId: style.id,
+    ));
   }
 
   @override
@@ -101,7 +95,9 @@ class _NewDeckSheetState extends State<_NewDeckSheet> {
             SizedBox(height: LayoutTokens.gr3),
             TextField(
               controller: _nameCtrl,
-              scrollPadding: const EdgeInsets.only(bottom: 80),
+              scrollPadding: const EdgeInsets.only(
+                bottom: LayoutTokens.gr5 + LayoutTokens.gr6,
+              ),
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: l10n.newDeckNameLabel,

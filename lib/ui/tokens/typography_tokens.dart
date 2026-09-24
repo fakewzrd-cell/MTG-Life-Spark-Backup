@@ -31,21 +31,21 @@ class TypographyTokens {
 
   /// Module headers — profile sections, lobby blocks, decks screen.
   static TextStyle sectionTitle(Color primary) => GoogleFonts.lato(
-        fontSize: FontTokens.headline,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.2,
-        height: 1.2,
-        color: primary,
-      );
+    fontSize: FontTokens.headline,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.2,
+    height: 1.2,
+    color: primary,
+  );
 
   /// In-card titles — profile carousel cards.
   static TextStyle cardTitle(Color primary) => GoogleFonts.lato(
-        fontSize: FontTokens.title,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.15,
-        height: 1.2,
-        color: primary,
-      );
+    fontSize: FontTokens.title,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.15,
+    height: 1.2,
+    color: primary,
+  );
 
   static TextStyle body(BuildContext context) {
     final colors = AppColorTokens.of(context);

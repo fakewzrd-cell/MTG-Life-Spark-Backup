@@ -14,15 +14,18 @@ Future<void> showCounterAdjustSheet(
   required int current,
   required void Function(int delta) onChanged,
   bool confirmReset = false,
+  VoidCallback? onRemove,
 }) {
   return showGameBottomSheet<void>(
     context: context,
-    builder: (_) => CounterAdjustSheet(
-      title: title,
-      current: current,
-      onChanged: onChanged,
-      confirmReset: confirmReset,
-    ),
+    builder:
+        (_) => CounterAdjustSheet(
+          title: title,
+          current: current,
+          onChanged: onChanged,
+          confirmReset: confirmReset,
+          onRemove: onRemove,
+        ),
   );
 }
 
@@ -31,6 +34,7 @@ class CounterAdjustSheet extends StatefulWidget {
   final int current;
   final void Function(int delta) onChanged;
   final bool confirmReset;
+  final VoidCallback? onRemove;
 
   const CounterAdjustSheet({
     super.key,
@@ -38,6 +42,7 @@ class CounterAdjustSheet extends StatefulWidget {
     required this.current,
     required this.onChanged,
     this.confirmReset = false,
+    this.onRemove,
   });
 
   @override
@@ -125,13 +130,32 @@ class _CounterAdjustSheetState extends State<CounterAdjustSheet> {
             child: Text(
               l10n.counterResetToZero,
               style: TextStyle(
-                color: _value == 0
-                    ? colors.textSecondary.withValues(alpha: 0.45)
-                    : colors.error,
+                color:
+                    _value == 0
+                        ? colors.textSecondary.withValues(alpha: 0.45)
+                        : colors.error,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
+          if (widget.onRemove != null) ...[
+            SizedBox(height: LayoutTokens.gr0),
+            TextButton(
+              onPressed: () {
+                context.gameHapticSelection();
+                final remove = widget.onRemove;
+                Navigator.pop(context);
+                remove?.call();
+              },
+              child: Text(
+                l10n.dialsRemoveFromStrip,
+                style: TextStyle(
+                  color: colors.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
           SizedBox(height: LayoutTokens.gr1),
           TextButton(
             onPressed: () => Navigator.pop(context),

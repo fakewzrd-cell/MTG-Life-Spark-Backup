@@ -23,10 +23,9 @@ Future<ScryfallCard?> showStackCardPickerDialog(
 }) {
   return showDialog<ScryfallCard>(
     context: context,
-    builder: (ctx) => _StackCardPickerDialog(
-      title: title,
-      initialQuery: initialQuery,
-    ),
+    builder:
+        (ctx) =>
+            _StackCardPickerDialog(title: title, initialQuery: initialQuery),
   );
 }
 
@@ -34,17 +33,15 @@ class _StackCardPickerDialog extends ConsumerStatefulWidget {
   final String title;
   final String? initialQuery;
 
-  const _StackCardPickerDialog({
-    required this.title,
-    this.initialQuery,
-  });
+  const _StackCardPickerDialog({required this.title, this.initialQuery});
 
   @override
   ConsumerState<_StackCardPickerDialog> createState() =>
       _StackCardPickerDialogState();
 }
 
-class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> {
+class _StackCardPickerDialogState
+    extends ConsumerState<_StackCardPickerDialog> {
   late final TextEditingController _searchController;
   Timer? _debounce;
   List<ScryfallCard> _results = [];
@@ -105,7 +102,11 @@ class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> 
         }
       });
     } catch (e, st) {
-      appLog('StackCardPicker: Scryfall search failed', error: e, stackTrace: st);
+      appLog(
+        'StackCardPicker: Scryfall search failed',
+        error: e,
+        stackTrace: st,
+      );
       if (!mounted || requestId != _searchRequestId) return;
       setState(() {
         _results = [];
@@ -154,13 +155,14 @@ class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> 
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.gameColors;
-    final canAdd = !_confirming &&
+    final canAdd =
+        !_confirming &&
         (_selected != null || _searchController.text.trim().isNotEmpty);
 
     return AlertDialog(
       backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         side: BorderSide(color: colors.backgroundSecondary),
       ),
       title: GameDialogTitleRow(
@@ -184,20 +186,21 @@ class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> 
               decoration: InputDecoration(
                 labelText: l10n.stackPickerCardNameLabel,
                 hintText: l10n.stackPickerCardNameHint,
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        tooltip: l10n.stackPickerClearSearch,
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _results = [];
-                            _selected = null;
-                            _error = null;
-                          });
-                        },
-                      )
-                    : null,
+                suffixIcon:
+                    _searchController.text.isNotEmpty
+                        ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: l10n.stackPickerClearSearch,
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _results = [];
+                              _selected = null;
+                              _error = null;
+                            });
+                          },
+                        )
+                        : null,
               ),
               textCapitalization: TextCapitalization.words,
               onChanged: (v) {
@@ -220,16 +223,17 @@ class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> 
       actions: [
         FilledButton(
           onPressed: canAdd ? _confirm : null,
-          child: _confirming
-              ? SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colors.textPrimary,
-                  ),
-                )
-              : Text(l10n.stackPickerAdd),
+          child:
+              _confirming
+                  ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.textPrimary,
+                    ),
+                  )
+                  : Text(l10n.stackPickerAdd),
         ),
       ],
     );
@@ -290,16 +294,17 @@ class _StackCardPickerDialogState extends ConsumerState<_StackCardPickerDialog> 
             ),
           ),
           subtitle: _cardSubtitle(card),
-          trailing: card.manaCost != null && card.manaCost!.isNotEmpty
-              ? Text(
-                  manaCostPlainText(card.manaCost!),
-                  style: TextStyle(
-                    fontSize: FontTokens.caption,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textSecondary,
-                  ),
-                )
-              : null,
+          trailing:
+              card.manaCost != null && card.manaCost!.isNotEmpty
+                  ? Text(
+                    manaCostPlainText(card.manaCost!),
+                    style: TextStyle(
+                      fontSize: FontTokens.caption,
+                      fontWeight: FontWeight.w600,
+                      color: colors.textSecondary,
+                    ),
+                  )
+                  : null,
           onTap: () => _select(card),
         );
       },

@@ -10,10 +10,7 @@ import 'game_colors.dart';
 
 /// Full-screen glance cue when the active seat becomes yours. Tap anywhere to dismiss.
 class YourTurnPromptOverlay extends StatelessWidget {
-  const YourTurnPromptOverlay({
-    super.key,
-    required this.onDismiss,
-  });
+  const YourTurnPromptOverlay({super.key, required this.onDismiss});
 
   final VoidCallback onDismiss;
 
@@ -38,14 +35,14 @@ class YourTurnPromptOverlay extends StatelessWidget {
               ),
               child: Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr6),
+                  padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr5),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       DecoratedBox(
                         decoration: BoxDecoration(
                           color: colors.primaryAccent,
-                          borderRadius: RadiusTokens.radiusLg,
+                          borderRadius: RadiusTokens.radiusXl,
                         ),
                         child: Padding(
                           padding: EdgeInsets.symmetric(
@@ -70,9 +67,7 @@ class YourTurnPromptOverlay extends StatelessWidget {
                                 l10n.gameYourTurnTapContinue,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: colors.onAccent.withValues(
-                                    alpha: 0.9,
-                                  ),
+                                  color: colors.onAccent.withValues(alpha: 0.9),
                                   fontSize: FontTokens.body,
                                   fontWeight: FontWeight.w600,
                                 ),

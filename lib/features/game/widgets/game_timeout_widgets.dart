@@ -65,7 +65,7 @@ class _GameTimeoutOption extends StatelessWidget {
     final colors = context.gameColors;
     return ListTile(
       tileColor: colors.backgroundSecondary,
-      shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusControlSm),
+      shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
       leading: Icon(icon, color: colors.emphasis),
       title: Text(label, style: TextStyle(color: colors.textPrimary)),
       onTap: onTap,
@@ -82,7 +82,8 @@ class GameTimeoutOverlay extends StatefulWidget {
   final int? durationSeconds;
   final VoidCallback onEndTimeout;
 
-  const GameTimeoutOverlay({super.key, 
+  const GameTimeoutOverlay({
+    super.key,
     this.startTime,
     this.durationSeconds,
     required this.onEndTimeout,
@@ -137,9 +138,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
             child: GestureDetector(
               onTap: () => setState(() => _minimized = false),
               behavior: HitTestBehavior.opaque,
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.45),
-              ),
+              child: Container(color: Colors.black.withValues(alpha: 0.45)),
             ),
           ),
           Positioned(
@@ -163,7 +162,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                       ),
                       decoration: BoxDecoration(
                         color: colors.surface,
-                        borderRadius: RadiusTokens.radiusLg,
+                        borderRadius: RadiusTokens.radiusXl,
                         border: Border.all(color: colors.borderSubtle),
                       ),
                       child: Row(
@@ -171,7 +170,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                         children: [
                           InkWell(
                             onTap: () => setState(() => _minimized = false),
-                            borderRadius: RadiusTokens.radiusMd,
+                            borderRadius: RadiusTokens.radiusXl,
                             child: Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: LayoutTokens.gr1,
@@ -239,11 +238,14 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
           color: Colors.black.withValues(alpha: 0.7),
           child: Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 32),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+              margin: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr5),
+              padding: const EdgeInsets.symmetric(
+                horizontal: LayoutTokens.gr5,
+                vertical: LayoutTokens.gr5,
+              ),
               decoration: BoxDecoration(
                 color: colors.surface,
-                borderRadius: RadiusTokens.radiusLg,
+                borderRadius: RadiusTokens.radiusXl,
               ),
               child: Stack(
                 clipBehavior: Clip.none,
@@ -252,15 +254,12 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                     top: -8,
                     right: -8,
                     child: IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: colors.textSecondary,
-                      ),
+                      icon: Icon(Icons.close, color: colors.textSecondary),
                       tooltip: l10n.timeoutMinimizeTooltip,
                       onPressed: () => setState(() => _minimized = true),
                       style: IconButton.styleFrom(
                         backgroundColor: colors.backgroundSecondary,
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(LayoutTokens.gr1),
                       ),
                     ),
                   ),
@@ -278,7 +277,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                           letterSpacing: 2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: LayoutTokens.gr1),
                       Text(
                         widget.durationSeconds != null
                             ? '$_timeStr remaining'
@@ -301,7 +300,7 @@ class _GameTimeoutOverlayState extends State<GameTimeoutOverlay> {
                       SizedBox(height: LayoutTokens.gr4),
                       SizedBox(
                         width: double.infinity,
-                          child: FilledButton(
+                        child: FilledButton(
                           onPressed: widget.onEndTimeout,
                           style: FilledButton.styleFrom(
                             backgroundColor: colors.emphasis,
@@ -381,11 +380,11 @@ class _GameTimeoutBannerState extends State<GameTimeoutBanner> {
       margin: EdgeInsets.zero,
       padding: EdgeInsets.symmetric(
         horizontal: LayoutTokens.gr2,
-        vertical: LayoutTokens.gr1 + 2,
+        vertical: LayoutTokens.gr2,
       ),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusControlSm,
+        borderRadius: RadiusTokens.radiusXl,
         border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
@@ -416,7 +415,8 @@ class GameTurnDurationBanner extends StatefulWidget {
   final bool isActiveTurn;
   final String activePlayerName;
 
-  const GameTurnDurationBanner({super.key, 
+  const GameTurnDurationBanner({
+    super.key,
     required this.turnStartTime,
     this.limitSeconds,
     required this.isActiveTurn,
@@ -453,9 +453,10 @@ class _GameTurnDurationBannerState extends State<GameTurnDurationBanner> {
     final remaining =
         hasLimit ? (widget.limitSeconds! - elapsed).clamp(0, 9999) : null;
 
-    final prefix = widget.isActiveTurn
-        ? l10n.gameYourTurn
-        : l10n.gamePlayersTurn(widget.activePlayerName);
+    final prefix =
+        widget.isActiveTurn
+            ? l10n.gameYourTurn
+            : l10n.gamePlayersTurn(widget.activePlayerName);
     String label;
     if (hasLimit && remaining != null) {
       final m = remaining ~/ 60;
@@ -475,7 +476,7 @@ class _GameTurnDurationBannerState extends State<GameTurnDurationBanner> {
       ),
       decoration: BoxDecoration(
         color: colors.primaryAccent.withValues(alpha: OpacityTokens.subtle),
-        borderRadius: RadiusTokens.radiusControlSm,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -483,10 +484,12 @@ class _GameTurnDurationBannerState extends State<GameTurnDurationBanner> {
           Icon(
             Icons.schedule,
             color:
-                widget.isActiveTurn ? colors.primaryAccent : colors.textSecondary,
+                widget.isActiveTurn
+                    ? colors.primaryAccent
+                    : colors.textSecondary,
             size: 14,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: LayoutTokens.gr1),
           Text(
             label,
             style: TextStyle(
@@ -503,7 +506,6 @@ class _GameTurnDurationBannerState extends State<GameTurnDurationBanner> {
     );
   }
 }
-
 
 void showGameTimeoutPicker(BuildContext context, GameStateNotifier notifier) {
   showGameBottomSheet<void>(

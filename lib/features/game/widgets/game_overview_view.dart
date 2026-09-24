@@ -63,6 +63,9 @@ class GameOverviewView extends ConsumerStatefulWidget {
 class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
   final GlobalKey _activeCardKey = GlobalKey();
 
+  /// Host life stepper is closed until that player's life number is tapped.
+  String? _lifeEditorPlayerId;
+
   GameState get game => widget.game;
 
   @override
@@ -102,10 +105,21 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
     }
   }
 
+  void _toggleLifeEditor(String playerId) {
+    setState(() {
+      _lifeEditorPlayerId = _lifeEditorPlayerId == playerId ? null : playerId;
+    });
+  }
+
   Widget _rowFor(PlayerGameState p) {
     return p.isEliminated
         ? _EliminatedPlayerRow(p: p, game: game)
-        : _GameOverviewPlayerCard(p: p, game: game);
+        : _GameOverviewPlayerCard(
+          p: p,
+          game: game,
+          lifeControlsOpen: _lifeEditorPlayerId == p.playerId,
+          onToggleLifeControls: () => _toggleLifeEditor(p.playerId),
+        );
   }
 
   Widget _keyedRow(PlayerGameState p) {
@@ -156,8 +170,9 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
 
     // Keep status / nav bar styling aligned with the rest of the app so Table
     // does not flash a white system bar (SliverAppBar default overlay).
-    final overlay = AppSystemUi.overlayStyle(context)
-        .copyWith(statusBarColor: Colors.transparent);
+    final overlay = AppSystemUi.overlayStyle(
+      context,
+    ).copyWith(statusBarColor: Colors.transparent);
 
     // Transparent top chrome so the identity gradient reads edge-to-edge;
     // [SliverAppBar] (primary) still owns status-bar inset without a dark band.
@@ -325,13 +340,13 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                           Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: LayoutTokens.gr1,
-                              vertical: LayoutTokens.gr0 - 1,
+                              vertical: LayoutTokens.gr0,
                             ),
                             decoration: BoxDecoration(
                               color: colors.backgroundSecondary.withValues(
                                 alpha: OpacityTokens.soft,
                               ),
-                              borderRadius: RadiusTokens.radiusControlSm,
+                              borderRadius: RadiusTokens.radiusXl,
                             ),
                             child: Text(
                               '$aliveCount',
@@ -369,24 +384,25 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                       pageInset,
                       LayoutTokens.gr3,
                     ),
-                    sliver: _canHostReorder(game)
-                        ? SliverReorderableList(
-                            itemCount: game.playersInTurnOrder.length,
-                            onReorderItem: _onHostReorder,
-                            itemBuilder: (context, index) {
-                              final p = game.playersInTurnOrder[index];
-                              return ReorderableDelayedDragStartListener(
-                                key: ValueKey(p.playerId),
-                                index: index,
-                                child: _keyedRow(p),
-                              );
-                            },
-                          )
-                        : SliverList(
-                            delegate: SliverChildListDelegate(
-                              _buildPlayerListChildren(),
+                    sliver:
+                        _canHostReorder(game)
+                            ? SliverReorderableList(
+                              itemCount: game.playersInTurnOrder.length,
+                              onReorderItem: _onHostReorder,
+                              itemBuilder: (context, index) {
+                                final p = game.playersInTurnOrder[index];
+                                return ReorderableDelayedDragStartListener(
+                                  key: ValueKey(p.playerId),
+                                  index: index,
+                                  child: _keyedRow(p),
+                                );
+                              },
+                            )
+                            : SliverList(
+                              delegate: SliverChildListDelegate(
+                                _buildPlayerListChildren(),
+                              ),
                             ),
-                          ),
                   ),
                 ],
               ),
@@ -400,50 +416,25 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                   pageInset,
                   LayoutTokens.gr2,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    EndTurnBar(
-                      accentColor: colors.primaryAccent,
-                      enabled: endTurnEnabled,
-                      onEndTurn: () => notifier.endTurn(),
-                      waitingForName: waitingForName,
-                      onHostSkip: game.canHostSkipTurn
-                          ? () => notifier.endTurn()
+                child: EndTurnBar(
+                  accentColor: colors.primaryAccent,
+                  enabled: endTurnEnabled,
+                  onEndTurn: () => notifier.endTurn(),
+                  waitingForName: waitingForName,
+                  onHostSkip:
+                      game.canHostSkipTurn ? () => notifier.endTurn() : null,
+                  forfeitLabel: l10n.forfeitConfirm,
+                  forfeitColor: colors.error,
+                  onForfeit:
+                      game.localPlayer != null &&
+                              !game.localPlayer!.isEliminated &&
+                              !game.gameOver
+                          ? () => showGameForfeitFlow(
+                            context,
+                            ref,
+                            game.localPlayerId,
+                          )
                           : null,
-                    ),
-                    if (game.localPlayer != null &&
-                        !game.localPlayer!.isEliminated &&
-                        !game.gameOver)
-                      Align(
-                        alignment: Alignment.center,
-                        child: TextButton(
-                          onPressed: () {
-                            context.gameHapticLight();
-                            showGameForfeitFlow(
-                              context,
-                              ref,
-                              game.localPlayerId,
-                            );
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: colors.error,
-                            minimumSize: const Size(
-                              LayoutTokens.minTapTarget,
-                              LayoutTokens.minTapTarget,
-                            ),
-                          ),
-                          child: Text(
-                            l10n.forfeitConfirm,
-                            style: const TextStyle(
-                              fontSize: FontTokens.hudSm,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
                 ),
               ),
             ),
@@ -479,7 +470,7 @@ class _EliminatedPlayerRow extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: colors.backgroundSecondary.withValues(alpha: OpacityTokens.half),
-        borderRadius: RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         children: [
@@ -495,7 +486,7 @@ class _EliminatedPlayerRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: LayoutTokens.gr1 + 2),
+          SizedBox(width: LayoutTokens.gr1),
           Expanded(
             child: Tooltip(
               message: p.username,
@@ -586,59 +577,64 @@ class _GameOverviewLifeBadge extends StatelessWidget {
         minHeight: LayoutTokens.minTapTarget,
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: showHeart ? LayoutTokens.gr1 + 2 : LayoutTokens.gr1,
-        vertical: LayoutTokens.gr0 + 2,
+        horizontal: showHeart ? LayoutTokens.gr2 : LayoutTokens.gr1,
+        vertical: LayoutTokens.gr1,
       ),
       decoration: BoxDecoration(
-        color: isActive && !eliminated
-            ? accent.withValues(alpha: OpacityTokens.subtle)
-            : colors.backgroundSecondary.withValues(alpha: OpacityTokens.half),
-        borderRadius: RadiusTokens.radiusControlSm,
+        color:
+            isActive && !eliminated
+                ? accent.withValues(alpha: OpacityTokens.subtle)
+                : colors.backgroundSecondary.withValues(
+                  alpha: OpacityTokens.half,
+                ),
+        borderRadius: RadiusTokens.radiusXl,
       ),
       alignment: Alignment.center,
-      child: eliminated
-          ? Text(
-              AppLocalizations.of(context).statusOut,
-              style: TextStyle(
-                color: _textColor(colors),
-                fontWeight: FontWeight.w700,
-                fontSize: FontTokens.hudSm,
-                height: 1,
-              ),
-            )
-          : showHeart
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.favorite_rounded,
-                  size: 18,
-                  color: _textColor(colors)
-                      .withValues(alpha: OpacityTokens.nearOpaque),
+      child:
+          eliminated
+              ? Text(
+                AppLocalizations.of(context).statusOut,
+                style: TextStyle(
+                  color: _textColor(colors),
+                  fontWeight: FontWeight.w700,
+                  fontSize: FontTokens.hudSm,
+                  height: 1,
                 ),
-                SizedBox(width: LayoutTokens.gr0),
-                Text(
-                  '$life',
-                  style: TextStyle(
-                    color: _textColor(colors),
-                    fontWeight: FontWeight.w700,
-                    fontSize: FontTokens.body,
-                    height: 1,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+              )
+              : showHeart
+              ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.favorite_rounded,
+                    size: 18,
+                    color: _textColor(
+                      colors,
+                    ).withValues(alpha: OpacityTokens.nearOpaque),
                   ),
+                  SizedBox(width: LayoutTokens.gr0),
+                  Text(
+                    '$life',
+                    style: TextStyle(
+                      color: _textColor(colors),
+                      fontWeight: FontWeight.w700,
+                      fontSize: FontTokens.body,
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              )
+              : Text(
+                '$life',
+                style: TextStyle(
+                  color: _textColor(colors),
+                  fontWeight: FontWeight.w700,
+                  fontSize: FontTokens.body,
+                  height: 1,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
-              ],
-            )
-          : Text(
-              '$life',
-              style: TextStyle(
-                color: _textColor(colors),
-                fontWeight: FontWeight.w700,
-                fontSize: FontTokens.body,
-                height: 1,
-                fontFeatures: const [FontFeature.tabularFigures()],
               ),
-            ),
     );
   }
 }
@@ -651,6 +647,7 @@ class _GameOverviewLifeStepper extends StatelessWidget {
     required this.accent,
     required this.enabled,
     required this.onDelta,
+    required this.onLifeTap,
     this.showHeart = false,
   });
 
@@ -659,6 +656,7 @@ class _GameOverviewLifeStepper extends StatelessWidget {
   final Color accent;
   final bool enabled;
   final void Function(int delta) onDelta;
+  final VoidCallback onLifeTap;
   final bool showHeart;
 
   Color _textColor(AppColorTokens colors) {
@@ -672,10 +670,13 @@ class _GameOverviewLifeStepper extends StatelessWidget {
     final colors = context.gameColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isActive
-            ? accent.withValues(alpha: OpacityTokens.subtle)
-            : colors.backgroundSecondary.withValues(alpha: OpacityTokens.half),
-        borderRadius: RadiusTokens.radiusControlSm,
+        color:
+            isActive
+                ? accent.withValues(alpha: OpacityTokens.subtle)
+                : colors.backgroundSecondary.withValues(
+                  alpha: OpacityTokens.half,
+                ),
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -684,33 +685,54 @@ class _GameOverviewLifeStepper extends StatelessWidget {
             icon: Icons.remove_rounded,
             enabled: enabled,
             semanticLabel: AppLocalizations.of(context).overviewDecreaseLife,
-            onTap: enabled
-                ? () {
-                    context.gameHapticLight();
-                    onDelta(-1);
-                  }
-                : null,
-            onHoldStep: enabled
-                ? () {
-                    context.gameHapticLight();
-                    onDelta(-5);
-                  }
-                : null,
+            onTap:
+                enabled
+                    ? () {
+                      context.gameHapticLight();
+                      onDelta(-1);
+                    }
+                    : null,
+            onHoldStep:
+                enabled
+                    ? () {
+                      context.gameHapticLight();
+                      onDelta(-5);
+                    }
+                    : null,
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr0),
-            child: showHeart
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.favorite_rounded,
-                        size: 16,
-                        color: _textColor(colors)
-                            .withValues(alpha: OpacityTokens.nearOpaque),
-                      ),
-                      SizedBox(width: LayoutTokens.gr0),
-                      Text(
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onLifeTap,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr0),
+              child:
+                  showHeart
+                      ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.favorite_rounded,
+                            size: 16,
+                            color: _textColor(
+                              colors,
+                            ).withValues(alpha: OpacityTokens.nearOpaque),
+                          ),
+                          SizedBox(width: LayoutTokens.gr0),
+                          Text(
+                            '$life',
+                            style: TextStyle(
+                              color: _textColor(colors),
+                              fontWeight: FontWeight.w700,
+                              fontSize: FontTokens.body,
+                              height: 1,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                      : Text(
                         '$life',
                         style: TextStyle(
                           color: _textColor(colors),
@@ -720,35 +742,26 @@ class _GameOverviewLifeStepper extends StatelessWidget {
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
-                    ],
-                  )
-                : Text(
-                    '$life',
-                    style: TextStyle(
-                      color: _textColor(colors),
-                      fontWeight: FontWeight.w700,
-                      fontSize: FontTokens.body,
-                      height: 1,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
+            ),
           ),
           _LifeStepButton(
             icon: Icons.add_rounded,
             enabled: enabled,
             semanticLabel: AppLocalizations.of(context).overviewIncreaseLife,
-            onTap: enabled
-                ? () {
-                    context.gameHapticLight();
-                    onDelta(1);
-                  }
-                : null,
-            onHoldStep: enabled
-                ? () {
-                    context.gameHapticLight();
-                    onDelta(5);
-                  }
-                : null,
+            onTap:
+                enabled
+                    ? () {
+                      context.gameHapticLight();
+                      onDelta(1);
+                    }
+                    : null,
+            onHoldStep:
+                enabled
+                    ? () {
+                      context.gameHapticLight();
+                      onDelta(5);
+                    }
+                    : null,
           ),
         ],
       ),
@@ -819,24 +832,26 @@ class _LifeStepButtonState extends State<_LifeStepButton> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
-        onLongPressStart: widget.enabled && widget.onHoldStep != null
-            ? (_) => _startHold()
-            : null,
-        onLongPressEnd: widget.enabled && widget.onHoldStep != null
-            ? (_) => _stopHold()
-            : null,
-        onLongPressCancel: widget.enabled && widget.onHoldStep != null
-            ? _stopHold
-            : null,
+        onLongPressStart:
+            widget.enabled && widget.onHoldStep != null
+                ? (_) => _startHold()
+                : null,
+        onLongPressEnd:
+            widget.enabled && widget.onHoldStep != null
+                ? (_) => _stopHold()
+                : null,
+        onLongPressCancel:
+            widget.enabled && widget.onHoldStep != null ? _stopHold : null,
         child: SizedBox(
           width: LayoutTokens.minTapTarget,
           height: LayoutTokens.minTapTarget,
           child: Icon(
             widget.icon,
             size: 20,
-            color: widget.enabled
-                ? colors.textPrimary
-                : colors.textSecondary.withValues(alpha: 0.4),
+            color:
+                widget.enabled
+                    ? colors.textPrimary
+                    : colors.textSecondary.withValues(alpha: 0.4),
           ),
         ),
       ),
@@ -866,7 +881,7 @@ class _GameOverviewCommanderTaxChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: colors.textSecondary.withValues(alpha: 0.15),
-          borderRadius: RadiusTokens.radiusControlSm,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         alignment: Alignment.center,
         child: Text(
@@ -929,7 +944,7 @@ class _PlayerPoliticsBadges extends StatelessWidget {
         padding: EdgeInsets.all(LayoutTokens.gr0),
         decoration: BoxDecoration(
           color: colors.emphasis.withValues(alpha: OpacityTokens.soft),
-          borderRadius: RadiusTokens.radiusControlSm,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         child: child,
       ),
@@ -940,17 +955,23 @@ class _PlayerPoliticsBadges extends StatelessWidget {
 class _GameOverviewPlayerCard extends ConsumerWidget {
   final PlayerGameState p;
   final GameState game;
+  final bool lifeControlsOpen;
+  final VoidCallback onToggleLifeControls;
 
-  const _GameOverviewPlayerCard({required this.p, required this.game});
+  const _GameOverviewPlayerCard({
+    required this.p,
+    required this.game,
+    required this.lifeControlsOpen,
+    required this.onToggleLifeControls,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.gameColors;
     final isActive = p.playerId == game.activePlayerId;
     final isLocal = p.playerId == game.localPlayerId;
-    final teamIdx = game.teamsEnabled
-        ? (game.teamAssignments[p.playerId] ?? 0)
-        : 0;
+    final teamIdx =
+        game.teamsEnabled ? (game.teamAssignments[p.playerId] ?? 0) : 0;
     final local = game.localPlayer;
     final notifier = ref.read(gameProvider.notifier);
     final pendingLabel = pendingAllianceLabel(
@@ -988,38 +1009,32 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       margin: EdgeInsets.only(bottom: LayoutTokens.gr2),
       decoration: BoxDecoration(
-        gradient: showAsActive
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [borderColor.withValues(alpha: 0.24), colors.surface],
-              )
-            : null,
-        color: p.isEliminated
-            ? colors.backgroundSecondary.withValues(alpha: OpacityTokens.half)
-            : showAsActive
-            ? null
-            : isLocal
-            ? colors.surface.withValues(alpha: OpacityTokens.nearOpaque)
-            : colors.surface,
-        borderRadius: showAsActive
-            ? RadiusTokens.radiusMd
-            : RadiusTokens.radiusSm,
+        gradient:
+            showAsActive
+                ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [borderColor.withValues(alpha: 0.24), colors.surface],
+                )
+                : null,
+        color:
+            p.isEliminated
+                ? colors.backgroundSecondary.withValues(
+                  alpha: OpacityTokens.half,
+                )
+                : showAsActive
+                ? null
+                : isLocal
+                ? colors.surface.withValues(alpha: OpacityTokens.nearOpaque)
+                : colors.surface,
+        borderRadius: RadiusTokens.radiusXl,
+        border: showAsActive ? Border.all(color: borderColor, width: 2) : null,
       ),
       child: ClipRRect(
-        borderRadius: showAsActive
-            ? RadiusTokens.radiusMd
-            : RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
         child: Stack(
           children: [
             OverviewCommanderArtBackdrop(player: p),
-            if (showAsActive)
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(width: 4, color: borderColor),
-              ),
             Padding(
               padding: EdgeInsets.fromLTRB(
                 LayoutTokens.gr2,
@@ -1077,13 +1092,15 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                                       TextSpan(
                                         text: p.username,
                                         style: TextStyle(
-                                          color: p.isEliminated
-                                              ? colors.textSecondary
-                                              : colors.textPrimary,
+                                          color:
+                                              p.isEliminated
+                                                  ? colors.textSecondary
+                                                  : colors.textPrimary,
                                           fontWeight: FontWeight.w700,
-                                          fontSize: showAsActive
-                                              ? FontTokens.title
-                                              : FontTokens.hudSm,
+                                          fontSize:
+                                              showAsActive
+                                                  ? FontTokens.title
+                                                  : FontTokens.hudSm,
                                           height: 1.2,
                                         ),
                                       ),
@@ -1114,7 +1131,7 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                           ],
                         ),
                         if (showAsActive && game.phasesEnabled) ...[
-                          SizedBox(height: 2),
+                          SizedBox(height: LayoutTokens.gr0),
                           Text(
                             game.currentPhase.streamlinedShortLabel,
                             style: TextStyle(
@@ -1129,7 +1146,7 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                           playerId: p.playerId,
                         ),
                         if (pendingLabel != null) ...[
-                          SizedBox(height: LayoutTokens.gr0 + 1),
+                          SizedBox(height: LayoutTokens.gr0),
                           Text(
                             pendingLabel,
                             maxLines: 1,
@@ -1162,15 +1179,31 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                           accent: borderColor,
                           showHeart: showAsActive,
                         )
-                      else
+                      else if (lifeControlsOpen)
                         _GameOverviewLifeStepper(
                           life: p.life,
                           isActive: showAsActive,
                           accent: borderColor,
                           enabled: true,
                           showHeart: showAsActive,
-                          onDelta: (delta) =>
-                              notifier.adjustLife(p.playerId, delta),
+                          onLifeTap: onToggleLifeControls,
+                          onDelta:
+                              (delta) => notifier.adjustLife(p.playerId, delta),
+                        )
+                      else
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onToggleLifeControls,
+                            borderRadius: RadiusTokens.radiusXl,
+                            child: _GameOverviewLifeBadge(
+                              life: p.life,
+                              eliminated: false,
+                              isActive: showAsActive,
+                              accent: borderColor,
+                              showHeart: showAsActive,
+                            ),
+                          ),
                         ),
                       if (showMenu) ...[
                         SizedBox(width: LayoutTokens.gr0),
@@ -1286,9 +1319,10 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
 
     return Semantics(
       container: true,
-      label: showAsActive
-          ? '${AppLocalizations.of(context).gameNowPlaying}: ${p.username}'
-          : null,
+      label:
+          showAsActive
+              ? '${AppLocalizations.of(context).gameNowPlaying}: ${p.username}'
+              : null,
       child: card,
     );
   }
@@ -1313,55 +1347,60 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
               GameSheetHeader(title: sheetL10n.overviewAssignTeamTitle),
               SizedBox(height: LayoutTokens.gr2),
               ...[0, 1, 2, 3, 4].map((idx) {
-                final label = idx == 0
-                    ? sheetL10n.overviewTeamNone
-                    : sheetL10n.overviewTeamN('$idx');
+                final label =
+                    idx == 0
+                        ? sheetL10n.overviewTeamNone
+                        : sheetL10n.overviewTeamN('$idx');
                 final color = idx == 0 ? colors.textSecondary : teamColor(idx);
                 final isSelected = currentTeam == idx;
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.only(bottom: LayoutTokens.gr1),
                   child: Material(
-                    color: isSelected
-                        ? (idx == 0
-                              ? colors.textSecondary.withValues(alpha: 0.15)
-                              : color.withValues(alpha: 0.15))
-                        : Colors.transparent,
-                    borderRadius: RadiusTokens.radiusControlSm,
+                    color:
+                        isSelected
+                            ? (idx == 0
+                                ? colors.textSecondary.withValues(alpha: 0.15)
+                                : color.withValues(alpha: 0.15))
+                            : Colors.transparent,
+                    borderRadius: RadiusTokens.radiusXl,
                     child: InkWell(
                       onTap: () {
                         notifier.assignTeam(playerId, idx);
                         Navigator.of(ctx).pop();
                       },
-                      borderRadius: RadiusTokens.radiusControlSm,
+                      borderRadius: RadiusTokens.radiusXl,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
+                          horizontal: LayoutTokens.gr3,
+                          vertical: LayoutTokens.gr2,
                         ),
                         child: Row(
                           children: [
                             if (idx > 0)
                               Container(
-                                width: 12,
-                                height: 12,
+                                width: LayoutTokens.gr2,
+                                height: LayoutTokens.gr2,
                                 decoration: BoxDecoration(
                                   color: color,
                                   shape: BoxShape.circle,
                                 ),
                               )
                             else
-                              const SizedBox(width: 12),
-                            if (idx > 0) const SizedBox(width: 10),
+                              const SizedBox(width: LayoutTokens.gr2),
+                            if (idx > 0)
+                              const SizedBox(width: LayoutTokens.gr1),
                             Text(
                               label,
                               style: TextStyle(
-                                color: idx == 0
-                                    ? colors.textSecondary
-                                    : colors.textPrimary,
+                                color:
+                                    idx == 0
+                                        ? colors.textSecondary
+                                        : colors.textPrimary,
                                 fontSize: FontTokens.hudSm,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                               ),
                             ),
                           ],

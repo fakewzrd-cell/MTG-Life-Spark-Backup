@@ -44,4 +44,5 @@ int _privateLanScore(String ip) {
   return 5;
 }
 
-bool _looksLikeIpv4(String ip) => RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(ip);
+bool _looksLikeIpv4(String ip) =>
+    RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(ip);

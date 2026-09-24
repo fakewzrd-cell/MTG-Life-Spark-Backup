@@ -70,7 +70,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'El modo claro usa fondos suaves — prueba Fog o Slate';
+      'Fondos oscuros. Desactívalo para una página clara.';
 
   @override
   String get settingsLanguage => 'Idioma';
@@ -927,6 +927,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Escribe el nombre de una carta para ver las reglas.';
 
   @override
+  String get lookupRecentEmpty => 'Aún no has consultado cartas.';
+
+  @override
+  String get lookupBack => 'Volver';
+
+  @override
   String lookupNoResults(String query) {
     return 'No se encontraron cartas para “$query”.';
   }
@@ -1756,7 +1762,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Elige trackers para tu franja (máx. $max). Toca la X de un contador para quitarlo.';
+    return 'Elige trackers para tu franja (máx. $max). Abre un contador para quitarlo.';
   }
 
   @override
@@ -1773,7 +1779,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dialsAddCounterTooltip => 'Añadir contador';
 
   @override
-  String get dialsRemoveFromStrip => 'Quitar de la franja';
+  String get dialsAddCounterChip => 'Contador';
+
+  @override
+  String get dialsRemoveFromStrip => 'Quitar contador';
 
   @override
   String get hubGuideTitle => 'Tour rápido';
@@ -1795,18 +1804,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'Lleva la vida y los contadores aquí. Fin de turno está bajo la barra de fases — o desactiva el rastreador de fases en el lobby para un control grande de Fin de turno.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Pila y búsqueda';
+  String get hubGuideSlideStackTitle => 'Pila';
 
   @override
   String get hubGuideSlideStackBody =>
-      'La pila es para Hold Priority y resolver efectos. La búsqueda abre Scryfall sin dejar tu asiento — texto de oráculo y rulings.';
+      'La pila es para Hold Priority y resolver efectos.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Búsqueda';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'La búsqueda abre Scryfall sin dejar tu asiento — texto de oráculo y rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Resumen de mesa';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Abre Mesa para todo el pod. Herramientas tiene dados y monedas que todos ven; Historial está en la cabecera. Fin de turno queda fijo; Rendirse está debajo.';
+      'Abre Mesa para todo el pod. Herramientas tiene dados y monedas que todos ven; Historial está en la cabecera. Fin de turno y Rendirse van juntos.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Tu turno y Commander';
@@ -2760,15 +2776,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get paletteSlate => 'Pizarra';
-
-  @override
-  String get paletteForest => 'Bosque';
-
-  @override
-  String get paletteObsidian => 'Obsidiana';
-
-  @override
-  String get paletteFog => 'Niebla';
 
   @override
   String networkCannotReachHost(String error) {

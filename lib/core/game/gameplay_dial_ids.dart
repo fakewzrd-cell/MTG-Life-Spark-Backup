@@ -26,11 +26,11 @@ abstract final class GameplayDialIds {
     exile,
   ];
 
-  /// Max counters visible on the gameplay strip (one row + Add tile).
-  static const int maxStripDials = 4;
+  /// Max counters visible on the gameplay strip (two chip rows + Add).
+  static const int maxStripDials = 8;
 
-  /// Max user-defined custom counters per player.
-  static const int maxCustomDials = 4;
+  /// Max user-defined custom counters per player. Shares the strip cap.
+  static const int maxCustomDials = 8;
 }
 
 /// Shared rules for counter limits on the gameplay strip.
@@ -55,8 +55,7 @@ abstract final class GameplayDialLimits {
       customDialCount(player) < GameplayDialIds.maxCustomDials &&
       canAddDialToStrip(player);
 
-  /// Add tile stays in the row until 4 custom counters are showing, and only
-  /// while the row still has fewer than 4 pills (prevents a clipped second row).
+  /// Add tile stays until the strip or the custom-counter cap is full.
   static bool showAddCounterTile(
     PlayerGameState player, {
     required bool isEliminated,
@@ -70,8 +69,7 @@ abstract final class GameplayDialLimits {
     required bool isNewKey,
     required bool addsToStrip,
   }) {
-    if (isNewKey &&
-        customDialCount(player) >= GameplayDialIds.maxCustomDials) {
+    if (isNewKey && customDialCount(player) >= GameplayDialIds.maxCustomDials) {
       return false;
     }
     if (addsToStrip && stripIsFull(player)) return false;

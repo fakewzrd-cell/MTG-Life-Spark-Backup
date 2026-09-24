@@ -5,8 +5,5 @@ WebSocketChannel connectClientChannel(
   Uri uri, {
   required Duration connectTimeout,
 }) {
-  return IOWebSocketChannel.connect(
-    uri,
-    connectTimeout: connectTimeout,
-  );
+  return IOWebSocketChannel.connect(uri, connectTimeout: connectTimeout);
 }

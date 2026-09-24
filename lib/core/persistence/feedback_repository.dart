@@ -32,8 +32,11 @@ class FeedbackRepository {
     try {
       return GameFeedback.fromJson(jsonDecode(json) as Map<String, dynamic>);
     } catch (e, st) {
-      appLog('FeedbackRepository: invalid feedback JSON for key $key',
-          error: e, stackTrace: st);
+      appLog(
+        'FeedbackRepository: invalid feedback JSON for key $key',
+        error: e,
+        stackTrace: st,
+      );
       return null;
     }
   }
@@ -72,8 +75,10 @@ class FeedbackRepository {
       allFeedback().fold<int>(0, (sum, f) => sum + f.dislikePlayerIds.length);
 
   /// Count of feedback entries where Spark of the game was chosen.
-  int get totalStarVotesGiven => allFeedback()
-      .fold<int>(0, (sum, f) => sum + (f.starPlayerId != null ? 1 : 0));
+  int get totalStarVotesGiven => allFeedback().fold<int>(
+    0,
+    (sum, f) => sum + (f.starPlayerId != null ? 1 : 0),
+  );
 
   /// Wipe all stored feedback (used by backup restore).
   Future<void> clearAll() async {

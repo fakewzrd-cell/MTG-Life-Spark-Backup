@@ -27,16 +27,18 @@ class LobbySlotCardShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
-    final fill = emphasized
-        ? (emphasizeColor ?? colors.primaryAccent)
-            .withValues(alpha: OpacityTokens.subtle)
-        : colors.surface;
+    final fill =
+        emphasized
+            ? (emphasizeColor ?? colors.primaryAccent).withValues(
+              alpha: OpacityTokens.subtle,
+            )
+            : colors.surface;
     return Container(
       margin: EdgeInsets.only(bottom: LayoutTokens.gr2),
       padding: EdgeInsets.all(compact ? LayoutTokens.gr2 : LayoutTokens.gr3),
       decoration: BoxDecoration(
         color: fill,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: child,
     );
@@ -62,10 +64,7 @@ class LobbyPlayerIdentityRow extends StatelessWidget {
         Container(
           width: LayoutTokens.gr1,
           height: LayoutTokens.gr1,
-          decoration: BoxDecoration(
-            color: playerColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: playerColor, shape: BoxShape.circle),
         ),
         SizedBox(width: LayoutTokens.gr1),
         Expanded(
@@ -87,29 +86,25 @@ class LobbyPlayerIdentityRow extends StatelessWidget {
 
 /// Commander art or color fallback for lobby slots.
 class LobbySlotAvatar extends StatelessWidget {
-  const LobbySlotAvatar({
-    super.key,
-    required this.slot,
-    this.size,
-  });
+  const LobbySlotAvatar({super.key, required this.slot, this.size});
 
   final PlayerSlot slot;
   final double? size;
 
   @override
   Widget build(BuildContext context) {
-    final resolved =
-        size ?? LayoutTokens.gr6 + LayoutTokens.gr0;
+    final resolved = size ?? LayoutTokens.thumbTapTarget;
     if (slot.commanderImageUrl != null) {
       return ClipRRect(
-        borderRadius: RadiusTokens.radiusControlMd,
+        borderRadius: RadiusTokens.radiusXl,
         child: CachedNetworkImage(
           imageUrl: slot.commanderImageUrl!,
           width: resolved,
           height: resolved,
           fit: BoxFit.cover,
-          errorWidget: (_, __, ___) =>
-              _LobbyColorDot(color: slot.playerColor, size: resolved),
+          errorWidget:
+              (_, __, ___) =>
+                  _LobbyColorDot(color: slot.playerColor, size: resolved),
         ),
       );
     }
@@ -130,7 +125,7 @@ class _LobbyColorDot extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.25),
-        borderRadius: RadiusTokens.radiusControlMd,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Icon(Icons.person, color: color, size: size * 0.56),
     );
@@ -155,7 +150,7 @@ class LobbyReadyBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: tone.withValues(alpha: OpacityTokens.soft),
-        borderRadius: RadiusTokens.radiusXs,
+        borderRadius: RadiusTokens.radiusXl,
       ),
       child: Text(
         isReady ? l10n.lobbyReady : l10n.lobbyWaiting,
@@ -212,9 +207,7 @@ class LobbyActionButton extends StatelessWidget {
         ),
         backgroundColor: bg,
         foregroundColor: fg,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusControlSm,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
         textStyle: TextStyle(
           fontSize: FontTokens.sm,
           fontWeight: FontWeight.w600,

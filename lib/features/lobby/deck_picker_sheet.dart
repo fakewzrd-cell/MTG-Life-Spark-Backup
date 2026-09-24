@@ -21,11 +21,12 @@ Future<void> showDeckPickerSheet(
 ) async {
   final lobbyFormat = ref.read(lobbyProvider).config.format;
   final isCommanderLobby = lobbyFormat.isCommanderStyle;
-  final allForFormat = ref
-      .read(deckRepositoryProvider)
-      .getAll()
-      .where((d) => d.matchesLobbyFormat(lobbyFormat))
-      .toList();
+  final allForFormat =
+      ref
+          .read(deckRepositoryProvider)
+          .getAll()
+          .where((d) => d.matchesLobbyFormat(lobbyFormat))
+          .toList();
   final decks = allForFormat.where((d) => d.hasDeckStyle).toList();
   final needsStyle = allForFormat.where((d) => !d.hasDeckStyle).length;
   await showGameBottomSheet<void>(
@@ -45,8 +46,10 @@ Future<void> showDeckPickerSheet(
             if (isCommanderLobby)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading:
-                    Icon(Icons.person_outline, color: colors.textSecondary),
+                leading: Icon(
+                  Icons.person_outline,
+                  color: colors.textSecondary,
+                ),
                 title: Text(
                   l10n.deckPickerManualOnly,
                   style: TextStyle(color: colors.textPrimary),
@@ -76,8 +79,8 @@ Future<void> showDeckPickerSheet(
                           ? '$needsStyle deck${needsStyle == 1 ? '' : 's'} '
                               'need a style set in the Decks tab before lobby use.'
                           : l10n.deckPickerEmptyForFormat(
-                              lobbyFormat.displayName,
-                            ),
+                            lobbyFormat.displayName,
+                          ),
                       style: TextStyle(
                         color: colors.textSecondary,
                         fontSize: FontTokens.hudSm,

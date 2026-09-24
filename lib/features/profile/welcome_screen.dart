@@ -42,66 +42,64 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
     return BlockSystemAppExit(
       child: Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: LayoutTokens.ctaHorizontal,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: LayoutTokens.ctaHorizontal,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      BrandLogo(layout: BrandLogoLayout.vertical, height: 96),
+                      SizedBox(height: LayoutTokens.gr4),
+                      Text(
+                        l10n.welcomeTagline,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  LayoutTokens.ctaHorizontal,
+                  LayoutTokens.gr2,
+                  LayoutTokens.ctaHorizontal,
+                  LayoutTokens.gr5,
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    BrandLogo(
-                      layout: BrandLogoLayout.vertical,
-                      height: 96,
+                    UiButton(
+                      label: l10n.welcomeReadyToPlay,
+                      enabled: !_skipping,
+                      onPressed:
+                          _skipping
+                              ? null
+                              : () => context.go(AppRoutes.profileSetup),
                     ),
-                    SizedBox(height: LayoutTokens.gr4),
-                    Text(
-                      l10n.welcomeTagline,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: colors.textSecondary,
-                          ),
-                      textAlign: TextAlign.center,
+                    SizedBox(height: LayoutTokens.gr2),
+                    UiButton(
+                      label: l10n.welcomeSkip,
+                      variant: UiButtonVariant.secondary,
+                      loading: _skipping,
+                      enabled: !_skipping,
+                      onPressed: _skipping ? null : _skip,
                     ),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                LayoutTokens.ctaHorizontal,
-                LayoutTokens.gr2,
-                LayoutTokens.ctaHorizontal,
-                LayoutTokens.gr5,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  UiButton(
-                    label: l10n.welcomeReadyToPlay,
-                    enabled: !_skipping,
-                    onPressed: _skipping
-                        ? null
-                        : () => context.go(AppRoutes.profileSetup),
-                  ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  UiButton(
-                    label: l10n.welcomeSkip,
-                    variant: UiButtonVariant.secondary,
-                    loading: _skipping,
-                    enabled: !_skipping,
-                    onPressed: _skipping ? null : _skip,
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

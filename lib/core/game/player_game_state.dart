@@ -11,14 +11,14 @@ class LifeChange {
   const LifeChange({required this.delta, required this.time});
 
   Map<String, dynamic> toJson() => {
-        'delta': delta,
-        'time': time.toIso8601String(),
-      };
+    'delta': delta,
+    'time': time.toIso8601String(),
+  };
 
   factory LifeChange.fromJson(Map<String, dynamic> json) => LifeChange(
-        delta: (json['delta'] as num).toInt(),
-        time: DateTime.parse(json['time'] as String),
-      );
+    delta: (json['delta'] as num).toInt(),
+    time: DateTime.parse(json['time'] as String),
+  );
 }
 
 /// Per-player in-game state. Reconstructed each session; never persisted to Hive.
@@ -68,7 +68,8 @@ class PlayerGameState {
 
   // Elimination
   final bool isEliminated;
-  final String? eliminationReason; // 'life'|'poison'|'commanderDamage'|'concede'|'disconnect'
+  final String?
+  eliminationReason; // 'life'|'poison'|'commanderDamage'|'concede'|'disconnect'
   final String? killedByPlayerId;
 
   // Life change log (last 10 entries)
@@ -144,12 +145,14 @@ class PlayerGameState {
       partnerCommanderImageUrl:
           partnerCommanderImageUrl ?? this.partnerCommanderImageUrl,
       hasPartner: hasPartner ?? this.hasPartner,
-      commanderColorIdentity: identical(commanderColorIdentity, _sentinelCi)
-          ? this.commanderColorIdentity
-          : List<String>.from(commanderColorIdentity as List<String>),
-      selectedDeckId: identical(selectedDeckId, _sentinel)
-          ? this.selectedDeckId
-          : selectedDeckId as String?,
+      commanderColorIdentity:
+          identical(commanderColorIdentity, _sentinelCi)
+              ? this.commanderColorIdentity
+              : List<String>.from(commanderColorIdentity as List<String>),
+      selectedDeckId:
+          identical(selectedDeckId, _sentinel)
+              ? this.selectedDeckId
+              : selectedDeckId as String?,
       life: life ?? this.life,
       poison: poison ?? this.poison,
       energy: energy ?? this.energy,
@@ -157,21 +160,25 @@ class PlayerGameState {
       rad: rad ?? this.rad,
       extraDials: extraDials ?? this.extraDials,
       customDialLabels: customDialLabels ?? this.customDialLabels,
-      visibleGameplayDials: identical(visibleGameplayDials, _sentinel)
-          ? this.visibleGameplayDials
-          : List<String>.from(visibleGameplayDials as List<String>),
+      visibleGameplayDials:
+          identical(visibleGameplayDials, _sentinel)
+              ? this.visibleGameplayDials
+              : List<String>.from(visibleGameplayDials as List<String>),
       commanderDamage: commanderDamage ?? this.commanderDamage,
       commanderCastCount: commanderCastCount ?? this.commanderCastCount,
-      allyPlayerId: identical(allyPlayerId, _sentinel)
-          ? this.allyPlayerId
-          : allyPlayerId as String?,
+      allyPlayerId:
+          identical(allyPlayerId, _sentinel)
+              ? this.allyPlayerId
+              : allyPlayerId as String?,
       isEliminated: isEliminated ?? this.isEliminated,
-      eliminationReason: identical(eliminationReason, _sentinel)
-          ? this.eliminationReason
-          : eliminationReason as String?,
-      killedByPlayerId: identical(killedByPlayerId, _sentinel)
-          ? this.killedByPlayerId
-          : killedByPlayerId as String?,
+      eliminationReason:
+          identical(eliminationReason, _sentinel)
+              ? this.eliminationReason
+              : eliminationReason as String?,
+      killedByPlayerId:
+          identical(killedByPlayerId, _sentinel)
+              ? this.killedByPlayerId
+              : killedByPlayerId as String?,
       lifeChangeLog: lifeChangeLog ?? this.lifeChangeLog,
       undoStack: undoStack ?? this.undoStack,
     );
@@ -210,33 +217,32 @@ class PlayerGameState {
   int get commanderTax => commanderCastCount * 2;
 
   Map<String, dynamic> toJson() => {
-        'pid': playerId,
-        'username': username,
-        'colorValue': playerColor.toARGB32(),
-        'commanderName': commanderName,
-        'commanderImageUrl': commanderImageUrl,
-        'partnerCommanderName': partnerCommanderName,
-        'partnerCommanderImageUrl': partnerCommanderImageUrl,
-        'hasPartner': hasPartner,
-        'commanderColorIdentity': commanderColorIdentity,
-        'selectedDeckId': selectedDeckId,
-        'life': life,
-        'poison': poison,
-        'energy': energy,
-        'experience': experience,
-        'rad': rad,
-        'extraDials': extraDials.map((k, v) => MapEntry(k, v)),
-        'customDialLabels': customDialLabels,
-        'visibleGameplayDials': visibleGameplayDials,
-        'commanderDamage':
-            commanderDamage.map((k, v) => MapEntry(k, v.toList())),
-        'commanderCastCount': commanderCastCount,
-        'allyPlayerId': allyPlayerId,
-        'isEliminated': isEliminated,
-        'eliminationReason': eliminationReason,
-        'killedByPlayerId': killedByPlayerId,
-        'lifeChangeLog': lifeChangeLog.map((e) => e.toJson()).toList(),
-      };
+    'pid': playerId,
+    'username': username,
+    'colorValue': playerColor.toARGB32(),
+    'commanderName': commanderName,
+    'commanderImageUrl': commanderImageUrl,
+    'partnerCommanderName': partnerCommanderName,
+    'partnerCommanderImageUrl': partnerCommanderImageUrl,
+    'hasPartner': hasPartner,
+    'commanderColorIdentity': commanderColorIdentity,
+    'selectedDeckId': selectedDeckId,
+    'life': life,
+    'poison': poison,
+    'energy': energy,
+    'experience': experience,
+    'rad': rad,
+    'extraDials': extraDials.map((k, v) => MapEntry(k, v)),
+    'customDialLabels': customDialLabels,
+    'visibleGameplayDials': visibleGameplayDials,
+    'commanderDamage': commanderDamage.map((k, v) => MapEntry(k, v.toList())),
+    'commanderCastCount': commanderCastCount,
+    'allyPlayerId': allyPlayerId,
+    'isEliminated': isEliminated,
+    'eliminationReason': eliminationReason,
+    'killedByPlayerId': killedByPlayerId,
+    'lifeChangeLog': lifeChangeLog.map((e) => e.toJson()).toList(),
+  };
 
   factory PlayerGameState.fromJson(Map<String, dynamic> json) {
     final xd = json['extraDials'] as Map<String, dynamic>?;
@@ -262,19 +268,19 @@ class PlayerGameState {
       rad: (json['rad'] as num?)?.toInt() ?? 0,
       extraDials: xd?.map((k, v) => MapEntry(k, (v as num).toInt())) ?? {},
       customDialLabels: cd?.map((k, v) => MapEntry(k, v as String)) ?? {},
-      visibleGameplayDials:
-          vgd?.map((e) => e.toString()).toList() ?? const [],
+      visibleGameplayDials: vgd?.map((e) => e.toString()).toList() ?? const [],
       commanderDamage:
           (json['commanderDamage'] as Map<String, dynamic>?)?.map(
-                (k, v) => MapEntry(k, List<int>.from(v as List)),
-              ) ??
-              {},
+            (k, v) => MapEntry(k, List<int>.from(v as List)),
+          ) ??
+          {},
       commanderCastCount: (json['commanderCastCount'] as num?)?.toInt() ?? 0,
       allyPlayerId: json['allyPlayerId'] as String?,
       isEliminated: json['isEliminated'] as bool? ?? false,
       eliminationReason: json['eliminationReason'] as String?,
       killedByPlayerId: json['killedByPlayerId'] as String?,
-      lifeChangeLog: (json['lifeChangeLog'] as List<dynamic>?)
+      lifeChangeLog:
+          (json['lifeChangeLog'] as List<dynamic>?)
               ?.map((e) => LifeChange.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],

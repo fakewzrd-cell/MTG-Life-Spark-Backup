@@ -17,7 +17,6 @@ import '../../shared/utils/app_locale.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/widgets/brand_logo.dart';
 import '../../ui/components/shell_destructive_dialog.dart';
-import '../../ui/components/ui_app_bar.dart';
 import '../../ui/components/ui_snack_bar.dart';
 import '../../ui/components/ui_surface.dart';
 import '../../ui/tokens/app_color_palettes.dart';
@@ -61,19 +60,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final languageCode = _settings.localeCode.trim().isEmpty
-        ? kLocaleSystem
-        : _settings.localeCode;
+    final languageCode =
+        _settings.localeCode.trim().isEmpty
+            ? kLocaleSystem
+            : _settings.localeCode;
     return Scaffold(
-      appBar: UiAppBar(title: l10n.settingsTitle),
       backgroundColor: colors.backgroundPrimary,
       body: ListView(
-        padding: LayoutTokens.shellListPadding(context, top: LayoutTokens.gr4),
+        padding: LayoutTokens.shellListPadding(
+          context,
+          top: MediaQuery.paddingOf(context).top + LayoutTokens.gr4,
+        ),
         children: [
           _SectionHeader(l10n.settingsSectionGameplay),
           _SettingTile(
             title: l10n.settingsDefaultFormat,
-            subtitle: l10n.settingsDefaultFormatSubtitle(_settings.defaultFormat),
+            subtitle: l10n.settingsDefaultFormatSubtitle(
+              _settings.defaultFormat,
+            ),
             onTap: () async {
               final picked = await _pickFormat(context);
               if (picked != null && mounted) {
@@ -86,6 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsDefaultStartingLife,
             subtitle: l10n.settingsDefaultStartingLifeSubtitle(
@@ -111,6 +116,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
             icon: Icons.brightness_5_outlined,
           ),
+          const _SettingsDivider(),
           _SwitchTile(
             title: l10n.settingsHideSystemBars,
             subtitle: l10n.settingsHideSystemBarsSubtitle,
@@ -121,6 +127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
             icon: Icons.fullscreen,
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsLanguage,
             subtitle: l10n.settingsLanguageSubtitle(
@@ -150,7 +157,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _ColorSchemePicker(
             selected: ref.watch(colorSchemePreferenceProvider),
             onSelected: (id) {
-              ref.read(colorSchemePreferenceProvider.notifier).setColorScheme(id);
+              ref
+                  .read(colorSchemePreferenceProvider.notifier)
+                  .setColorScheme(id);
             },
           ),
           SizedBox(height: LayoutTokens.shellSectionGap),
@@ -164,6 +173,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _save();
             },
           ),
+          const _SettingsDivider(),
           _SwitchTile(
             title: l10n.settingsShakeToUndo,
             subtitle: l10n.settingsShakeToUndoSubtitle,
@@ -184,17 +194,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _save();
             },
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsClearImageCache,
             subtitle: l10n.settingsClearImageCacheSubtitle,
             onTap: _clearCache,
             isDestructive: true,
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsSaveBackup,
             subtitle: l10n.settingsSaveBackupSubtitle,
             onTap: _exportBackup,
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsRestoreBackup,
             subtitle: l10n.settingsRestoreBackupSubtitle,
@@ -207,11 +220,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l10n.settingsFeedbackSubtitle,
             onTap: () => context.push(AppRoutes.feedback),
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsViewHubGuide,
             subtitle: l10n.settingsViewHubGuideSubtitle,
             onTap: () => showHubGuideSheet(context),
           ),
+          const _SettingsDivider(),
           _SettingTile(
             title: l10n.settingsViewTutorialAgain,
             subtitle: l10n.settingsViewTutorialAgainSubtitle,
@@ -222,12 +237,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               });
             },
           ),
-          SizedBox(height: LayoutTokens.gr6),
+          SizedBox(height: LayoutTokens.gr5),
           const Center(
-            child: BrandLogo(
-              layout: BrandLogoLayout.horizontal,
-              height: 28,
-            ),
+            child: BrandLogo(layout: BrandLogoLayout.horizontal, height: 28),
           ),
           SizedBox(height: LayoutTokens.gr1),
           Center(
@@ -250,13 +262,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<String?> _pickLanguage(BuildContext context, String current) {
     final l10n = AppLocalizations.of(context);
-    final options = <String>[
-      kLocaleSystem,
-      ...kSupportedLocaleCodes,
-    ];
-    return showModalBottomSheet<String>(
+    final options = <String>[kLocaleSystem, ...kSupportedLocaleCodes];
+    return showGameBottomSheet<String>(
       context: context,
-      useRootNavigator: true,
       builder: (ctx) {
         return SafeArea(
           child: Column(
@@ -265,12 +273,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               for (final code in options)
                 ListTile(
                   title: Text(languageLabel(l10n, code)),
-                  trailing: code == current
-                      ? Icon(
-                          Icons.check_rounded,
-                          color: AppColorTokens.of(ctx).primaryAccent,
-                        )
-                      : null,
+                  trailing:
+                      code == current
+                          ? Icon(
+                            Icons.check_rounded,
+                            color: AppColorTokens.of(ctx).primaryAccent,
+                          )
+                          : null,
                   onTap: () => Navigator.of(ctx).pop(code),
                 ),
             ],
@@ -294,7 +303,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GameSheetHeader(title: AppLocalizations.of(sheetContext).settingsDefaultFormatSheetTitle),
+              GameSheetHeader(
+                title:
+                    AppLocalizations.of(
+                      sheetContext,
+                    ).settingsDefaultFormatSheetTitle,
+              ),
               SizedBox(height: LayoutTokens.gr2),
               ...formats.map((f) {
                 final label = f.displayName;
@@ -305,14 +319,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     label,
                     style: TextStyle(
                       color: colors.textPrimary,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
-                  trailing: selected
-                      ? Icon(Icons.check_circle_rounded,
-                          color: colors.primaryAccent)
-                      : null,
+                  trailing:
+                      selected
+                          ? Icon(
+                            Icons.check_circle_rounded,
+                            color: colors.primaryAccent,
+                          )
+                          : null,
                   onTap: () => Navigator.pop(sheetContext, label),
                 );
               }),
@@ -333,7 +349,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GameSheetHeader(title: AppLocalizations.of(sheetContext).settingsDefaultStartingLifeSheetTitle),
+              GameSheetHeader(
+                title:
+                    AppLocalizations.of(
+                      sheetContext,
+                    ).settingsDefaultStartingLifeSheetTitle,
+              ),
               SizedBox(height: LayoutTokens.gr2),
               ...[20, 25, 30, 40, 60].map((l) {
                 final selected = l == _settings.defaultStartingLife;
@@ -343,14 +364,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     '$l life',
                     style: TextStyle(
                       color: colors.textPrimary,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
-                  trailing: selected
-                      ? Icon(Icons.check_circle_rounded,
-                          color: colors.primaryAccent)
-                      : null,
+                  trailing:
+                      selected
+                          ? Icon(
+                            Icons.check_circle_rounded,
+                            color: colors.primaryAccent,
+                          )
+                          : null,
                   onTap: () => Navigator.pop(sheetContext, l),
                 );
               }),
@@ -392,9 +415,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _restoreBackup() async {
     final l10n = AppLocalizations.of(context);
     try {
-      final pending = await ref.read(backupServiceProvider).pickBackupFile(
-            fileTypeLabel: l10n.backupFileTypeLabel,
-          );
+      final pending = await ref
+          .read(backupServiceProvider)
+          .pickBackupFile(fileTypeLabel: l10n.backupFileTypeLabel);
       if (!mounted) return;
       if (pending == null) return;
 
@@ -407,30 +430,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
       if (!confirmed || !mounted) return;
 
-      final backup =
-          await ref.read(backupServiceProvider).restoreBackup(pending);
+      final backup = await ref
+          .read(backupServiceProvider)
+          .restoreBackup(pending);
       if (!mounted) return;
 
       _settings = ref.read(settingsRepositoryProvider).settings;
-      ref
-          .read(colorSchemePreferenceProvider.notifier)
-          .hydrateFromRepository();
+      ref.read(colorSchemePreferenceProvider.notifier).hydrateFromRepository();
       bumpSettingsRevision(ref);
       bumpProfileRevision(ref);
       bumpDeckListRevision(ref);
       setState(() {});
-      showUiSnackBar(
-        context,
-        l10n.backupRestored(backup.profile.username),
-      );
+      showUiSnackBar(context, l10n.backupRestored(backup.profile.username));
     } catch (e, st) {
       appLog('Settings: restore backup failed', error: e, stackTrace: st);
       if (!mounted) return;
-      showUiSnackBar(
-        context,
-        _localizeBackupError(l10n, e),
-        isError: true,
-      );
+      showUiSnackBar(context, _localizeBackupError(l10n, e), isError: true);
     }
   }
 }
@@ -447,6 +462,19 @@ String _localizeBackupError(AppLocalizations l10n, Object error) {
     }
   }
   return l10n.backupRestoreFailed;
+}
+
+class _SettingsDivider extends StatelessWidget {
+  const _SettingsDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColorTokens.of(context).borderSubtle,
+    );
+  }
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -467,10 +495,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ColorSchemePicker extends StatelessWidget {
-  const _ColorSchemePicker({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ColorSchemePicker({required this.selected, required this.onSelected});
 
   final AppColorSchemeId selected;
   final ValueChanged<AppColorSchemeId> onSelected;
@@ -488,7 +513,7 @@ class _ColorSchemePicker extends StatelessWidget {
       padding: EdgeInsets.only(bottom: LayoutTokens.gr1),
       child: UiSurface(
         padding: EdgeInsets.all(LayoutTokens.gr2),
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -501,10 +526,7 @@ class _ColorSchemePicker extends StatelessWidget {
                     for (var col = 0; col < crossAxisCount; col++) ...[
                       if (col > 0) const SizedBox(width: crossSpacing),
                       Expanded(
-                        child: _swatchAt(
-                          palettes,
-                          row * crossAxisCount + col,
-                        ),
+                        child: _swatchAt(palettes, row * crossAxisCount + col),
                       ),
                     ],
                   ],
@@ -546,9 +568,6 @@ class _ColorSwatchButton extends StatelessWidget {
       AppColorSchemeId.violet => l10n.paletteViolet,
       AppColorSchemeId.crimson => l10n.paletteCrimson,
       AppColorSchemeId.slate => l10n.paletteSlate,
-      AppColorSchemeId.forest => l10n.paletteForest,
-      AppColorSchemeId.obsidian => l10n.paletteObsidian,
-      AppColorSchemeId.fog => l10n.paletteFog,
     };
     return Semantics(
       button: true,
@@ -558,15 +577,13 @@ class _ColorSwatchButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: palette.previewBackground,
-              borderRadius: RadiusTokens.radiusSm,
+              borderRadius: RadiusTokens.radiusXl,
               border: Border.all(
-                color: selected
-                    ? palette.previewAccent
-                    : Colors.transparent,
+                color: selected ? palette.previewAccent : Colors.transparent,
                 width: 2.5,
               ),
             ),
@@ -605,13 +622,14 @@ class _SwitchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      secondary: icon != null
-          ? Icon(
-              icon,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            )
-          : null,
+      secondary:
+          icon != null
+              ? Icon(
+                icon,
+                size: 22,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              )
+              : null,
       title: Text(
         title,
         style: Theme.of(context).textTheme.bodyLarge,
@@ -654,18 +672,19 @@ class _SettingTile extends StatelessWidget {
     final colors = AppColorTokens.of(context);
     final color = isDestructive ? colors.error : colors.textSecondary;
     return ListTile(
-      leading: icon != null
-          ? Icon(
-              icon,
-              size: 22,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            )
-          : null,
+      leading:
+          icon != null
+              ? Icon(
+                icon,
+                size: 22,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              )
+              : null,
       title: Text(
         title,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: isDestructive ? colors.error : null,
-            ),
+          color: isDestructive ? colors.error : null,
+        ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
@@ -751,7 +770,7 @@ class _AppCreditsState extends State<_AppCredits> {
         SizedBox(height: LayoutTokens.gr1),
         InkWell(
           onTap: _openScryfall,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: LayoutTokens.gr2,

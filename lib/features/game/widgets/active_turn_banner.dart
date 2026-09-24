@@ -25,16 +25,17 @@ class ActiveTurnBanner extends StatelessWidget {
     // Seat identity uses player color — brand accent is reserved for CTAs.
     final accent = active?.playerColor ?? colors.primaryAccent;
     final youLabel = l10n.glanceYou;
-    final name = isLocal
-        ? youLabel
-        : overviewShortPlayerName(active?.username ?? '—', maxChars: 14);
-    final turnLabel =
-        isLocal ? l10n.gameYourTurn : l10n.gamePlayersTurn(name);
-    final initial = isLocal
-        ? (youLabel.isNotEmpty ? youLabel[0].toUpperCase() : '?')
-        : (active?.username.isNotEmpty == true
-            ? active!.username[0].toUpperCase()
-            : '?');
+    final name =
+        isLocal
+            ? youLabel
+            : overviewShortPlayerName(active?.username ?? '—', maxChars: 14);
+    final turnLabel = isLocal ? l10n.gameYourTurn : l10n.gamePlayersTurn(name);
+    final initial =
+        isLocal
+            ? (youLabel.isNotEmpty ? youLabel[0].toUpperCase() : '?')
+            : (active?.username.isNotEmpty == true
+                ? active!.username[0].toUpperCase()
+                : '?');
 
     return Semantics(
       label: turnLabel,
@@ -44,11 +45,13 @@ class ActiveTurnBanner extends StatelessWidget {
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              accent.withValues(alpha: isLocal ? OpacityTokens.soft : OpacityTokens.faint),
+              accent.withValues(
+                alpha: isLocal ? OpacityTokens.soft : OpacityTokens.faint,
+              ),
               colors.surface.withValues(alpha: OpacityTokens.nearOpaque),
             ],
           ),
-          borderRadius: RadiusTokens.radiusControlMd,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -62,7 +65,7 @@ class ActiveTurnBanner extends StatelessWidget {
                 height: LayoutTokens.gr4,
                 decoration: BoxDecoration(
                   color: accent,
-                  borderRadius: RadiusTokens.radiusXs,
+                  borderRadius: RadiusTokens.radiusXl,
                 ),
               ),
               SizedBox(width: LayoutTokens.gr2),
@@ -94,7 +97,7 @@ class ActiveTurnBanner extends StatelessWidget {
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: LayoutTokens.gr0),
                     Text(
                       turnLabel,
                       maxLines: 1,

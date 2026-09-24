@@ -54,10 +54,13 @@ class TierBadge extends StatelessWidget {
     final color = wizardTierColorForLevel(level, colors);
     final label = l10n.tierBadgeLabel(wizardRankTitle(l10n, level), level);
     final child = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: LayoutTokens.gr2,
+        vertical: LayoutTokens.gr0,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: RadiusTokens.radiusSm,
+        borderRadius: RadiusTokens.radiusXl,
         border: Border.all(color: color, width: 1),
       ),
       child: FittedBox(
@@ -97,16 +100,13 @@ class TierBadge extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           child: ConstrainedBox(
             constraints: const BoxConstraints(
               minWidth: LayoutTokens.minTapTarget,
               minHeight: LayoutTokens.minTapTarget,
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: child,
-            ),
+            child: Align(alignment: Alignment.centerLeft, child: child),
           ),
         ),
       ),

@@ -26,9 +26,10 @@ class HomeNavBar {
     final quit = await showShellDestructiveConfirm(
       context: context,
       title: l10n.gameLeaveTitle,
-      message: concededEarly
-          ? l10n.gameLeaveMessageAfterConcede
-          : l10n.gameLeaveMessageActive,
+      message:
+          concededEarly
+              ? l10n.gameLeaveMessageAfterConcede
+              : l10n.gameLeaveMessageActive,
       confirmLabel: l10n.sessionLeaveConfirm,
       cancelLabel: l10n.sessionLeaveStay,
     );
@@ -36,7 +37,10 @@ class HomeNavBar {
     if (concededEarly) {
       await recordLocalConcedeBeforeExit(ref);
     }
-    if (context.mounted) context.go(AppRoutes.home);
+    if (context.mounted) {
+      allowNextGameExit(ref);
+      context.go(AppRoutes.home);
+    }
     await quitActiveGame(ref);
   }
 }

@@ -81,7 +81,8 @@ Color commanderDamageColor(AppColorTokens colors, int damage) {
   final ko = GameConstants.commanderDamageKo;
   if (damage >= ko) return colors.error;
   if (damage >= ko - 3) return colors.warning;
-  if (damage >= 10) return colors.emphasis.withValues(alpha: OpacityTokens.nearOpaque);
+  if (damage >= 10)
+    return colors.emphasis.withValues(alpha: OpacityTokens.nearOpaque);
   return colors.textPrimary;
 }
 
@@ -108,10 +109,7 @@ bool isCommanderGameSession({
 ///
 /// Handle + title sit outside the scroll list so swipe-down dismisses the sheet
 /// (same pattern as card lookup). Only the threat list scrolls when tall.
-Future<void> showCommanderDamageSheet(
-  BuildContext context,
-  WidgetRef ref,
-) {
+Future<void> showCommanderDamageSheet(BuildContext context, WidgetRef ref) {
   return showGameBottomSheet<void>(
     context: context,
     builder: (ctx) {
@@ -129,9 +127,10 @@ Future<void> showCommanderDamageSheet(
               if (local == null) return const SizedBox.shrink();
               final l10n = AppLocalizations.of(context);
 
-              final opponents = game.players
-                  .where((p) => p.playerId != local.playerId)
-                  .toList();
+              final opponents =
+                  game.players
+                      .where((p) => p.playerId != local.playerId)
+                      .toList();
               final notifier = ref.read(gameProvider.notifier);
 
               return Column(
@@ -154,18 +153,18 @@ Future<void> showCommanderDamageSheet(
                         CommanderDamagePanel(
                           localPlayer: local,
                           opponents: opponents,
-                          onDamageChange: ({
-                            required String fromPlayerId,
-                            required int partnerIndex,
-                            required String toPlayerId,
-                            required int delta,
-                          }) =>
-                              notifier.applyCommanderDamage(
-                            fromPlayerId: fromPlayerId,
-                            partnerIndex: partnerIndex,
-                            toPlayerId: toPlayerId,
-                            delta: delta,
-                          ),
+                          onDamageChange:
+                              ({
+                                required String fromPlayerId,
+                                required int partnerIndex,
+                                required String toPlayerId,
+                                required int delta,
+                              }) => notifier.applyCommanderDamage(
+                                fromPlayerId: fromPlayerId,
+                                partnerIndex: partnerIndex,
+                                toPlayerId: toPlayerId,
+                                delta: delta,
+                              ),
                         ),
                       ],
                     ),
@@ -200,8 +199,7 @@ class CommanderDamageBarButton extends StatelessWidget {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
     final ko = GameConstants.commanderDamageKo;
-    final remaining =
-        (ko - maxTrackDamage).clamp(0, ko);
+    final remaining = (ko - maxTrackDamage).clamp(0, ko);
     final urgent = remaining <= 3;
     final lethal = remaining == 0 && maxTrackDamage >= ko;
     final accent = commanderDamageColor(colors, maxTrackDamage);
@@ -214,7 +212,7 @@ class CommanderDamageBarButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: enabled ? onTap : null,
-          borderRadius: RadiusTokens.radiusControlSm,
+          borderRadius: RadiusTokens.radiusLgIncreased,
           child: AnimatedContainer(
             duration: MotionTokens.standard,
             curve: Curves.easeOutCubic,
@@ -226,10 +224,13 @@ class CommanderDamageBarButton extends StatelessWidget {
               vertical: LayoutTokens.gr1,
             ),
             decoration: BoxDecoration(
-              color: urgent
-                  ? accent.withValues(alpha: OpacityTokens.subtle)
-                  : colors.primaryAccent.withValues(alpha: OpacityTokens.subtle),
-              borderRadius: RadiusTokens.radiusControlSm,
+              color:
+                  urgent
+                      ? accent.withValues(alpha: OpacityTokens.subtle)
+                      : colors.primaryAccent.withValues(
+                        alpha: OpacityTokens.subtle,
+                      ),
+              borderRadius: RadiusTokens.radiusLgIncreased,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -237,21 +238,21 @@ class CommanderDamageBarButton extends StatelessWidget {
                 if (lethal)
                   Icon(
                     Icons.warning_amber_rounded,
-                    size: LayoutTokens.gr3 + 2,
+                    size: 16,
                     color: enabled ? accent : colors.textSecondary,
                   )
                 else
                   GameIcon.commanderDamage(
-                    size: LayoutTokens.gr3 + 2,
+                    size: 16,
                     color: enabled ? accent : colors.textSecondary,
                   ),
-                SizedBox(height: LayoutTokens.gr0),
+                const SizedBox(height: 4),
                 Text(
                   '$maxTrackDamage/$ko',
                   style: TextStyle(
                     color: enabled ? accent : colors.textSecondary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: FontTokens.body,
                     height: 1,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
@@ -259,13 +260,13 @@ class CommanderDamageBarButton extends StatelessWidget {
                 Text(
                   l10n.cmdDmgShortLabel,
                   style: TextStyle(
-                    color: enabled
-                        ? accent.withValues(alpha: 0.9)
-                        : colors.textSecondary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 10,
-                    height: 1.1,
-                    letterSpacing: 0.4,
+                    color:
+                        enabled
+                            ? accent.withValues(alpha: 0.9)
+                            : colors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: FontTokens.hudXs,
+                    height: 1,
                   ),
                 ),
               ],
@@ -286,7 +287,8 @@ class CommanderDamagePanel extends StatefulWidget {
     required int partnerIndex,
     required String toPlayerId,
     required int delta,
-  }) onDamageChange;
+  })
+  onDamageChange;
 
   const CommanderDamagePanel({
     super.key,
@@ -303,10 +305,11 @@ class _CommanderDamagePanelState extends State<CommanderDamagePanel> {
   String? _dealtExpandedId;
 
   List<PlayerGameState> get _trackableOpponents {
-    final list = widget.opponents.where((o) {
-      if (!o.isEliminated) return true;
-      return _maxIncomingTrack(o) > 0 || _dealtTotal(o) > 0;
-    }).toList();
+    final list =
+        widget.opponents.where((o) {
+          if (!o.isEliminated) return true;
+          return _maxIncomingTrack(o) > 0 || _dealtTotal(o) > 0;
+        }).toList();
     list.sort((a, b) => _maxIncomingTrack(b).compareTo(_maxIncomingTrack(a)));
     return list;
   }
@@ -385,10 +388,11 @@ class _CommanderDamagePanelState extends State<CommanderDamagePanel> {
               shortName: _shortName(opp.username),
               dealtTotal: _dealtTotal(opp),
               dealtExpanded: _dealtExpandedId == opp.playerId,
-              onToggleDealt: () => setState(() {
-                _dealtExpandedId =
-                    _dealtExpandedId == opp.playerId ? null : opp.playerId;
-              }),
+              onToggleDealt:
+                  () => setState(() {
+                    _dealtExpandedId =
+                        _dealtExpandedId == opp.playerId ? null : opp.playerId;
+                  }),
               onDamageChange: widget.onDamageChange,
             ),
             SizedBox(height: LayoutTokens.gr2),
@@ -420,7 +424,8 @@ class _ThreatOpponentRow extends StatelessWidget {
     required int partnerIndex,
     required String toPlayerId,
     required int delta,
-  }) onDamageChange;
+  })
+  onDamageChange;
 
   @override
   Widget build(BuildContext context) {
@@ -432,20 +437,22 @@ class _ThreatOpponentRow extends StatelessWidget {
       opponent.playerId,
       partnerIndex: 0,
     );
-    final partnerDmg = opponent.hasPartner
-        ? localPlayer.commanderDamageFrom(
-            opponent.playerId,
-            partnerIndex: 1,
-          )
-        : 0;
-    final accent = commanderDamageColor(colors, primaryDmg > partnerDmg
-        ? primaryDmg
-        : partnerDmg);
+    final partnerDmg =
+        opponent.hasPartner
+            ? localPlayer.commanderDamageFrom(
+              opponent.playerId,
+              partnerIndex: 1,
+            )
+            : 0;
+    final accent = commanderDamageColor(
+      colors,
+      primaryDmg > partnerDmg ? primaryDmg : partnerDmg,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.backgroundSecondary.withValues(alpha: 0.45),
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         border: Border.all(color: accent.withValues(alpha: 0.35)),
       ),
       child: Padding(
@@ -488,45 +495,50 @@ class _ThreatOpponentRow extends StatelessWidget {
               label: opponent.commanderName ?? l10n.cmdDmgDefaultCommander,
               damage: primaryDmg,
               showTakenOfKo: true,
-              onAdd: canEditReceived
-                  ? () => onDamageChange(
+              onAdd:
+                  canEditReceived
+                      ? () => onDamageChange(
                         fromPlayerId: opponent.playerId,
                         partnerIndex: 0,
                         toPlayerId: localPlayer.playerId,
                         delta: 1,
                       )
-                  : null,
-              onRemove: primaryDmg > 0 && canEditReceived
-                  ? () => onDamageChange(
+                      : null,
+              onRemove:
+                  primaryDmg > 0 && canEditReceived
+                      ? () => onDamageChange(
                         fromPlayerId: opponent.playerId,
                         partnerIndex: 0,
                         toPlayerId: localPlayer.playerId,
                         delta: -1,
                       )
-                  : null,
+                      : null,
             ),
             if (opponent.hasPartner) ...[
               SizedBox(height: LayoutTokens.gr2),
               _DamageTrack(
-                label: opponent.partnerCommanderName ?? l10n.cmdDmgDefaultPartner,
+                label:
+                    opponent.partnerCommanderName ?? l10n.cmdDmgDefaultPartner,
                 damage: partnerDmg,
                 showTakenOfKo: true,
-                onAdd: canEditReceived
-                    ? () => onDamageChange(
+                onAdd:
+                    canEditReceived
+                        ? () => onDamageChange(
                           fromPlayerId: opponent.playerId,
                           partnerIndex: 1,
                           toPlayerId: localPlayer.playerId,
                           delta: 1,
                         )
-                    : null,
-                onRemove: partnerDmg > 0 && canEditReceived
-                    ? () => onDamageChange(
+                        : null,
+                onRemove:
+                    partnerDmg > 0 && canEditReceived
+                        ? () => onDamageChange(
                           fromPlayerId: opponent.playerId,
                           partnerIndex: 1,
                           toPlayerId: localPlayer.playerId,
                           delta: -1,
                         )
-                    : null,
+                        : null,
               ),
             ],
             if (dealtExpanded) ...[
@@ -567,7 +579,8 @@ class _DirectionSection extends StatelessWidget {
     required int partnerIndex,
     required String toPlayerId,
     required int delta,
-  }) onDamageChange;
+  })
+  onDamageChange;
 
   @override
   Widget build(BuildContext context) {
@@ -577,20 +590,19 @@ class _DirectionSection extends StatelessWidget {
       sourcePlayer.playerId,
       partnerIndex: 0,
     );
-    final partnerDmg = sourcePlayer.hasPartner
-        ? targetPlayer.commanderDamageFrom(
-            sourcePlayer.playerId,
-            partnerIndex: 1,
-          )
-        : 0;
+    final partnerDmg =
+        sourcePlayer.hasPartner
+            ? targetPlayer.commanderDamageFrom(
+              sourcePlayer.playerId,
+              partnerIndex: 1,
+            )
+            : 0;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.backgroundSecondary.withValues(alpha: 0.4),
-        borderRadius: RadiusTokens.radiusMd,
-        border: Border.all(
-          color: colors.textSecondary.withValues(alpha: 0.12),
-        ),
+        borderRadius: RadiusTokens.radiusXl,
+        border: Border.all(color: colors.textSecondary.withValues(alpha: 0.12)),
       ),
       child: Padding(
         padding: EdgeInsets.all(LayoutTokens.gr2),
@@ -605,7 +617,7 @@ class _DirectionSection extends StatelessWidget {
                 fontSize: FontTokens.hudSm,
               ),
             ),
-            SizedBox(height: 2),
+            SizedBox(height: LayoutTokens.gr0),
             Text(
               subtitle,
               style: TextStyle(
@@ -618,45 +630,50 @@ class _DirectionSection extends StatelessWidget {
             _DamageTrack(
               label: sourcePlayer.commanderName ?? l10n.cmdDmgDefaultCommander,
               damage: primaryDmg,
-              onAdd: canEdit
-                  ? () => onDamageChange(
+              onAdd:
+                  canEdit
+                      ? () => onDamageChange(
                         fromPlayerId: sourcePlayer.playerId,
                         partnerIndex: 0,
                         toPlayerId: targetPlayer.playerId,
                         delta: 1,
                       )
-                  : null,
-              onRemove: primaryDmg > 0 && canEdit
-                  ? () => onDamageChange(
+                      : null,
+              onRemove:
+                  primaryDmg > 0 && canEdit
+                      ? () => onDamageChange(
                         fromPlayerId: sourcePlayer.playerId,
                         partnerIndex: 0,
                         toPlayerId: targetPlayer.playerId,
                         delta: -1,
                       )
-                  : null,
+                      : null,
             ),
             if (sourcePlayer.hasPartner) ...[
               SizedBox(height: LayoutTokens.gr2),
               _DamageTrack(
-                label: sourcePlayer.partnerCommanderName ??
+                label:
+                    sourcePlayer.partnerCommanderName ??
                     l10n.cmdDmgDefaultPartnerCommander,
                 damage: partnerDmg,
-                onAdd: canEdit
-                    ? () => onDamageChange(
+                onAdd:
+                    canEdit
+                        ? () => onDamageChange(
                           fromPlayerId: sourcePlayer.playerId,
                           partnerIndex: 1,
                           toPlayerId: targetPlayer.playerId,
                           delta: 1,
                         )
-                    : null,
-                onRemove: partnerDmg > 0 && canEdit
-                    ? () => onDamageChange(
+                        : null,
+                onRemove:
+                    partnerDmg > 0 && canEdit
+                        ? () => onDamageChange(
                           fromPlayerId: sourcePlayer.playerId,
                           partnerIndex: 1,
                           toPlayerId: targetPlayer.playerId,
                           delta: -1,
                         )
-                    : null,
+                        : null,
               ),
             ],
           ],
@@ -677,7 +694,7 @@ class _OpponentAvatar extends StatelessWidget {
     if (opponent.commanderImageUrl != null &&
         opponent.commanderImageUrl!.isNotEmpty) {
       return ClipRRect(
-        borderRadius: RadiusTokens.radiusControlMd,
+        borderRadius: RadiusTokens.radiusLgIncreased,
         child: CachedNetworkImage(
           imageUrl: opponent.commanderImageUrl!,
           width: size,
@@ -691,19 +708,19 @@ class _OpponentAvatar extends StatelessWidget {
   }
 
   Widget _colorDot(double size) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: opponent.playerColor.withValues(alpha: OpacityTokens.soft),
-          borderRadius: RadiusTokens.radiusControlMd,
-          border: Border.all(color: opponent.playerColor),
-        ),
-        child: Icon(
-          Icons.person,
-          color: opponent.playerColor,
-          size: LayoutTokens.gr3,
-        ),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: opponent.playerColor.withValues(alpha: OpacityTokens.soft),
+      borderRadius: RadiusTokens.radiusLgIncreased,
+      border: Border.all(color: opponent.playerColor),
+    ),
+    child: Icon(
+      Icons.person,
+      color: opponent.playerColor,
+      size: LayoutTokens.gr3,
+    ),
+  );
 }
 
 class _DamageTrack extends StatelessWidget {
@@ -760,7 +777,7 @@ class _DamageTrack extends StatelessWidget {
         ),
         SizedBox(height: LayoutTokens.gr0),
         ClipRRect(
-          borderRadius: BorderRadius.circular(LayoutTokens.gr0),
+          borderRadius: RadiusTokens.radiusXl,
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 4,
@@ -790,11 +807,7 @@ class _DamageTrack extends StatelessWidget {
                 child: Text('$damage'),
               ),
             ),
-            _DmgStepButton(
-              icon: Icons.add_rounded,
-              isAdd: true,
-              onTap: onAdd,
-            ),
+            _DmgStepButton(icon: Icons.add_rounded, isAdd: true, onTap: onAdd),
           ],
         ),
       ],
@@ -807,23 +820,21 @@ class _DmgStepButton extends StatelessWidget {
   final bool isAdd;
   final VoidCallback? onTap;
 
-  const _DmgStepButton({
-    required this.icon,
-    required this.isAdd,
-    this.onTap,
-  });
+  const _DmgStepButton({required this.icon, required this.isAdd, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
     final enabled = onTap != null;
-    final fill = isAdd
-        ? colors.primaryAccent.withValues(alpha: enabled ? 0.22 : 0.08)
-        : colors.success.withValues(alpha: enabled ? 0.2 : 0.08);
-    final iconColor = enabled
-        ? (isAdd ? colors.primaryAccent : colors.success)
-        : colors.textSecondary.withValues(alpha: 0.45);
+    final fill =
+        isAdd
+            ? colors.primaryAccent.withValues(alpha: enabled ? 0.22 : 0.08)
+            : colors.success.withValues(alpha: enabled ? 0.2 : 0.08);
+    final iconColor =
+        enabled
+            ? (isAdd ? colors.primaryAccent : colors.success)
+            : colors.textSecondary.withValues(alpha: 0.45);
 
     return Semantics(
       button: true,
@@ -832,21 +843,19 @@ class _DmgStepButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: enabled
-              ? () {
-                  context.gameHapticLight();
-                  onTap!();
-                }
-              : null,
+          onTap:
+              enabled
+                  ? () {
+                    context.gameHapticLight();
+                    onTap!();
+                  }
+                  : null,
           borderRadius: RadiusTokens.radiusPill,
           child: AnimatedContainer(
             duration: MotionTokens.standard,
             width: LayoutTokens.thumbTapTarget,
             height: LayoutTokens.thumbTapTarget,
-            decoration: BoxDecoration(
-              color: fill,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
             child: Icon(icon, size: 26, color: iconColor),
           ),
         ),

@@ -104,7 +104,8 @@ class GameDialogTitleRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: titleWidget ??
+          child:
+              titleWidget ??
               Text(title!, style: GameModalChrome.dialogTitleStyle(context)),
         ),
         GameDialogCloseButton(onPressed: onClose),
@@ -176,31 +177,32 @@ class GameSheetBody extends StatelessWidget {
     super.key,
     required this.child,
     this.scrollable = false,
+    this.scrollController,
   });
 
   final Widget child;
   final bool scrollable;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
     final pad = GameModalChrome.sheetPadding(context);
     if (!scrollable) {
-      return SafeArea(
-        top: false,
-        child: Padding(padding: pad, child: child),
-      );
+      return SafeArea(top: false, child: Padding(padding: pad, child: child));
     }
 
     return SafeArea(
       top: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final maxH = constraints.maxHeight.isFinite
-              ? constraints.maxHeight
-              : MediaQuery.sizeOf(context).height * 0.9;
+          final maxH =
+              constraints.maxHeight.isFinite
+                  ? constraints.maxHeight
+                  : MediaQuery.sizeOf(context).height * 0.9;
           return ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxH),
             child: ListView(
+              controller: scrollController,
               shrinkWrap: true,
               padding: pad,
               children: [child],
@@ -250,10 +252,67 @@ Future<T?> showGameBottomSheet<T>({
       return Align(
         alignment: Alignment.bottomCenter,
         heightFactor: 1,
-        child: builder(ctx),
+        child: _SheetPullDownToDismiss(child: builder(ctx)),
       );
     },
   );
+}
+
+/// A downward pull closes the sheet. Scrolling a list still wins until that
+/// list is back at the top, then a further pull of 32px dismisses it.
+class _SheetPullDownToDismiss extends StatefulWidget {
+  const _SheetPullDownToDismiss({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SheetPullDownToDismiss> createState() =>
+      _SheetPullDownToDismissState();
+}
+
+class _SheetPullDownToDismissState extends State<_SheetPullDownToDismiss> {
+  static const _closeDistance = LayoutTokens.gr5;
+
+  final Map<int, double> _offsets = {};
+  double _pull = 0;
+  bool _closing = false;
+
+  bool get _atTop => _offsets.values.every((offset) => offset <= 0.5);
+
+  void _close() {
+    if (_closing || !mounted) return;
+    _closing = true;
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.axis != Axis.vertical) return false;
+        final key = identityHashCode(notification.context);
+        _offsets[key] =
+            notification.metrics.pixels - notification.metrics.minScrollExtent;
+        return false;
+      },
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _pull = 0,
+        onPointerUp: (_) => _pull = 0,
+        onPointerCancel: (_) => _pull = 0,
+        onPointerMove: (event) {
+          if (_closing) return;
+          if (!_atTop || event.delta.dy <= 0) {
+            _pull = 0;
+            return;
+          }
+          _pull += event.delta.dy;
+          if (_pull >= _closeDistance) _close();
+        },
+        child: widget.child,
+      ),
+    );
+  }
 }
 
 /// Confirm dialog: title, body, single primary action; dismiss via X.
@@ -273,7 +332,7 @@ Future<bool?> showGameConfirmDialog({
       return AlertDialog(
         backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           side: BorderSide(color: colors.backgroundSecondary),
         ),
         title: GameDialogTitleRow(
@@ -284,9 +343,12 @@ Future<bool?> showGameConfirmDialog({
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: destructive
-                ? FilledButton.styleFrom(backgroundColor: colors.error)
-                : FilledButton.styleFrom(backgroundColor: colors.primaryAccent),
+            style:
+                destructive
+                    ? FilledButton.styleFrom(backgroundColor: colors.error)
+                    : FilledButton.styleFrom(
+                      backgroundColor: colors.primaryAccent,
+                    ),
             child: Text(confirmLabel),
           ),
         ],
@@ -304,6 +366,7 @@ Future<bool?> showGameChoiceDialog({
   String? secondaryLabel,
   bool primaryDestructive = false,
   bool barrierDismissible = true,
+
   /// Result when the title close control is tapped (default: secondary/`false`).
   bool? closeResult = false,
 }) {
@@ -315,7 +378,7 @@ Future<bool?> showGameChoiceDialog({
       return AlertDialog(
         backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           side: BorderSide(color: colors.backgroundSecondary),
         ),
         title: GameDialogTitleRow(
@@ -338,9 +401,12 @@ Future<bool?> showGameChoiceDialog({
               children: [
                 FilledButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  style: primaryDestructive
-                      ? GameUiTokens.destructiveFilledButton(colors)
-                      : GameUiTokens.sheetPrimaryButton(colors.primaryAccent),
+                  style:
+                      primaryDestructive
+                          ? GameUiTokens.destructiveFilledButton(colors)
+                          : GameUiTokens.sheetPrimaryButton(
+                            colors.primaryAccent,
+                          ),
                   child: Text(primaryLabel),
                 ),
                 if (secondaryLabel != null) ...[
@@ -348,8 +414,7 @@ Future<bool?> showGameChoiceDialog({
                   FilledButton(
                     onPressed: () => Navigator.pop(ctx, false),
                     style: FilledButton.styleFrom(
-                      minimumSize:
-                          const Size(0, LayoutTokens.minTapTarget),
+                      minimumSize: const Size(0, LayoutTokens.minTapTarget),
                       backgroundColor: colors.backgroundSecondary,
                       foregroundColor: colors.textPrimary,
                     ),
@@ -388,7 +453,7 @@ class GameFormDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         side: BorderSide(color: colors.backgroundSecondary),
       ),
       contentPadding: const EdgeInsets.fromLTRB(

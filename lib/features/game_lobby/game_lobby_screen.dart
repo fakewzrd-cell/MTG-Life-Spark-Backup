@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
-import '../../ui/components/ui_app_bar.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
@@ -20,9 +19,8 @@ class GameLobbyScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
-      appBar: UiAppBar(title: l10n.lobbyTitle),
       body: SafeArea(
-        top: false,
+        top: true,
         bottom: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -42,7 +40,7 @@ class GameLobbyScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.lobbyHost),
                 ),
               ),
-              SizedBox(height: LayoutTokens.shellSectionGap),
+              SizedBox(height: LayoutTokens.gr2),
               Expanded(
                 child: _BigActionButton(
                   label: l10n.lobbyJoinGame,
@@ -62,10 +60,7 @@ class GameLobbyScreen extends StatelessWidget {
 
 /// Soft tonal gradient — Host/Join stay distinct without bordered cards.
 class _LobbyAccentBackdrop extends StatelessWidget {
-  const _LobbyAccentBackdrop({
-    required this.colors,
-    this.mirrored = false,
-  });
+  const _LobbyAccentBackdrop({required this.colors, this.mirrored = false});
 
   final AppColorTokens colors;
   final bool mirrored;
@@ -113,9 +108,7 @@ class _BigActionButton extends StatelessWidget {
     final isCompact =
         MediaQuery.sizeOf(context).width < 360 ||
         MediaQuery.sizeOf(context).height < 600;
-    final padding = isCompact ? LayoutTokens.gr3 : LayoutTokens.gr4;
-    final titleSize =
-        isCompact ? FontTokens.headline : FontTokens.headline + LayoutTokens.gr1;
+    final titleSize = FontTokens.headline;
 
     return Material(
       color: colors.surface,
@@ -126,19 +119,18 @@ class _BigActionButton extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        splashColor:
-            colors.primaryAccent.withValues(alpha: OpacityTokens.subtle),
-        highlightColor:
-            colors.primaryAccent.withValues(alpha: OpacityTokens.faint),
+        splashColor: colors.primaryAccent.withValues(
+          alpha: OpacityTokens.subtle,
+        ),
+        highlightColor: colors.primaryAccent.withValues(
+          alpha: OpacityTokens.faint,
+        ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _LobbyAccentBackdrop(
-              colors: colors,
-              mirrored: mirrored,
-            ),
+            _LobbyAccentBackdrop(colors: colors, mirrored: mirrored),
             Padding(
-              padding: EdgeInsets.all(padding),
+              padding: const EdgeInsets.all(LayoutTokens.gr2),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -154,13 +146,14 @@ class _BigActionButton extends StatelessWidget {
                     Text(
                       label,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontSize: titleSize,
-                            fontWeight: FontWeight.w600,
-                            color: colors.textPrimary,
-                            height: 1.1,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                        height: 1.1,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -212,11 +205,7 @@ class _LobbyIconBadge extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: Icon(
-            icon,
-            size: iconSize,
-            color: colors.primaryAccent,
-          ),
+          child: Icon(icon, size: iconSize, color: colors.primaryAccent),
         ),
       ),
     );

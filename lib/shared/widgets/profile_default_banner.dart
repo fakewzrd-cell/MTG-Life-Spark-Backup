@@ -28,10 +28,7 @@ Widget defaultBannerFill(BuildContext context) {
 }
 
 /// Bundled profile / commander art shown when no network image is available.
-Widget defaultProfileBannerArt(
-  BuildContext context, {
-  double? height,
-}) {
+Widget defaultProfileBannerArt(BuildContext context, {double? height}) {
   return Image.asset(
     AppIcons.defaultProfileBanner,
     fit: BoxFit.cover,

@@ -48,9 +48,7 @@ import 'ranks_info_sheet.dart';
 ) {
   final ordered = List<MatchRecord>.from(matches)
     ..sort((a, b) => a.date.compareTo(b.date));
-  return computeWinStreaks([
-    for (final m in ordered) m.result == 'win',
-  ]);
+  return computeWinStreaks([for (final m in ordered) m.result == 'win']);
 }
 
 double _profileLayoutTextScale(BuildContext context) {
@@ -164,13 +162,21 @@ class _PlayerStatsCarouselTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: ProfileCarouselCard(
-        padding: edgeToEdge ? EdgeInsets.zero : null,
-        child: child,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final slotWidth =
+            constraints.hasBoundedWidth ? constraints.maxWidth : width;
+        final slotHeight =
+            constraints.hasBoundedHeight ? constraints.maxHeight : height;
+        return SizedBox(
+          width: slotWidth,
+          height: slotHeight,
+          child: ProfileCarouselCard(
+            padding: edgeToEdge ? EdgeInsets.zero : null,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
@@ -193,9 +199,7 @@ PlayerDeck? pickMostPlayedDeck(Iterable<PlayerDeck> decks) {
 /// Undefeated decks are excluded so "Tough record" never highlights a winner.
 @visibleForTesting
 PlayerDeck? pickWorstDeck(Iterable<PlayerDeck> decks) {
-  final beaten = decks
-      .where((d) => d.gamesPlayed > 0 && d.losses > 0)
-      .toList();
+  final beaten = decks.where((d) => d.gamesPlayed > 0 && d.losses > 0).toList();
   if (beaten.isEmpty) return null;
   beaten.sort((a, b) {
     final wr = a.winRate.compareTo(b.winRate);
@@ -208,15 +212,14 @@ PlayerDeck? pickWorstDeck(Iterable<PlayerDeck> decks) {
 }
 
 class ProfilePlayerStatsSection extends ConsumerWidget {
-  const ProfilePlayerStatsSection({super.key, 
+  const ProfilePlayerStatsSection({
+    super.key,
     required this.profile,
     required this.colors,
-    required this.hasPlayedGames,
   });
 
   final PlayerProfile profile;
   final AppColorTokens colors;
-  final bool hasPlayedGames;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -233,23 +236,23 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
     final xpProgress =
         (xpNeeded > 0) ? (xpInLevel / xpNeeded).clamp(0.0, 1.0) : 0.0;
 
-    final mostPlayed =
-        hasPlayedGames ? pickMostPlayedDeck(repoDecks) : null;
-    final worst = hasPlayedGames ? pickWorstDeck(repoDecks) : null;
+    final mostPlayed = pickMostPlayedDeck(repoDecks);
+    final worst = pickWorstDeck(repoDecks);
 
-    final matches = ref
-        .watch(matchRepositoryProvider)
-        .getAllMatches()
-        .where((m) => !m.matchId.startsWith('__preview_placeholder'))
-        .toList();
+    final matches =
+        ref
+            .watch(matchRepositoryProvider)
+            .getAllMatches()
+            .where((m) => !m.matchId.startsWith('__preview_placeholder'))
+            .toList();
     final streaks = computeWinStreaksFromMatches(matches);
     // Prefer match history when present; fall back to persisted streak.
-    final currentStreak = matches.isNotEmpty
-        ? streaks.current
-        : (hasPlayedGames ? profile.currentWinStreak : 0);
-    final bestStreak = matches.isNotEmpty
-        ? math.max(streaks.best, profile.currentWinStreak)
-        : (hasPlayedGames ? profile.currentWinStreak : 0);
+    final currentStreak =
+        matches.isNotEmpty ? streaks.current : profile.currentWinStreak;
+    final bestStreak =
+        matches.isNotEmpty
+            ? math.max(streaks.best, profile.currentWinStreak)
+            : profile.currentWinStreak;
 
     final titleStyle = TypographyTokens.sectionTitle(colors.textPrimary);
 
@@ -257,8 +260,6 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
       builder: (context, _) {
         final cardHeight = profileCarouselCardHeight(context);
         final cardWidth = kProfileCarouselCardWidth;
-        final emptyUntilFirstGame =
-            AppLocalizations.of(context).profileEmptyRecentGames;
         final l10n = AppLocalizations.of(context);
 
         final tiles = <Widget>[
@@ -280,7 +281,6 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
             child: _RecordCard(
               profile: profile,
               colors: colors,
-              hasPlayedGames: hasPlayedGames,
               fillHeight: true,
             ),
           ),
@@ -289,7 +289,6 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
             height: cardHeight,
             child: _WinStreakCard(
               colors: colors,
-              hasPlayedGames: hasPlayedGames,
               currentStreak: currentStreak,
               bestStreak: bestStreak,
               fillHeight: true,
@@ -298,55 +297,47 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
           _PlayerStatsCarouselTile(
             width: cardWidth,
             height: cardHeight,
-            child: hasPlayedGames
-                ? _BehaviourBarCard(
-                    profile: profile,
-                    colors: colors,
-                    fillHeight: true,
-                  )
-                : _PlayerStatsEmptyCard(
-                    title: l10n.statsPlayerBehaviour,
-                    colors: colors,
-                    message: emptyUntilFirstGame,
-                  ),
+            child: _BehaviourBarCard(
+              profile: profile,
+              colors: colors,
+              fillHeight: true,
+            ),
           ),
           _PlayerStatsCarouselTile(
             width: cardWidth,
             height: cardHeight,
-            edgeToEdge: hasPlayedGames && mostPlayed != null,
-            child: hasPlayedGames && mostPlayed != null
-                ? _DeckHighlightCard(
-                    title: l10n.statsMostPlayed,
-                    profile: profile,
-                    deck: mostPlayed,
-                    statKind: _DeckHighlightStat.wins,
-                  )
-                : _PlayerStatsEmptyCard(
-                    title: l10n.statsMostPlayed,
-                    colors: colors,
-                    message: hasPlayedGames
-                        ? l10n.statsNoDeckStatsYet
-                        : emptyUntilFirstGame,
-                  ),
+            edgeToEdge: mostPlayed != null,
+            child:
+                mostPlayed != null
+                    ? _DeckHighlightCard(
+                      title: l10n.statsMostPlayed,
+                      profile: profile,
+                      deck: mostPlayed,
+                      statKind: _DeckHighlightStat.wins,
+                    )
+                    : _PlayerStatsEmptyCard(
+                      title: l10n.statsMostPlayed,
+                      colors: colors,
+                      message: l10n.statsNoDeckStatsYet,
+                    ),
           ),
           _PlayerStatsCarouselTile(
             width: cardWidth,
             height: cardHeight,
-            edgeToEdge: hasPlayedGames && worst != null,
-            child: hasPlayedGames && worst != null
-                ? _DeckHighlightCard(
-                    title: l10n.statsToughRecord,
-                    profile: profile,
-                    deck: worst,
-                    statKind: _DeckHighlightStat.losses,
-                  )
-                : _PlayerStatsEmptyCard(
-                    title: l10n.statsToughRecord,
-                    colors: colors,
-                    message: hasPlayedGames
-                        ? l10n.statsNoLossesOnDeck
-                        : emptyUntilFirstGame,
-                  ),
+            edgeToEdge: worst != null,
+            child:
+                worst != null
+                    ? _DeckHighlightCard(
+                      title: l10n.statsToughRecord,
+                      profile: profile,
+                      deck: worst,
+                      statKind: _DeckHighlightStat.losses,
+                    )
+                    : _PlayerStatsEmptyCard(
+                      title: l10n.statsToughRecord,
+                      colors: colors,
+                      message: l10n.statsNoLossesOnDeck,
+                    ),
           ),
         ];
 
@@ -362,20 +353,7 @@ class ProfilePlayerStatsSection extends ConsumerWidget {
               pluralUnit: l10n.statsPluralUnit,
             ),
             SizedBox(height: LayoutTokens.gr2),
-            SizedBox(
-              height: cardHeight,
-              child: ListView.separated(
-                primary: false,
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: EdgeInsets.only(right: LayoutTokens.gr1),
-                physics: kProfileHorizontalCarouselPhysics,
-                itemCount: tiles.length,
-                separatorBuilder: (_, __) =>
-                    SizedBox(width: LayoutTokens.gr2),
-                itemBuilder: (_, i) => tiles[i],
-              ),
-            ),
+            ProfileFocusCarousel(height: cardHeight, children: tiles),
           ],
         );
       },
@@ -448,10 +426,8 @@ class _DeckHighlightCard extends ConsumerWidget {
         .watch(matchRepositoryProvider)
         .getAllMatches()
         .where((m) => !isPreviewPlaceholderMatchId(m.matchId));
-    final imageUrl = resolveDeckCommanderImageUrl(
-          deck: deck,
-          profile: profile,
-        ) ??
+    final imageUrl =
+        resolveDeckCommanderImageUrl(deck: deck, profile: profile) ??
         resolveCommanderArtByName(
           commanderName: deck.commanderName,
           decks: [deck],
@@ -556,10 +532,7 @@ class _DeckHighlightCard extends ConsumerWidget {
 /// Starts neutral with no reactions. Likes nudge left; dislikes nudge right.
 /// Uses a soft curve so early feedback does not slam the knob to an extreme.
 @visibleForTesting
-double behaviourSaltFraction({
-  required int likes,
-  required int dislikes,
-}) {
+double behaviourSaltFraction({required int likes, required int dislikes}) {
   final l = likes < 0 ? 0 : likes;
   final d = dislikes < 0 ? 0 : dislikes;
   if (l == 0 && d == 0) return 0.5;
@@ -572,9 +545,9 @@ double behaviourSaltFraction({
 }
 
 double _saltFraction(PlayerProfile profile) => behaviourSaltFraction(
-      likes: profile.likesReceived,
-      dislikes: profile.dislikesReceived,
-    );
+  likes: profile.likesReceived,
+  dislikes: profile.dislikesReceived,
+);
 
 IconData _behaviourSmileyIcon(double salt) {
   if (salt < 0.28) return Icons.sentiment_very_satisfied_rounded;
@@ -585,11 +558,7 @@ IconData _behaviourSmileyIcon(double salt) {
 }
 
 Color _behaviourSmileyColor(double salt, AppColorTokens colors) {
-  return Color.lerp(
-        colors.textMuted,
-        colors.primaryAccent,
-        salt,
-      ) ??
+  return Color.lerp(colors.textMuted, colors.primaryAccent, salt) ??
       colors.textPrimary;
 }
 
@@ -619,8 +588,7 @@ Widget _behaviourSpectrumTrack({
   required AppColorTokens colors,
   required double width,
 }) {
-  final w =
-      width.isFinite && width > 0 ? width : 280.0;
+  final w = width.isFinite && width > 0 ? width : 280.0;
   const double sideInset = 16.0;
   final double trackUsableW = math.max(0.0, w - 2 * sideInset);
   const double barHeight = 14.0;
@@ -634,9 +602,10 @@ Widget _behaviourSpectrumTrack({
   final double barTop = (thumbSize - barHeight) / 2;
   final saltPct = (salt * 100).round();
   final l10n = AppLocalizations.of(context);
-  final leaning = saltPct < 45
-      ? l10n.statsLeaningGood
-      : saltPct > 55
+  final leaning =
+      saltPct < 45
+          ? l10n.statsLeaningGood
+          : saltPct > 55
           ? l10n.statsLeaningSalty
           : l10n.statsLeaningNeutral;
 
@@ -644,58 +613,52 @@ Widget _behaviourSpectrumTrack({
     label: l10n.statsBehaviourA11y(leaning),
     value: '$saltPct% toward salty',
     child: SizedBox(
-    width: w,
-    height: h,
-    child: Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.centerLeft,
-      children: [
-        Positioned(
-          left: 0,
-          top: barTop,
-          child: Container(
-            width: w,
-            height: barHeight,
-            decoration: BoxDecoration(
-              borderRadius: RadiusTokens.radiusPill,
-              gradient: LinearGradient(
-                colors: [
-                  colors.textMuted,
-                  colors.textSecondary,
-                  colors.primaryAccent,
-                ],
+      width: w,
+      height: h,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.centerLeft,
+        children: [
+          Positioned(
+            left: 0,
+            top: barTop,
+            child: Container(
+              width: w,
+              height: barHeight,
+              decoration: BoxDecoration(
+                borderRadius: RadiusTokens.radiusPill,
+                gradient: LinearGradient(
+                  colors: [
+                    colors.textMuted,
+                    colors.textSecondary,
+                    colors.primaryAccent,
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          left: knobLeft,
-          top: 0,
-          child: Container(
-            width: thumbSize,
-            height: thumbSize,
-            decoration: BoxDecoration(
-              color: colors.textPrimary,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: colors.backgroundPrimary,
-                width: 2,
+          Positioned(
+            left: knobLeft,
+            top: 0,
+            child: Container(
+              width: thumbSize,
+              height: thumbSize,
+              decoration: BoxDecoration(
+                color: colors.textPrimary,
+                shape: BoxShape.circle,
+                border: Border.all(color: colors.backgroundPrimary, width: 2),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
-  ),
   );
 }
 
 /// Centered title for carousel stat cards (Level, Behaviour, Most played, etc.).
 class _CarouselSectionHeader extends StatelessWidget {
-  const _CarouselSectionHeader({
-    required this.title,
-    required this.colors,
-  });
+  const _CarouselSectionHeader({required this.title, required this.colors});
 
   final String title;
   final AppColorTokens colors;
@@ -724,13 +687,11 @@ class _RecordCard extends StatefulWidget {
   const _RecordCard({
     required this.profile,
     required this.colors,
-    required this.hasPlayedGames,
     this.fillHeight = false,
   });
 
   final PlayerProfile profile;
   final AppColorTokens colors;
-  final bool hasPlayedGames;
   final bool fillHeight;
 
   @override
@@ -745,9 +706,10 @@ class _RecordCardState extends State<_RecordCard>
   int get _targetWr {
     final wins = widget.profile.totalWins;
     final losses = widget.profile.totalLosses;
-    final games = widget.profile.totalGamesPlayed > 0
-        ? widget.profile.totalGamesPlayed
-        : wins + losses;
+    final games =
+        widget.profile.totalGamesPlayed > 0
+            ? widget.profile.totalGamesPlayed
+            : wins + losses;
     return games == 0 ? 0 : ((wins / games) * 100).round().clamp(0, 100);
   }
 
@@ -761,7 +723,7 @@ class _RecordCardState extends State<_RecordCard>
     _wrAnim = Tween<double>(begin: 0, end: _targetWr.toDouble()).animate(
       CurvedAnimation(parent: _controller, curve: MotionTokens.easeOut),
     );
-    if (widget.hasPlayedGames && widget.profile.totalGamesPlayed > 0) {
+    if (widget.profile.totalGamesPlayed > 0) {
       _controller.forward();
     }
   }
@@ -772,8 +734,7 @@ class _RecordCardState extends State<_RecordCard>
     final next = _targetWr.toDouble();
     if (oldWidget.profile.totalWins != widget.profile.totalWins ||
         oldWidget.profile.totalLosses != widget.profile.totalLosses ||
-        oldWidget.profile.totalGamesPlayed !=
-            widget.profile.totalGamesPlayed) {
+        oldWidget.profile.totalGamesPlayed != widget.profile.totalGamesPlayed) {
       _wrAnim = Tween<double>(begin: _wrAnim.value, end: next).animate(
         CurvedAnimation(parent: _controller, curve: MotionTokens.easeOut),
       );
@@ -790,18 +751,12 @@ class _RecordCardState extends State<_RecordCard>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (!widget.hasPlayedGames || widget.profile.totalGamesPlayed <= 0) {
-      return _PlayerStatsEmptyCard(
-        title: l10n.statsRecord,
-        colors: widget.colors,
-      );
-    }
-
     final wins = widget.profile.totalWins;
     final losses = widget.profile.totalLosses;
-    final games = widget.profile.totalGamesPlayed > 0
-        ? widget.profile.totalGamesPlayed
-        : wins + losses;
+    final games =
+        widget.profile.totalGamesPlayed > 0
+            ? widget.profile.totalGamesPlayed
+            : wins + losses;
     final colors = widget.colors;
 
     Widget hero(int wr) {
@@ -876,14 +831,12 @@ class _RecordCardState extends State<_RecordCard>
 class _WinStreakCard extends StatefulWidget {
   const _WinStreakCard({
     required this.colors,
-    required this.hasPlayedGames,
     required this.currentStreak,
     required this.bestStreak,
     this.fillHeight = false,
   });
 
   final AppColorTokens colors;
-  final bool hasPlayedGames;
   final int currentStreak;
   final int bestStreak;
   final bool fillHeight;
@@ -908,13 +861,14 @@ class _WinStreakCardState extends State<_WinStreakCard>
     _countAnim = Tween<double>(
       begin: 0,
       end: widget.currentStreak.toDouble(),
-    ).animate(CurvedAnimation(parent: _controller, curve: MotionTokens.easeOut));
-    _flameScale = Tween<double>(begin: 0.55, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: MotionTokens.enter),
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: MotionTokens.easeOut),
     );
-    if (widget.hasPlayedGames) {
-      _controller.forward();
-    }
+    _flameScale = Tween<double>(
+      begin: 0.55,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: MotionTokens.enter));
+    _controller.forward();
   }
 
   @override
@@ -940,20 +894,14 @@ class _WinStreakCardState extends State<_WinStreakCard>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (!widget.hasPlayedGames) {
-      return _PlayerStatsEmptyCard(
-        title: l10n.statsWinStreak,
-        colors: widget.colors,
-      );
-    }
-
     final colors = widget.colors;
     final flame = widget.currentStreak > 0;
 
     Widget footer() {
-      final bestLabel = widget.bestStreak <= 0
-          ? l10n.statsWinToStartStreak
-          : widget.bestStreak == widget.currentStreak &&
+      final bestLabel =
+          widget.bestStreak <= 0
+              ? l10n.statsWinToStartStreak
+              : widget.bestStreak == widget.currentStreak &&
                   widget.currentStreak > 0
               ? l10n.statsPersonalBest
               : l10n.statsBestStreak(widget.bestStreak);
@@ -1019,10 +967,7 @@ class _WinStreakCardState extends State<_WinStreakCard>
             if (widget.fillHeight)
               Expanded(
                 child: Column(
-                  children: [
-                    Expanded(child: Center(child: hero())),
-                    footer(),
-                  ],
+                  children: [Expanded(child: Center(child: hero())), footer()],
                 ),
               )
             else ...[
@@ -1052,6 +997,7 @@ class _LevelDonutCard extends StatelessWidget {
   final int xpNeeded;
   final int xpInLevel;
   final double xpProgress;
+
   /// When true (wide side-by-side row), middle content expands to match sibling card height.
   final bool fillHeight;
 
@@ -1064,8 +1010,7 @@ class _LevelDonutCard extends StatelessWidget {
 
   /// Donut + center (% + level) only; stroke scales with [size].
   Widget _donutGaugeOnly(BuildContext context, double size) {
-    final stroke =
-        (size / _kDonutStrokeReferenceSize * 12).clamp(8.0, 14.0);
+    final stroke = (size / _kDonutStrokeReferenceSize * 12).clamp(8.0, 14.0);
     return Center(
       child: _AnimatedDonutGauge(
         targetProgress: xpProgress,
@@ -1116,7 +1061,7 @@ class _LevelDonutCard extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 2),
+        SizedBox(height: LayoutTokens.gr0),
         Center(
           child: _AnimatedXpInLevelLabel(
             targetXpInLevel: xpInLevel,
@@ -1138,10 +1083,7 @@ class _LevelDonutCard extends StatelessWidget {
     final card = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _CarouselSectionHeader(
-          title: l10n.statsLevelProgress,
-          colors: colors,
-        ),
+        _CarouselSectionHeader(title: l10n.statsLevelProgress, colors: colors),
         SizedBox(height: LayoutTokens.gr2),
         if (fillHeight)
           Expanded(
@@ -1149,11 +1091,11 @@ class _LevelDonutCard extends StatelessWidget {
               builder: (context, c) {
                 final layoutTs = _profileLayoutTextScale(context);
                 final bottomReserve = _kBottomXpLabelReserveH * layoutTs;
-                final widthLimit = c.maxWidth.isFinite && c.maxWidth > 0
-                    ? c.maxWidth
-                    : _kDonutSizeMax;
-                final heightLimit =
-                    math.max(0.0, c.maxHeight - bottomReserve);
+                final widthLimit =
+                    c.maxWidth.isFinite && c.maxWidth > 0
+                        ? c.maxWidth
+                        : _kDonutSizeMax;
+                final heightLimit = math.max(0.0, c.maxHeight - bottomReserve);
                 final donutSize = math
                     .min(widthLimit, heightLimit)
                     .clamp(_kDonutSizeMin, _kDonutSizeMax);
@@ -1193,10 +1135,7 @@ class _LevelDonutCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => showRanksInfoSheet(
-            context,
-            currentLevel: profile.level,
-          ),
+          onTap: () => showRanksInfoSheet(context, currentLevel: profile.level),
           borderRadius: BorderRadius.circular(RadiusTokens.carouselCard),
           child: card,
         ),
@@ -1214,6 +1153,7 @@ class _BehaviourBarCard extends StatefulWidget {
 
   final PlayerProfile profile;
   final AppColorTokens colors;
+
   /// When true (wide row), spectrum block expands so the card matches level progress height.
   final bool fillHeight;
 
@@ -1232,7 +1172,10 @@ class _BehaviourBarCardState extends State<_BehaviourBarCard>
 
   double get _targetSalt => _saltFraction(widget.profile);
 
-  static double _fillBehaviourBandGap(double maxHeight, double layoutTextScale) {
+  static double _fillBehaviourBandGap(
+    double maxHeight,
+    double layoutTextScale,
+  ) {
     final core = _kFillBehaviourCoreH * layoutTextScale;
     final slack = maxHeight - core;
     final raw = slack / _kFillBehaviourBandGaps;
@@ -1259,10 +1202,11 @@ class _BehaviourBarCardState extends State<_BehaviourBarCard>
   void didUpdateWidget(covariant _BehaviourBarCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.profile.likesReceived != widget.profile.likesReceived ||
-        oldWidget.profile.dislikesReceived !=
-            widget.profile.dislikesReceived) {
-      _saltAnim = Tween<double>(begin: _saltAnim.value, end: _targetSalt)
-          .animate(
+        oldWidget.profile.dislikesReceived != widget.profile.dislikesReceived) {
+      _saltAnim = Tween<double>(
+        begin: _saltAnim.value,
+        end: _targetSalt,
+      ).animate(
         CurvedAnimation(parent: _controller, curve: MotionTokens.easeOut),
       );
       _controller.forward(from: 0);
@@ -1342,9 +1286,10 @@ class _BehaviourBarCardState extends State<_BehaviourBarCard>
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, c) {
-                    final w = c.maxWidth.isFinite && c.maxWidth > 0
-                        ? c.maxWidth
-                        : 280.0;
+                    final w =
+                        c.maxWidth.isFinite && c.maxWidth > 0
+                            ? c.maxWidth
+                            : 280.0;
                     final bandGap = _fillBehaviourBandGap(
                       c.maxHeight,
                       _profileLayoutTextScale(context),
@@ -1376,18 +1321,14 @@ class _BehaviourBarCardState extends State<_BehaviourBarCard>
                 ),
               )
             else ...[
-              Center(
-                child: _behaviourSmileyMark(
-                  salt: salt,
-                  colors: colors,
-                ),
-              ),
+              Center(child: _behaviourSmileyMark(salt: salt, colors: colors)),
               SizedBox(height: LayoutTokens.gr1),
               LayoutBuilder(
                 builder: (context, c) {
-                  final w = c.maxWidth.isFinite && c.maxWidth > 0
-                      ? c.maxWidth
-                      : 280.0;
+                  final w =
+                      c.maxWidth.isFinite && c.maxWidth > 0
+                          ? c.maxWidth
+                          : 280.0;
                   return _behaviourSpectrumTrack(
                     context: context,
                     salt: salt,

@@ -14,11 +14,11 @@ import 'game_modal_chrome.dart';
 
 /// Preset whispers — one tap to send.
 List<String> whisperChipLabels(AppLocalizations l10n) => [
-      l10n.whisperPresetTeamUp,
-      l10n.whisperPresetDontAttack,
-      l10n.whisperPresetHaveRemoval,
-      l10n.whisperPresetAllGood,
-    ];
+  l10n.whisperPresetTeamUp,
+  l10n.whisperPresetDontAttack,
+  l10n.whisperPresetHaveRemoval,
+  l10n.whisperPresetAllGood,
+];
 
 const _kWhisperMaxLength = 80;
 
@@ -55,20 +55,15 @@ class _PlayerWhisperSheetState extends ConsumerState<_PlayerWhisperSheet> {
 
   void _send(String text) {
     final l10n = AppLocalizations.of(context);
-    final ok = ref.read(gameProvider.notifier).sendPlayerWhisper(
-          widget.target.playerId,
-          text,
-        );
+    final ok = ref
+        .read(gameProvider.notifier)
+        .sendPlayerWhisper(widget.target.playerId, text);
     if (!context.mounted) return;
     if (ok) {
       Navigator.pop(context);
       showUiSnackBar(context, l10n.whisperSentSnack(widget.target.username));
     } else {
-      showUiSnackBar(
-        context,
-        l10n.whisperSendFailed,
-        isError: true,
-      );
+      showUiSnackBar(context, l10n.whisperSendFailed, isError: true);
     }
   }
 
@@ -115,7 +110,7 @@ class _PlayerWhisperSheetState extends ConsumerState<_PlayerWhisperSheet> {
                   backgroundColor: colors.surface,
                   side: BorderSide(color: colors.borderSubtle),
                   shape: RoundedRectangleBorder(
-                    borderRadius: RadiusTokens.radiusSm,
+                    borderRadius: RadiusTokens.radiusXl,
                   ),
                   onPressed: () => _send(label),
                 ),

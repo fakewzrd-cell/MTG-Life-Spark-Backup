@@ -46,12 +46,13 @@ abstract final class AppSystemUi {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Dock nav uses backgroundPrimary @ 78% over the same scaffold tone.
-    final navBarColor = matchBottomNav
-        ? Color.alphaBlend(
-            colors.backgroundPrimary.withValues(alpha: 0.78),
-            colors.backgroundPrimary,
-          )
-        : colors.backgroundPrimary;
+    final navBarColor =
+        matchBottomNav
+            ? Color.alphaBlend(
+              colors.backgroundPrimary.withValues(alpha: 0.78),
+              colors.backgroundPrimary,
+            )
+            : colors.backgroundPrimary;
 
     return SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -61,8 +62,9 @@ abstract final class AppSystemUi {
       systemNavigationBarIconBrightness:
           isDark ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
-      systemNavigationBarDividerColor:
-          colors.borderSubtle.withValues(alpha: 0.22),
+      systemNavigationBarDividerColor: colors.borderSubtle.withValues(
+        alpha: 0.22,
+      ),
     );
   }
 }

@@ -76,10 +76,9 @@ class _OverviewCommanderArtBackdropState
     if (!mounted || url == null || url.isEmpty) return;
 
     setState(() => _resolvedUrl = url);
-    ref.read(gameProvider.notifier).patchCommanderArt(
-      widget.player.playerId,
-      commanderImageUrl: url,
-    );
+    ref
+        .read(gameProvider.notifier)
+        .patchCommanderArt(widget.player.playerId, commanderImageUrl: url);
   }
 
   @override

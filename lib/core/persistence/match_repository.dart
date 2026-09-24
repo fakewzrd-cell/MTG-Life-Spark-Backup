@@ -25,8 +25,7 @@ class MatchRepository {
     return _box.values
         .where(
           (m) =>
-              !isPreviewPlaceholderMatchId(m.matchId) &&
-              m.date.isAfter(cutoff),
+              !isPreviewPlaceholderMatchId(m.matchId) && m.date.isAfter(cutoff),
         )
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
@@ -92,20 +91,20 @@ class MatchRepository {
 }
 
 MatchRecord _cloneRecord(MatchRecord m) => MatchRecord(
-      matchId: m.matchId,
-      date: m.date,
-      commanderName: m.commanderName,
-      partnerCommanderName: m.partnerCommanderName,
-      opponentNames: List<String>.from(m.opponentNames),
-      result: m.result,
-      eliminationReason: m.eliminationReason,
-      format: m.format,
-      durationMinutes: m.durationMinutes,
-      startingLifeTotal: m.startingLifeTotal,
-      playerCount: m.playerCount,
-      durationSeconds: m.durationSeconds,
-      participantsJson: m.participantsJson,
-      labelSnapshot: m.labelSnapshot,
-      locationSnapshot: m.locationSnapshot,
-      localDeckIdSnapshot: m.localDeckIdSnapshot,
-    );
+  matchId: m.matchId,
+  date: m.date,
+  commanderName: m.commanderName,
+  partnerCommanderName: m.partnerCommanderName,
+  opponentNames: List<String>.from(m.opponentNames),
+  result: m.result,
+  eliminationReason: m.eliminationReason,
+  format: m.format,
+  durationMinutes: m.durationMinutes,
+  startingLifeTotal: m.startingLifeTotal,
+  playerCount: m.playerCount,
+  durationSeconds: m.durationSeconds,
+  participantsJson: m.participantsJson,
+  labelSnapshot: m.labelSnapshot,
+  locationSnapshot: m.locationSnapshot,
+  localDeckIdSnapshot: m.localDeckIdSnapshot,
+);

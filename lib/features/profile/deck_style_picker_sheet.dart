@@ -71,7 +71,9 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
       title: l10n.stylePickerTitle,
       searchField: TextField(
         controller: _searchCtrl,
-        scrollPadding: const EdgeInsets.only(bottom: 120),
+        scrollPadding: const EdgeInsets.only(
+          bottom: LayoutTokens.gr6 * 2 + LayoutTokens.gr4,
+        ),
         decoration: InputDecoration(
           hintText: l10n.stylePickerSearchHint,
           prefixIcon: const Icon(Icons.search_rounded),
@@ -88,28 +90,31 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _pick(style),
-            borderRadius: RadiusTokens.radiusSm,
+            borderRadius: RadiusTokens.radiusXl,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: isSelected
-                    ? colors.primaryAccent.withValues(alpha: 0.12)
-                    : colors.surface,
-                borderRadius: RadiusTokens.radiusSm,
+                color:
+                    isSelected
+                        ? colors.primaryAccent.withValues(alpha: 0.12)
+                        : colors.surface,
+                borderRadius: RadiusTokens.radiusXl,
                 border: Border.all(
-                  color: isSelected
-                      ? colors.primaryAccent.withValues(alpha: 0.5)
-                      : colors.borderSubtle.withValues(alpha: 0.35),
+                  color:
+                      isSelected
+                          ? colors.primaryAccent.withValues(alpha: 0.5)
+                          : colors.borderSubtle.withValues(alpha: 0.35),
                 ),
               ),
               child: Padding(
                 padding: EdgeInsets.all(LayoutTokens.gr2),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             localizedDeckStyleName(l10n, style),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -119,25 +124,27 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
                               fontSize: FontTokens.body,
                             ),
                           ),
-                        ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle_rounded,
-                            color: colors.primaryAccent,
-                            size: 20,
+                          SizedBox(height: LayoutTokens.gr0),
+                          Text(
+                            localizedDeckStyleDescription(l10n, style),
+                            // Scrollable list — allow full copy; avoid silent clipping.
+                            style: TextStyle(
+                              color: colors.textSecondary,
+                              fontSize: FontTokens.sm,
+                              height: 1.35,
+                            ),
                           ),
-                      ],
-                    ),
-                    SizedBox(height: LayoutTokens.gr0),
-                    Text(
-                      localizedDeckStyleDescription(l10n, style),
-                      // Scrollable list — allow full copy; avoid silent clipping.
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: FontTokens.sm,
-                        height: 1.35,
+                        ],
                       ),
                     ),
+                    if (isSelected) ...[
+                      SizedBox(width: LayoutTokens.gr2),
+                      Icon(
+                        Icons.check_circle_rounded,
+                        color: colors.primaryAccent,
+                        size: 24,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -151,7 +158,8 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
 
 /// Tappable row showing the chosen style (or placeholder).
 class DeckStylePickerField extends StatelessWidget {
-  const DeckStylePickerField({super.key, 
+  const DeckStylePickerField({
+    super.key,
     required this.selected,
     required this.onPick,
     this.errorText,
@@ -165,9 +173,10 @@ class DeckStylePickerField extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final label = selected != null
-        ? localizedDeckStyleName(l10n, selected!)
-        : l10n.stylePickerChoose;
+    final label =
+        selected != null
+            ? localizedDeckStyleName(l10n, selected!)
+            : l10n.stylePickerChoose;
     final hasError = errorText != null && errorText!.isNotEmpty;
 
     return Column(
@@ -175,7 +184,7 @@ class DeckStylePickerField extends StatelessWidget {
       children: [
         InkWell(
           onTap: onPick,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           child: InputDecorator(
             decoration: InputDecoration(
               labelText: l10n.stylePickerFieldLabel,
@@ -191,9 +200,10 @@ class DeckStylePickerField extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: selected != null
-                    ? colors.textPrimary
-                    : colors.textSecondary,
+                color:
+                    selected != null
+                        ? colors.textPrimary
+                        : colors.textSecondary,
                 fontWeight:
                     selected != null ? FontWeight.w600 : FontWeight.w500,
               ),

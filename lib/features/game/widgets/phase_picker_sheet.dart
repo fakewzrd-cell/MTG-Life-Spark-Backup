@@ -20,14 +20,15 @@ Future<void> showPhasePickerSheet(
   return showGameBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (sheetCtx) => PhasePickerSheet(
-      currentPhase: currentPhase,
-      accentColor: accentColor,
-      onSelected: (phase) {
-        Navigator.pop(sheetCtx);
-        onSelected(phase);
-      },
-    ),
+    builder:
+        (sheetCtx) => PhasePickerSheet(
+          currentPhase: currentPhase,
+          accentColor: accentColor,
+          onSelected: (phase) {
+            Navigator.pop(sheetCtx);
+            onSelected(phase);
+          },
+        ),
   );
 }
 
@@ -92,13 +93,13 @@ class _PhasePickerSheetState extends State<PhasePickerSheet> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: colors.backgroundPrimary.withValues(alpha: 0.35),
-                borderRadius: RadiusTokens.radiusSm,
+                borderRadius: RadiusTokens.radiusXl,
                 border: Border.all(
                   color: colors.backgroundSecondary.withValues(alpha: 0.6),
                 ),
               ),
               child: ClipRRect(
-                borderRadius: RadiusTokens.radiusSm,
+                borderRadius: RadiusTokens.radiusXl,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (n) {
                     if (n is ScrollEndNotification && _wheelCtrl.hasClients) {

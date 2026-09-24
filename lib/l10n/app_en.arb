@@ -35,7 +35,7 @@
   "settingsHideSystemBarsSubtitle": "Fullscreen mode during gameplay",
   "settingsSectionAppearance": "Appearance",
   "settingsDarkAppearance": "Dark appearance",
-  "settingsDarkAppearanceSubtitle": "Light mode uses soft backgrounds — try Fog or Slate",
+  "settingsDarkAppearanceSubtitle": "Dark backgrounds. Turn off for a light page.",
   "settingsLanguage": "Language",
   "settingsLanguageSystem": "System default",
   "settingsLanguageSubtitle": "{language}",
@@ -420,6 +420,8 @@
   "lookupHint": "Search any MTG card…",
   "lookupHelp": "Oracle text and official rulings from Scryfall.",
   "lookupEmptyPrompt": "Type a card name to look up rules.",
+  "lookupRecentEmpty": "No cards looked up yet.",
+  "lookupBack": "Back",
   "lookupNoResults": "No cards found for “{query}”.",
   "@lookupNoResults": {
     "placeholders": {
@@ -977,7 +979,7 @@
   "dialsLabelGy": "GY",
   "dialsLabelExile": "Exile",
   "dialsAddCounterTitle": "Add counter",
-  "dialsAddCounterBody": "Pick trackers for your strip (max {max}). Tap the X on a counter to remove it from the strip.",
+  "dialsAddCounterBody": "Pick trackers for your strip (max {max}). Open a counter to remove it.",
   "@dialsAddCounterBody": {
     "placeholders": {
       "max": {
@@ -989,17 +991,20 @@
   "dialsSectionTokensZones": "Tokens & zones",
   "dialsAllBuiltInsOnStrip": "Every built-in counter is already on your strip. Remove one to free a slot.",
   "dialsAddCounterTooltip": "Add counter",
-  "dialsRemoveFromStrip": "Remove from strip",
+  "dialsAddCounterChip": "Counter",
+  "dialsRemoveFromStrip": "Remove counter",
   "hubGuideTitle": "Quick tour",
   "hubGuideSkip": "Skip",
   "hubGuideNext": "Next",
   "hubGuideGotIt": "Got it",
   "hubGuideSlidePlayTitle": "Play",
   "hubGuideSlidePlayBody": "Track life and counters here. End turn sits under the phase bar — or leave Phase tracker off in the lobby for a large End turn control.",
-  "hubGuideSlideStackTitle": "Stack & Lookup",
-  "hubGuideSlideStackBody": "Stack is for Hold Priority and resolving effects. Lookup opens Scryfall without leaving your seat — oracle text and rulings.",
+  "hubGuideSlideStackTitle": "Stack",
+  "hubGuideSlideStackBody": "Stack is for Hold Priority and resolving effects.",
+  "hubGuideSlideLookupTitle": "Lookup",
+  "hubGuideSlideLookupBody": "Lookup opens Scryfall without leaving your seat — oracle text and rulings.",
   "hubGuideSlideTableTitle": "Table overview",
-  "hubGuideSlideTableBody": "Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn stays pinned; Forfeit sits below it.",
+  "hubGuideSlideTableBody": "Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn and Forfeit sit side by side.",
   "hubGuideSlideCommanderTitle": "Your turn & commander",
   "hubGuideSlideCommanderBody": "When the seat becomes yours, tap the Your turn cue to dismiss it. The heart tracks commander damage toward 21.",
   "lifeA11yEliminatedAt": "Eliminated at {life} life",
@@ -1523,9 +1528,6 @@
   "paletteViolet": "Violet",
   "paletteCrimson": "Crimson",
   "paletteSlate": "Slate",
-  "paletteForest": "Forest",
-  "paletteObsidian": "Obsidian",
-  "paletteFog": "Fog",
   "networkCannotReachHost": "Cannot reach host: {error}",
   "@networkCannotReachHost": {
     "placeholders": {

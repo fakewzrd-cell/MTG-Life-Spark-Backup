@@ -21,23 +21,21 @@ class UiAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final Widget? resolvedTitle = titleWidget ??
+    final Widget? resolvedTitle =
+        titleWidget ??
         (title != null && title!.isNotEmpty
             ? Text(
-                title!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.appBarTheme.titleTextStyle ??
-                    theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              )
+              title!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  theme.appBarTheme.titleTextStyle ??
+                  theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            )
             : null);
 
-    return AppBar(
-      leading: leading,
-      title: resolvedTitle,
-      actions: actions,
-    );
+    return AppBar(leading: leading, title: resolvedTitle, actions: actions);
   }
 }

@@ -56,9 +56,10 @@ class _GameLifeAnnouncerState extends ConsumerState<GameLifeAnnouncer> {
     _debounceTimer?.cancel();
     final direction = event.delta >= 0 ? 'plus' : 'minus';
     final actor = event.actorUsername;
-    final prefix = actor == null || actor.isEmpty
-        ? 'Your life changed'
-        : '$actor changed your life';
+    final prefix =
+        actor == null || actor.isEmpty
+            ? 'Your life changed'
+            : '$actor changed your life';
     _show('$prefix $direction ${event.delta.abs()}, ${event.total} life');
   }
 

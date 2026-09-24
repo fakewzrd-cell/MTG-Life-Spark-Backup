@@ -7,6 +7,7 @@ class AppIcons {
   static const String energy = 'assets/icons/Energy.png';
   static const String experience = 'assets/icons/Experience.png';
   static const String radiation = 'assets/icons/Radiation.svg';
+
   /// Treasure: raster only until a Treasure.svg is added to assets/icons.
   static const String treasure = 'assets/icons/Treasure.png';
 

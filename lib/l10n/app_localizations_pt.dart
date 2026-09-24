@@ -21,7 +21,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navDecks => 'Decks';
 
   @override
-  String get navSettings => 'Configurações';
+  String get navSettings => 'Ajustes';
 
   @override
   String get settingsTitle => 'Configurações';
@@ -69,7 +69,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'O modo claro usa fundos suaves — experimente Fog ou Slate';
+      'Fundos escuros. Desligue para uma página clara.';
 
   @override
   String get settingsLanguage => 'Idioma';
@@ -928,6 +928,12 @@ class AppLocalizationsPt extends AppLocalizations {
       'Digite o nome de uma carta para ver as regras.';
 
   @override
+  String get lookupRecentEmpty => 'Nenhuma carta consultada ainda.';
+
+  @override
+  String get lookupBack => 'Voltar';
+
+  @override
   String lookupNoResults(String query) {
     return 'Nenhuma carta encontrada para “$query”.';
   }
@@ -1756,7 +1762,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Escolha trackers para sua faixa (máx. $max). Toque no X de um contador para removê-lo.';
+    return 'Escolha trackers para sua faixa (máx. $max). Abra um contador para removê-lo.';
   }
 
   @override
@@ -1773,7 +1779,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dialsAddCounterTooltip => 'Adicionar contador';
 
   @override
-  String get dialsRemoveFromStrip => 'Remover da faixa';
+  String get dialsAddCounterChip => 'Contador';
+
+  @override
+  String get dialsRemoveFromStrip => 'Remover contador';
 
   @override
   String get hubGuideTitle => 'Tour rápido';
@@ -1795,18 +1804,25 @@ class AppLocalizationsPt extends AppLocalizations {
       'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Pilha e busca';
+  String get hubGuideSlideStackTitle => 'Pilha';
 
   @override
   String get hubGuideSlideStackBody =>
-      'A pilha é para Hold Priority e resolver efeitos. A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
+      'A pilha é para Hold Priority e resolver efeitos.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Busca';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Visão da mesa';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno fica fixo; Desistir fica abaixo.';
+      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Seu turno e Commander';
@@ -2760,15 +2776,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paletteSlate => 'Ardósia';
-
-  @override
-  String get paletteForest => 'Floresta';
-
-  @override
-  String get paletteObsidian => 'Obsidiana';
-
-  @override
-  String get paletteFog => 'Névoa';
 
   @override
   String networkCannotReachHost(String error) {
@@ -3020,7 +3027,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get navDecks => 'Decks';
 
   @override
-  String get navSettings => 'Configurações';
+  String get navSettings => 'Ajustes';
 
   @override
   String get settingsTitle => 'Configurações';
@@ -3068,7 +3075,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get settingsDarkAppearanceSubtitle =>
-      'O modo claro usa fundos suaves — experimente Fog ou Slate';
+      'Fundos escuros. Desligue para uma página clara.';
 
   @override
   String get settingsLanguage => 'Idioma';
@@ -3927,6 +3934,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
       'Digite o nome de uma carta para ver as regras.';
 
   @override
+  String get lookupRecentEmpty => 'Nenhuma carta consultada ainda.';
+
+  @override
+  String get lookupBack => 'Voltar';
+
+  @override
   String lookupNoResults(String query) {
     return 'Nenhuma carta encontrada para “$query”.';
   }
@@ -4755,7 +4768,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'Escolha trackers para sua faixa (máx. $max). Toque no X de um contador para removê-lo.';
+    return 'Escolha trackers para sua faixa (máx. $max). Abra um contador para removê-lo.';
   }
 
   @override
@@ -4772,7 +4785,10 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get dialsAddCounterTooltip => 'Adicionar contador';
 
   @override
-  String get dialsRemoveFromStrip => 'Remover da faixa';
+  String get dialsAddCounterChip => 'Contador';
+
+  @override
+  String get dialsRemoveFromStrip => 'Remover contador';
 
   @override
   String get hubGuideTitle => 'Tour rápido';
@@ -4794,18 +4810,25 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
       'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
 
   @override
-  String get hubGuideSlideStackTitle => 'Pilha e busca';
+  String get hubGuideSlideStackTitle => 'Pilha';
 
   @override
   String get hubGuideSlideStackBody =>
-      'A pilha é para Hold Priority e resolver efeitos. A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
+      'A pilha é para Hold Priority e resolver efeitos.';
+
+  @override
+  String get hubGuideSlideLookupTitle => 'Busca';
+
+  @override
+  String get hubGuideSlideLookupBody =>
+      'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Visão da mesa';
 
   @override
   String get hubGuideSlideTableBody =>
-      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno fica fixo; Desistir fica abaixo.';
+      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Seu turno e Commander';
@@ -5759,15 +5782,6 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get paletteSlate => 'Ardósia';
-
-  @override
-  String get paletteForest => 'Floresta';
-
-  @override
-  String get paletteObsidian => 'Obsidiana';
-
-  @override
-  String get paletteFog => 'Névoa';
 
   @override
   String networkCannotReachHost(String error) {

@@ -21,6 +21,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/app_router.dart';
 import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
+import '../../../ui/tokens/radius_tokens.dart';
 import '../../../ui/tokens/opacity_tokens.dart';
 import '../widgets/active_turn_banner.dart';
 import '../widgets/alliance_overview_ui.dart';
@@ -42,6 +43,7 @@ import '../widgets/end_turn_bar.dart';
 import '../widgets/phase_nav_cluster.dart';
 import '../widgets/player_whisper_overlay.dart';
 import '../widgets/table_tool_result_overlay.dart';
+import '../widgets/card_lookup_tab.dart';
 import '../widgets/stack_tracker_tab.dart';
 import '../widgets/variant_card_panel.dart';
 import '../widgets/your_turn_prompt_overlay.dart';
@@ -76,6 +78,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void initState() {
     super.initState();
+    ref.read(cardLookupSessionProvider.notifier).clear();
     final settings = ref.read(settingsRepositoryProvider).settings;
     _enteredWithHiddenSystemBars = settings.hideSystemBars;
     if (settings.keepDisplayAwake) {
@@ -191,7 +194,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         backgroundColor: colors.backgroundPrimary,
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(LayoutTokens.gr6),
+            padding: const EdgeInsets.all(LayoutTokens.gr5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -219,9 +222,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     fontSize: FontTokens.body,
                   ),
                 ),
-                const SizedBox(height: LayoutTokens.gr6),
+                const SizedBox(height: LayoutTokens.gr5),
                 FilledButton(
-                  onPressed: () => context.go(AppRoutes.lobby),
+                  onPressed: () {
+                    allowNextGameExit(ref);
+                    context.go(AppRoutes.lobby);
+                  },
                   child: Text(l10n.gameReturnToLobby),
                 ),
               ],
@@ -330,6 +336,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           confirmLabel: 'OK',
         );
         if (!context.mounted) return;
+        allowNextGameExit(ref);
         context.go(AppRoutes.lobby);
         await quitActiveGame(ref);
       });
@@ -400,8 +407,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
     return PopScope(
       // Never pop the /game route with the phone back button — that was
-      // sending players back to the host lobby mid-match. Nested sheets
-      // (card lookup, etc.) still receive back first while they are open.
+      // sending players back to the host lobby mid-match. Back closes the
+      // table overview. A card popup closes itself.
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
@@ -480,9 +487,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                             color: colors.warning.withValues(
                               alpha: OpacityTokens.soft,
                             ),
-                            borderRadius: BorderRadius.circular(
-                              LayoutTokens.gr2,
-                            ),
+                            borderRadius: RadiusTokens.radiusXl,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: LayoutTokens.gr4,
@@ -576,7 +581,7 @@ class _PersonalView extends ConsumerStatefulWidget {
 }
 
 class _PersonalViewState extends ConsumerState<_PersonalView> {
-  /// 0 = Play, 1 = Stack (History is on Table overview)
+  /// 0 = Play, 1 = Stack, 2 = Lookup (History is on Table overview)
   int _mainTabIndex = 0;
 
   @override
@@ -585,7 +590,7 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
     ref.watch(gameProvider.select(gameHudHeaderRebuildFingerprint));
     if (_mainTabIndex == 0) {
       ref.watch(gameProvider.select(playTabRebuildFingerprint));
-    } else {
+    } else if (_mainTabIndex == 1) {
       ref.watch(gameProvider.select(stackTabRebuildFingerprint));
     }
 
@@ -612,11 +617,12 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
     final isCompact =
         screenHeight < 704 || screenWidth < GameLayoutBreakpoints.compact;
     final tightVertical = screenHeight < GameLayoutBreakpoints.shortViewport;
-    final horizontalInset = LayoutTokens.gr3;
-    // Match dial strip / HUD inset: full column width (no 400px life band).
+    final horizontalInset = LayoutTokens.shellPageInset;
+    // Fixed life band. The column used to stretch this to fill leftover
+    // space; the counters no longer need that room.
     final lifeBandH =
         tightVertical
-            ? (isCompact ? 128.0 : 148.0)
+            ? (isCompact ? 128.0 : 160.0)
             : (isCompact ? 160.0 : 192.0);
     final playGapSm = tightVertical ? LayoutTokens.gr1 : LayoutTokens.gr2;
 
@@ -663,7 +669,6 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
             tightVertical ? LayoutTokens.gr1 : LayoutTokens.gr2,
           ),
           child: GameHudHeader(
-            tightVertical: tightVertical,
             accentColor: chromeAccent,
             turnLabel: turnLabel,
             isLocalPlayersTurn:
@@ -720,6 +725,7 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
         Expanded(
           child: switch (_mainTabIndex) {
             1 => StackTrackerTab(game: ref.read(gameProvider)),
+            2 => const CardLookupTab(),
             _ => Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalInset),
               child: LayoutBuilder(
@@ -774,8 +780,8 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                             waitingForName: endTurnEnabled ? null : activeName,
                             onHostSkip: canHostSkip ? notifier.endTurn : null,
                           );
-                  final lifeCounter = ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: lifeBandH),
+                  final lifeCounter = SizedBox(
+                    height: lifeBandH,
                     child: ScopedLifeCounter(
                       playerId: local.playerId,
                       onLifeChange: adjustLife,
@@ -789,12 +795,6 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                           local.playerId,
                           field,
                           delta,
-                        ),
-                    onSetCounterAbsolute:
-                        (field, v) => notifier.setGameplayDialAbsolute(
-                          local.playerId,
-                          field,
-                          v,
                         ),
                     onAddDialToStrip:
                         (field) => notifier.addGameplayDialToStrip(
@@ -832,8 +832,8 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                   ];
 
                   // Comfortable minimum: pinned zones at their intrinsic
-                  // size, plus the life counter's legibility floor.
-                  const lifeMinFloor = 96.0;
+                  // size, plus the fixed life band. Flexible gaps can shrink
+                  // to nothing; the band itself cannot.
                   const extraRowEstimate = 44.0;
                   final dialStripH =
                       GameplayDialsStripWidget.estimatedStripHeight(
@@ -845,28 +845,25 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                           ? PhaseNavCluster.heightFor(showSkip: canHostSkip)
                           : EndTurnBar.heightFor(showSkip: canHostSkip);
                   final comfortableMin =
-                      extraRowEstimate + // Card lookup always present
                       (variantsEnabled ? extraRowEstimate : 0.0) +
                       (showTurnTimer ? extraRowEstimate : 0.0) +
-                      lifeMinFloor +
+                      lifeBandH +
+                      playGapSm +
                       playGapSm +
                       dialStripH +
-                      playGapSm +
                       turnChromeH;
 
                   if (playConstraints.maxHeight >= comfortableMin) {
-                    // Normal case (virtually all portrait phones/tablets):
-                    // the life counter simply fills whatever space remains
-                    // via Expanded — no manual pixel math, and structurally
-                    // impossible to overflow here.
-                    // End turn / phases sit under counters for thumb reach.
+                    // Counters sit halfway between life and End turn.
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         ...extraRows,
-                        Expanded(child: lifeCounter),
+                        lifeCounter,
                         SizedBox(height: playGapSm),
+                        const Spacer(),
                         dialStrip,
+                        const Spacer(),
                         SizedBox(height: playGapSm),
                         phaseBar,
                       ],
@@ -879,22 +876,16 @@ class _PersonalViewState extends ConsumerState<_PersonalView> {
                   // of letting it overflow.
                   return SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: playConstraints.maxHeight,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ...extraRows,
-                          SizedBox(height: lifeMinFloor, child: lifeCounter),
-                          SizedBox(height: playGapSm),
-                          dialStrip,
-                          SizedBox(height: playGapSm),
-                          phaseBar,
-                        ],
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ...extraRows,
+                        lifeCounter,
+                        SizedBox(height: playGapSm),
+                        dialStrip,
+                        SizedBox(height: playGapSm),
+                        phaseBar,
+                      ],
                     ),
                   );
                 },

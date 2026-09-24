@@ -88,12 +88,11 @@ class _Bullet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 6, right: LayoutTokens.gr2),
-            child: Icon(
-              Icons.circle,
-              size: 6,
-              color: colors.primaryAccent,
+            padding: EdgeInsets.only(
+              top: LayoutTokens.gr0,
+              right: LayoutTokens.gr2,
             ),
+            child: Icon(Icons.circle, size: 6, color: colors.primaryAccent),
           ),
           Expanded(
             child: Text(

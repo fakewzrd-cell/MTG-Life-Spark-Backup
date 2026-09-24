@@ -218,7 +218,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsDarkAppearanceSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Light mode uses soft backgrounds — try Fog or Slate'**
+  /// **'Dark backgrounds. Turn off for a light page.'**
   String get settingsDarkAppearanceSubtitle;
 
   /// No description provided for @settingsLanguage.
@@ -1751,6 +1751,18 @@ abstract class AppLocalizations {
   /// **'Type a card name to look up rules.'**
   String get lookupEmptyPrompt;
 
+  /// No description provided for @lookupRecentEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards looked up yet.'**
+  String get lookupRecentEmpty;
+
+  /// No description provided for @lookupBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get lookupBack;
+
   /// No description provided for @lookupNoResults.
   ///
   /// In en, this message translates to:
@@ -3200,7 +3212,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialsAddCounterBody.
   ///
   /// In en, this message translates to:
-  /// **'Pick trackers for your strip (max {max}). Tap the X on a counter to remove it from the strip.'**
+  /// **'Pick trackers for your strip (max {max}). Open a counter to remove it.'**
   String dialsAddCounterBody(int max);
 
   /// No description provided for @dialsSectionCommon.
@@ -3227,10 +3239,16 @@ abstract class AppLocalizations {
   /// **'Add counter'**
   String get dialsAddCounterTooltip;
 
+  /// No description provided for @dialsAddCounterChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Counter'**
+  String get dialsAddCounterChip;
+
   /// No description provided for @dialsRemoveFromStrip.
   ///
   /// In en, this message translates to:
-  /// **'Remove from strip'**
+  /// **'Remove counter'**
   String get dialsRemoveFromStrip;
 
   /// No description provided for @hubGuideTitle.
@@ -3272,14 +3290,26 @@ abstract class AppLocalizations {
   /// No description provided for @hubGuideSlideStackTitle.
   ///
   /// In en, this message translates to:
-  /// **'Stack & Lookup'**
+  /// **'Stack'**
   String get hubGuideSlideStackTitle;
 
   /// No description provided for @hubGuideSlideStackBody.
   ///
   /// In en, this message translates to:
-  /// **'Stack is for Hold Priority and resolving effects. Lookup opens Scryfall without leaving your seat — oracle text and rulings.'**
+  /// **'Stack is for Hold Priority and resolving effects.'**
   String get hubGuideSlideStackBody;
+
+  /// No description provided for @hubGuideSlideLookupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lookup'**
+  String get hubGuideSlideLookupTitle;
+
+  /// No description provided for @hubGuideSlideLookupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Lookup opens Scryfall without leaving your seat — oracle text and rulings.'**
+  String get hubGuideSlideLookupBody;
 
   /// No description provided for @hubGuideSlideTableTitle.
   ///
@@ -3290,7 +3320,7 @@ abstract class AppLocalizations {
   /// No description provided for @hubGuideSlideTableBody.
   ///
   /// In en, this message translates to:
-  /// **'Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn stays pinned; Forfeit sits below it.'**
+  /// **'Open Table for the whole pod. Tools has dice and coin flips that everyone sees; History is in the header. End turn and Forfeit sit side by side.'**
   String get hubGuideSlideTableBody;
 
   /// No description provided for @hubGuideSlideCommanderTitle.
@@ -4984,24 +5014,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Slate'**
   String get paletteSlate;
-
-  /// No description provided for @paletteForest.
-  ///
-  /// In en, this message translates to:
-  /// **'Forest'**
-  String get paletteForest;
-
-  /// No description provided for @paletteObsidian.
-  ///
-  /// In en, this message translates to:
-  /// **'Obsidian'**
-  String get paletteObsidian;
-
-  /// No description provided for @paletteFog.
-  ///
-  /// In en, this message translates to:
-  /// **'Fog'**
-  String get paletteFog;
 
   /// No description provided for @networkCannotReachHost.
   ///

@@ -44,15 +44,12 @@ Map<GameFormat, List<PlayerDeck>> _groupDecksByFormat(List<PlayerDeck> decks) {
   return grouped;
 }
 
-bool _deckMatchesQuery(
-  PlayerDeck deck,
-  String query,
-  AppLocalizations l10n,
-) {
+bool _deckMatchesQuery(PlayerDeck deck, String query, AppLocalizations l10n) {
   if (query.isEmpty) return true;
   final q = query.toLowerCase();
   final style = deck.deckStyle;
-  final styleHit = style != null &&
+  final styleHit =
+      style != null &&
       (localizedDeckStyleName(l10n, style).toLowerCase().contains(q) ||
           style.displayName.toLowerCase().contains(q) ||
           style.id.contains(q));
@@ -300,10 +297,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
       );
     } else {
       scrollBody = ListView(
-        padding: LayoutTokens.shellListPadding(
-          context,
-          top: LayoutTokens.gr2,
-        ),
+        padding: LayoutTokens.shellListPadding(context, top: LayoutTokens.gr2),
         children: [
           Padding(
             padding: EdgeInsets.only(bottom: LayoutTokens.gr3),
@@ -314,29 +308,30 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
                 hintText: l10n.decksSearchHint,
                 prefixIcon: const Icon(Icons.search_rounded),
                 hintStyle: TextStyle(color: colors.textSecondary),
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: l10n.decksClearSearchTooltip,
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _query = '');
-                        },
-                        icon: const Icon(Icons.close_rounded),
-                      ),
+                suffixIcon:
+                    _query.isEmpty
+                        ? null
+                        : IconButton(
+                          tooltip: l10n.decksClearSearchTooltip,
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.close_rounded),
+                        ),
               ),
               style: TextStyle(color: colors.textPrimary),
             ),
           ),
           if (noMatches)
             Padding(
-              padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr6),
+              padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr5),
               child: Text(
                 l10n.decksNoSearchMatches(_query),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
               ),
             )
           else
@@ -426,29 +421,29 @@ class _DeckLibraryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final commanderLine = deck.isCommanderDeck && deck.hasPartner
-        ? '${deck.commanderName} // ${deck.partnerCommanderName}'
-        : deck.commanderName;
-    final styleLine = deck.hasDeckStyle
-        ? localizedDeckStyleName(
-            AppLocalizations.of(context),
-            deck.deckStyle!,
-          )
-        : AppLocalizations.of(context).decksStyleNotSet;
-    final wr = deck.gamesPlayed == 0
-        ? null
-        : (deck.winRate * 100).round();
+    final commanderLine =
+        deck.isCommanderDeck && deck.hasPartner
+            ? '${deck.commanderName} // ${deck.partnerCommanderName}'
+            : deck.commanderName;
+    final styleLine =
+        deck.hasDeckStyle
+            ? localizedDeckStyleName(
+              AppLocalizations.of(context),
+              deck.deckStyle!,
+            )
+            : AppLocalizations.of(context).decksStyleNotSet;
+    final wr = deck.gamesPlayed == 0 ? null : (deck.winRate * 100).round();
 
     return Semantics(
       button: true,
       label: '${deck.displayName}, ${deck.gameFormat.displayName}',
       child: Material(
         color: colors.surface,
-        borderRadius: RadiusTokens.radiusMd,
+        borderRadius: RadiusTokens.radiusXl,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           child: Padding(
             padding: EdgeInsets.all(LayoutTokens.gr2),
             child: Row(
@@ -501,9 +496,10 @@ class _DeckLibraryTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: deck.hasDeckStyle
-                              ? colors.textSecondary
-                              : colors.warning,
+                          color:
+                              deck.hasDeckStyle
+                                  ? colors.textSecondary
+                                  : colors.warning,
                           fontSize: FontTokens.sm,
                           fontWeight: FontWeight.w600,
                         ),
@@ -527,7 +523,7 @@ class _DeckLibraryTile extends StatelessWidget {
                       '${deck.wins}W–${deck.losses}L',
                       style: TextStyle(
                         color: colors.textSecondary,
-                        fontSize: FontTokens.xs,
+                        fontSize: FontTokens.sm,
                       ),
                     ),
                   ],
@@ -542,10 +538,7 @@ class _DeckLibraryTile extends StatelessWidget {
 }
 
 class _DeckCoverThumb extends StatelessWidget {
-  const _DeckCoverThumb({
-    required this.deck,
-    required this.colors,
-  });
+  const _DeckCoverThumb({required this.deck, required this.colors});
 
   final PlayerDeck deck;
   final AppColorTokens colors;
@@ -554,29 +547,31 @@ class _DeckCoverThumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = deck.commanderImageUrl;
     return ClipRRect(
-      borderRadius: RadiusTokens.radiusSm,
+      borderRadius: RadiusTokens.radiusXl,
       child: SizedBox(
         width: 48,
         height: 68,
-        child: url != null && url.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => ColoredBox(
+        child:
+            url != null && url.isNotEmpty
+                ? CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  errorWidget:
+                      (_, __, ___) => ColoredBox(
+                        color: colors.backgroundPrimary,
+                        child: Icon(
+                          Icons.style_outlined,
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                )
+                : ColoredBox(
                   color: colors.backgroundPrimary,
                   child: Icon(
                     Icons.style_outlined,
                     color: colors.textSecondary,
                   ),
                 ),
-              )
-            : ColoredBox(
-                color: colors.backgroundPrimary,
-                child: Icon(
-                  Icons.style_outlined,
-                  color: colors.textSecondary,
-                ),
-              ),
       ),
     );
   }

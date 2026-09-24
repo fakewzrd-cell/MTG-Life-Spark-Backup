@@ -19,15 +19,19 @@ class GameIcon extends StatelessWidget {
   /// Poison counter icon
   factory GameIcon.poison({double size = 24, Color? color}) =>
       GameIcon(assetPath: AppIcons.poison, size: size, color: color);
+
   /// Energy counter icon
   factory GameIcon.energy({double size = 24, Color? color}) =>
       GameIcon(assetPath: AppIcons.energy, size: size, color: color);
+
   /// Radiation counter icon
   factory GameIcon.radiation({double size = 24, Color? color}) =>
       GameIcon(assetPath: AppIcons.radiation, size: size, color: color);
+
   /// Experience counter icon
   factory GameIcon.experience({double size = 24, Color? color}) =>
       GameIcon(assetPath: AppIcons.experience, size: size, color: color);
+
   /// Treasure counter icon
   factory GameIcon.treasure({double size = 24, Color? color}) =>
       GameIcon(assetPath: AppIcons.treasure, size: size, color: color);
@@ -82,9 +86,8 @@ class GameIcon extends StatelessWidget {
       assetPath,
       width: size,
       height: size,
-      colorFilter: color != null
-          ? ColorFilter.mode(color!, BlendMode.srcIn)
-          : null,
+      colorFilter:
+          color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
     );
   }
 }

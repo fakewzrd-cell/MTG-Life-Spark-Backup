@@ -24,10 +24,10 @@ class BrandLogo extends StatelessWidget {
   final Color? color;
 
   String get _asset => switch (layout) {
-        BrandLogoLayout.mark => AppIcons.lifeSparkLogo,
-        BrandLogoLayout.horizontal => AppIcons.logoHorizontal,
-        BrandLogoLayout.vertical => AppIcons.logoVertical,
-      };
+    BrandLogoLayout.mark => AppIcons.lifeSparkLogo,
+    BrandLogoLayout.horizontal => AppIcons.logoHorizontal,
+    BrandLogoLayout.vertical => AppIcons.logoVertical,
+  };
 
   @override
   Widget build(BuildContext context) {

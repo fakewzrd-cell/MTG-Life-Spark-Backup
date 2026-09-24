@@ -17,7 +17,8 @@ import 'session_link_status.dart';
 /// No chunking needed — WiFi MTU is far larger than any game message.
 class WsHostService implements BleService {
   final _messageController = StreamController<BleMessage>.broadcast();
-  final _connectionController = StreamController<BleConnectionEvent>.broadcast();
+  final _connectionController =
+      StreamController<BleConnectionEvent>.broadcast();
 
   /// clientKey (remote address string) → verified playerId (after handshake)
   final Map<String, String> _verified = {};
@@ -76,17 +77,17 @@ class WsHostService implements BleService {
       // Bind to any available port on all IPv4 interfaces
       _server = await HttpServer.bind(InternetAddress.anyIPv4, 0);
       _ready = true;
-      _server!.transform(WebSocketTransformer()).listen(
-        _onNewSocket,
-        onError: (_) {},
-        cancelOnError: false,
-      );
+      _server!
+          .transform(WebSocketTransformer())
+          .listen(_onNewSocket, onError: (_) {}, cancelOnError: false);
     } catch (e) {
-      _connectionController.add(BleConnectionEvent(
-        playerId: '',
-        status: BleConnectionStatus.error,
-        errorMessage: 'Failed to start WebSocket server: $e',
-      ));
+      _connectionController.add(
+        BleConnectionEvent(
+          playerId: '',
+          status: BleConnectionStatus.error,
+          errorMessage: 'Failed to start WebSocket server: $e',
+        ),
+      );
     }
   }
 
@@ -129,9 +130,7 @@ class WsHostService implements BleService {
     if (data is! String) return;
     BleMessage message;
     try {
-      message = BleMessage.fromJson(
-        jsonDecode(data) as Map<String, dynamic>,
-      );
+      message = BleMessage.fromJson(jsonDecode(data) as Map<String, dynamic>);
     } catch (e, st) {
       appLog('WsHostService: invalid message JSON', error: e, stackTrace: st);
       return;
@@ -178,8 +177,7 @@ class WsHostService implements BleService {
     }
 
     if (message.type == BleMessageType.lobbyPlayerJoined) {
-      final playerId =
-          message.payload['pid'] as String? ?? clientKey;
+      final playerId = message.payload['pid'] as String? ?? clientKey;
       _bindVerifiedClient(clientKey, playerId);
       _messageController.add(message);
       return;
@@ -243,10 +241,11 @@ class WsHostService implements BleService {
 
   void _bindVerifiedClient(String clientKey, String playerId) {
     // Drop any older socket still mapped to this player (stale after resume).
-    final staleKeys = _verified.entries
-        .where((e) => e.value == playerId && e.key != clientKey)
-        .map((e) => e.key)
-        .toList();
+    final staleKeys =
+        _verified.entries
+            .where((e) => e.value == playerId && e.key != clientKey)
+            .map((e) => e.key)
+            .toList();
     for (final key in staleKeys) {
       _verified.remove(key);
       final stale = _sockets.remove(key);
@@ -260,10 +259,12 @@ class WsHostService implements BleService {
     final wasSoftDropped = _softDropped.remove(playerId);
     _reconnectGrace.remove(playerId)?.cancel();
     _verified[clientKey] = playerId;
-    _connectionController.add(BleConnectionEvent(
-      playerId: playerId,
-      status: BleConnectionStatus.connected,
-    ));
+    _connectionController.add(
+      BleConnectionEvent(
+        playerId: playerId,
+        status: BleConnectionStatus.connected,
+      ),
+    );
     if (wasSoftDropped) {
       _broadcastExcept(
         BleMessage(
@@ -290,10 +291,12 @@ class WsHostService implements BleService {
 
     // Soft drop: announce reconnecting; host decides after grace (no auto-kick).
     _softDropped.add(playerId);
-    _connectionController.add(BleConnectionEvent(
-      playerId: playerId,
-      status: BleConnectionStatus.reconnecting,
-    ));
+    _connectionController.add(
+      BleConnectionEvent(
+        playerId: playerId,
+        status: BleConnectionStatus.reconnecting,
+      ),
+    );
     _broadcastExcept(
       BleMessage(
         type: BleMessageType.playerReconnecting,
@@ -313,10 +316,12 @@ class WsHostService implements BleService {
       // Player already re-bound on another socket.
       if (_verified.containsValue(playerId)) return;
       // Grace expired — UI asks host Keep waiting / Remove (no auto-eliminate).
-      _connectionController.add(BleConnectionEvent(
-        playerId: playerId,
-        status: BleConnectionStatus.disconnected,
-      ));
+      _connectionController.add(
+        BleConnectionEvent(
+          playerId: playerId,
+          status: BleConnectionStatus.disconnected,
+        ),
+      );
     });
   }
 
@@ -325,10 +330,12 @@ class WsHostService implements BleService {
     if (playerId.isEmpty) return;
     if (_verified.containsValue(playerId)) return;
     _softDropped.add(playerId);
-    _connectionController.add(BleConnectionEvent(
-      playerId: playerId,
-      status: BleConnectionStatus.reconnecting,
-    ));
+    _connectionController.add(
+      BleConnectionEvent(
+        playerId: playerId,
+        status: BleConnectionStatus.reconnecting,
+      ),
+    );
     _broadcastExcept(
       BleMessage(
         type: BleMessageType.playerReconnecting,
@@ -361,8 +368,7 @@ class WsHostService implements BleService {
       return;
     }
     for (final entry in _sockets.entries) {
-      if (excludePlayerId != null &&
-          _verified[entry.key] == excludePlayerId) {
+      if (excludePlayerId != null && _verified[entry.key] == excludePlayerId) {
         continue;
       }
       _trySend(entry.value, encoded);
@@ -374,8 +380,7 @@ class WsHostService implements BleService {
     if (ws != null) _trySend(ws, jsonEncode(message.toJson()));
   }
 
-  void _broadcastExcept(BleMessage message,
-      {required String excludeKey}) {
+  void _broadcastExcept(BleMessage message, {required String excludeKey}) {
     final encoded = jsonEncode(message.toJson());
     for (final entry in _sockets.entries) {
       if (excludeKey.isNotEmpty && entry.key == excludeKey) continue;

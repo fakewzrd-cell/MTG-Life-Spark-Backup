@@ -33,10 +33,7 @@ class AllianceProposal {
 
   bool get isScheduled => !delivered;
 
-  AllianceProposal copyWith({
-    bool? delivered,
-    DateTime? deliverAt,
-  }) =>
+  AllianceProposal copyWith({bool? delivered, DateTime? deliverAt}) =>
       AllianceProposal(
         id: id,
         fromId: fromId,
@@ -50,16 +47,16 @@ class AllianceProposal {
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'fromId': fromId,
-        'toId': toId,
-        'duration': duration.name,
-        'deliveryTiming': deliveryTiming.name,
-        if (deliverAt != null) 'deliverAt': deliverAt!.toIso8601String(),
-        'createdAtRound': createdAtRound,
-        'createdAtTurnIndex': createdAtTurnIndex,
-        'delivered': delivered,
-      };
+    'id': id,
+    'fromId': fromId,
+    'toId': toId,
+    'duration': duration.name,
+    'deliveryTiming': deliveryTiming.name,
+    if (deliverAt != null) 'deliverAt': deliverAt!.toIso8601String(),
+    'createdAtRound': createdAtRound,
+    'createdAtTurnIndex': createdAtTurnIndex,
+    'delivered': delivered,
+  };
 
   factory AllianceProposal.fromJson(Map<String, dynamic> json) =>
       AllianceProposal(
@@ -74,9 +71,10 @@ class AllianceProposal {
           (d) => d.name == json['deliveryTiming'],
           orElse: () => AllianceDeliveryTiming.now,
         ),
-        deliverAt: json['deliverAt'] != null
-            ? DateTime.tryParse(json['deliverAt'] as String)
-            : null,
+        deliverAt:
+            json['deliverAt'] != null
+                ? DateTime.tryParse(json['deliverAt'] as String)
+                : null,
         createdAtRound: (json['createdAtRound'] as num?)?.toInt() ?? 1,
         createdAtTurnIndex: (json['createdAtTurnIndex'] as num?)?.toInt() ?? 0,
         delivered: json['delivered'] as bool? ?? true,
@@ -110,14 +108,14 @@ class Alliance {
       playerId == proposerId ? targetId : proposerId;
 
   Alliance copyWith({bool? isRevealed}) => Alliance(
-        id: id,
-        proposerId: proposerId,
-        targetId: targetId,
-        duration: duration,
-        formedAtRound: formedAtRound,
-        formedAtTurnIndex: formedAtTurnIndex,
-        isRevealed: isRevealed ?? this.isRevealed,
-      );
+    id: id,
+    proposerId: proposerId,
+    targetId: targetId,
+    duration: duration,
+    formedAtRound: formedAtRound,
+    formedAtTurnIndex: formedAtTurnIndex,
+    isRevealed: isRevealed ?? this.isRevealed,
+  );
 
   /// Returns true when this alliance should auto-expire at end-of-turn or
   /// end-of-round transitions. Manual alliances never auto-expire.
@@ -134,28 +132,27 @@ class Alliance {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'proposerId': proposerId,
-        'targetId': targetId,
-        'duration': duration.name,
-        'formedAtRound': formedAtRound,
-        'formedAtTurnIndex': formedAtTurnIndex,
-        'isRevealed': isRevealed,
-      };
+    'id': id,
+    'proposerId': proposerId,
+    'targetId': targetId,
+    'duration': duration.name,
+    'formedAtRound': formedAtRound,
+    'formedAtTurnIndex': formedAtTurnIndex,
+    'isRevealed': isRevealed,
+  };
 
   factory Alliance.fromJson(Map<String, dynamic> json) => Alliance(
-        id: json['id'] as String? ??
-            '${json['proposerId']}_${json['targetId']}',
-        proposerId: json['proposerId'] as String,
-        targetId: json['targetId'] as String,
-        duration: AllianceDuration.values.firstWhere(
-          (d) => d.name == json['duration'],
-          orElse: () => AllianceDuration.manual,
-        ),
-        formedAtRound: (json['formedAtRound'] as num).toInt(),
-        formedAtTurnIndex: (json['formedAtTurnIndex'] as num).toInt(),
-        isRevealed: json['isRevealed'] as bool? ?? false,
-      );
+    id: json['id'] as String? ?? '${json['proposerId']}_${json['targetId']}',
+    proposerId: json['proposerId'] as String,
+    targetId: json['targetId'] as String,
+    duration: AllianceDuration.values.firstWhere(
+      (d) => d.name == json['duration'],
+      orElse: () => AllianceDuration.manual,
+    ),
+    formedAtRound: (json['formedAtRound'] as num).toInt(),
+    formedAtTurnIndex: (json['formedAtTurnIndex'] as num).toInt(),
+    isRevealed: json['isRevealed'] as bool? ?? false,
+  );
 }
 
 String allianceDurationLabel(AllianceDuration duration) {

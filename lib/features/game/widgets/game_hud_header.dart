@@ -15,7 +15,6 @@ class GameHudHeader extends StatelessWidget {
     required this.onTabSelected,
     required this.accentColor,
     required this.turnLabel,
-    required this.tightVertical,
     this.isLocalPlayersTurn = false,
   });
 
@@ -24,7 +23,6 @@ class GameHudHeader extends StatelessWidget {
   final ValueChanged<int> onTabSelected;
   final Color accentColor;
   final String turnLabel;
-  final bool tightVertical;
 
   /// When true, the header card uses [accentColor] for active-turn chrome.
   final bool isLocalPlayersTurn;
@@ -42,25 +40,24 @@ class GameHudHeader extends StatelessWidget {
       label: turnLabel,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: activeTurn
-              ? Color.alphaBlend(
-                  accentColor.withValues(alpha: OpacityTokens.soft),
-                  colors.surface,
-                )
-              : colors.surface,
-          borderRadius: RadiusTokens.radiusMd,
+          color:
+              activeTurn
+                  ? Color.alphaBlend(
+                    accentColor.withValues(alpha: OpacityTokens.soft),
+                    colors.surface,
+                  )
+                  : colors.surface,
+          borderRadius: RadiusTokens.radiusXl,
         ),
         child: ClipRRect(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (statusStrip != null) ...[
                 Padding(
-                  padding: EdgeInsets.all(
-                    tightVertical ? LayoutTokens.gr1 : LayoutTokens.gr2,
-                  ),
+                  padding: const EdgeInsets.all(LayoutTokens.gr2),
                   child: statusStrip,
                 ),
                 Divider(height: 1, thickness: 1, color: dividerColor),

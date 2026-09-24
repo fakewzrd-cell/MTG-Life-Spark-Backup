@@ -1,7 +1,7 @@
 // Regression coverage for the Play tab's flex-based layout (game_screen.dart).
 //
 // Renders the same zone structure — pinned phase bar/dial strip, pinned
-// variant chip/turn timer rows, and a flexible life counter — using the
+// variant chip/turn timer rows, and a fixed-height life counter — using the
 // real production widgets, at a range of tight viewport heights with every
 // optional element enabled simultaneously (variant decks + turn timer + 4
 // gameplay counters). This is the worst case for overflow.
@@ -11,6 +11,7 @@
 // the standard way to assert "no overflow" for a widget test.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mgt_life_spark/ui/tokens/layout_tokens.dart';
 import 'package:mgt_life_spark/features/game/widgets/game_performance_widgets.dart';
 import 'package:mgt_life_spark/features/game/widgets/game_timeout_widgets.dart';
 import 'package:mgt_life_spark/features/game/widgets/gameplay_dials_strip_widget.dart';
@@ -25,13 +26,14 @@ import '../support/game_widget_harness.dart';
 /// production, without pulling in `GameScreen`'s unrelated plugin side
 /// effects (wakelock, shake-to-undo sensors).
 Widget _playTabHarness({required bool hasExtraRows}) {
-  const playGapSm = SizedBox(height: 8);
+  const playGapSm = SizedBox(height: LayoutTokens.gr2);
   const lifeBandH = 192.0;
-  const lifeMinFloor = 96.0;
   const extraRowEstimate = 44.0;
 
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    padding: const EdgeInsets.symmetric(
+      horizontal: LayoutTokens.shellPageInset,
+    ),
     child: LayoutBuilder(
       builder: (context, playConstraints) {
         final dialCompact = playConstraints.maxHeight < 520;
@@ -45,9 +47,9 @@ Widget _playTabHarness({required bool hasExtraRows}) {
           onEndTurn: () {},
           endTurnEnabled: true,
         );
-        final lifeCounter = ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: lifeBandH),
-          child: const ScopedLifeCounter(
+        final lifeCounter = const SizedBox(
+          height: lifeBandH,
+          child: ScopedLifeCounter(
             playerId: 'alice',
             onLifeChange: _noopLifeChange,
           ),
@@ -56,7 +58,6 @@ Widget _playTabHarness({required bool hasExtraRows}) {
           playerId: 'alice',
           compactVertical: dialCompact,
           onAdjustCounter: (_, __) {},
-          onSetCounterAbsolute: (_, __) {},
           onAddDialToStrip: (_) => true,
           onRemoveDialFromStrip: (_) {},
         );
@@ -82,11 +83,12 @@ Widget _playTabHarness({required bool hasExtraRows}) {
           context,
           compactVertical: dialCompact,
         );
-        final comfortableMin = (hasExtraRows ? extraRowEstimate * 2 : 0.0) +
-            lifeMinFloor +
-            8 +
+        final comfortableMin =
+            (hasExtraRows ? extraRowEstimate * 2 : 0.0) +
+            lifeBandH +
+            LayoutTokens.gr2 +
+            LayoutTokens.gr2 +
             dialStripH +
-            8 +
             PhaseNavCluster.barHeight;
 
         if (playConstraints.maxHeight >= comfortableMin) {
@@ -94,9 +96,11 @@ Widget _playTabHarness({required bool hasExtraRows}) {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ...extraRows,
-              Expanded(child: lifeCounter),
+              lifeCounter,
               playGapSm,
+              const Spacer(),
               dialStrip,
+              const Spacer(),
               playGapSm,
               phaseBar,
             ],
@@ -105,20 +109,16 @@ Widget _playTabHarness({required bool hasExtraRows}) {
 
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: playConstraints.maxHeight),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...extraRows,
-                SizedBox(height: lifeMinFloor, child: lifeCounter),
-                playGapSm,
-                dialStrip,
-                playGapSm,
-                phaseBar,
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ...extraRows,
+              lifeCounter,
+              playGapSm,
+              dialStrip,
+              playGapSm,
+              phaseBar,
+            ],
           ),
         );
       },
@@ -130,12 +130,21 @@ void _noopLifeChange(int delta) {}
 
 void main() {
   // Worst case: every optional Play tab element enabled at once — variant
-  // decks, a turn timer, and the maximum 4 gameplay counters.
+  // decks, a turn timer, and a full strip of gameplay counters.
   final worstCaseGame = harnessGame(
     localId: 'alice',
     players: [
       harnessPlayer(id: 'alice').copyWith(
-        visibleGameplayDials: ['poison', 'energy', 'experience', 'rad'],
+        visibleGameplayDials: [
+          'poison',
+          'energy',
+          'experience',
+          'rad',
+          'blood',
+          'clue',
+          'map',
+          'treasure',
+        ],
       ),
       harnessPlayer(id: 'bob'),
     ],
@@ -150,29 +159,35 @@ void main() {
   // area rarely gets the full device height (header/bottom bar consume
   // some), so these heights stand in for "space left for the Play tab"
   // rather than raw device size.
-  const heightsToTest = [160.0, 220.0, 280.0, 340.0, 420.0, 520.0, 640.0, 900.0];
+  const heightsToTest = [
+    160.0,
+    220.0,
+    280.0,
+    340.0,
+    420.0,
+    520.0,
+    640.0,
+    900.0,
+  ];
 
   for (final height in heightsToTest) {
-    testWidgets(
-      'Play tab layout has no overflow at height=$height '
-      '(variant chip + timer + 4 counters)',
-      (tester) async {
-        await tester.pumpWidget(
-          wrapGameWidget(
-            game: worstCaseGame,
-            child: Scaffold(
-              body: SizedBox(
-                height: height,
-                child: _playTabHarness(hasExtraRows: true),
-              ),
+    testWidgets('Play tab layout has no overflow at height=$height '
+        '(variant chip + timer + full counter strip)', (tester) async {
+      await tester.pumpWidget(
+        wrapGameWidget(
+          game: worstCaseGame,
+          child: Scaffold(
+            body: SizedBox(
+              height: height,
+              child: _playTabHarness(hasExtraRows: true),
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets(
       'Play tab layout has no overflow at height=$height (no extras)',

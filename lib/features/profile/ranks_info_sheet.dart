@@ -10,10 +10,7 @@ import '../../shared/widgets/tier_badge.dart';
 import '../game/widgets/game_modal_chrome.dart';
 
 /// Explains Level + Rank + metal tiers for the progression system.
-Future<void> showRanksInfoSheet(
-  BuildContext context, {
-  int? currentLevel,
-}) {
+Future<void> showRanksInfoSheet(BuildContext context, {int? currentLevel}) {
   HapticFeedback.selectionClick();
   return showGameBottomSheet<void>(
     context: context,
@@ -34,8 +31,10 @@ class _RanksInfoSheet extends StatelessWidget {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
     final maxSheetH = MediaQuery.sizeOf(context).height * _maxSheetFraction;
-    final maxListH =
-        (maxSheetH - _chromeReserve).clamp(160.0, maxSheetH * 0.85);
+    final maxListH = (maxSheetH - _chromeReserve).clamp(
+      160.0,
+      maxSheetH * 0.85,
+    );
     final level = currentLevel?.clamp(1, 100);
 
     return ConstrainedBox(
@@ -79,7 +78,8 @@ class _RanksInfoSheet extends StatelessWidget {
                           rank.minLevel,
                           rank.maxLevel,
                         ),
-                        isCurrent: level != null &&
+                        isCurrent:
+                            level != null &&
                             level >= rank.minLevel &&
                             level <= rank.maxLevel,
                         colors: colors,
@@ -119,10 +119,7 @@ class _TierSectionHeader extends StatelessWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           SizedBox(width: LayoutTokens.gr2),
           Expanded(

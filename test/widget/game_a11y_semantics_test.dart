@@ -12,20 +12,17 @@ import 'package:mgt_life_spark/shared/theme/app_theme.dart';
 import '../support/test_l10n.dart';
 
 PlayerGameState _player(String id, {String? username}) => PlayerGameState(
-      playerId: id,
-      username: username ?? id,
-      playerColor: Colors.blue,
-      life: 40,
-    );
+  playerId: id,
+  username: username ?? id,
+  playerColor: Colors.blue,
+  life: 40,
+);
 
 GameState _rollGame({
   required String localId,
   Map<String, int> rolls = const {},
 }) {
-  final players = [
-    _player('alice'),
-    _player('bob', username: 'Bob'),
-  ];
+  final players = [_player('alice'), _player('bob', username: 'Bob')];
   return GameState(
     players: players,
     turnOrder: players.map((p) => p.playerId).toList(),
@@ -38,7 +35,9 @@ GameState _rollGame({
 }
 
 void main() {
-  testWidgets('first-player die exposes stable button semantics', (tester) async {
+  testWidgets('first-player die exposes stable button semantics', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
     try {
       final game = _rollGame(localId: 'alice');
@@ -67,14 +66,8 @@ void main() {
           isEnabled: true,
         ),
       );
-      expect(
-        find.bySemanticsLabel('alice, you, Not rolled'),
-        findsOneWidget,
-      );
-      expect(
-        find.bySemanticsLabel('Bob, Not rolled'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('alice, you, Not rolled'), findsOneWidget);
+      expect(find.bySemanticsLabel('Bob, Not rolled'), findsOneWidget);
       expect(
         find.bySemanticsLabel('0 of 2 players have rolled'),
         findsOneWidget,
@@ -98,7 +91,6 @@ void main() {
               onTabSelected: (_) {},
               accentColor: Colors.purple,
               turnLabel: 'Your turn',
-              tightVertical: false,
               isLocalPlayersTurn: true,
             ),
           ),
@@ -107,10 +99,7 @@ void main() {
 
       expect(
         tester.getSemantics(find.bySemanticsLabel('Your turn')),
-        matchesSemantics(
-          label: 'Your turn',
-          isLiveRegion: true,
-        ),
+        matchesSemantics(label: 'Your turn', isLiveRegion: true),
       );
     } finally {
       handle.dispose();
@@ -118,56 +107,57 @@ void main() {
   });
 
   testWidgets(
-      'life announcer debounces local changes and speaks remote immediately',
-      (tester) async {
-    final handle = tester.ensureSemantics();
-    try {
-      late ProviderContainer container;
+    'life announcer debounces local changes and speaks remote immediately',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      try {
+        late ProviderContainer container;
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: Builder(
-            builder: (context) {
-              container = ProviderScope.containerOf(context);
-              return MaterialApp(
-                theme: AppTheme.dark(),
-                home: const Scaffold(
-                  body: GameLifeAnnouncer(enabled: true),
-                ),
-              );
-            },
+        await tester.pumpWidget(
+          ProviderScope(
+            child: Builder(
+              builder: (context) {
+                container = ProviderScope.containerOf(context);
+                return MaterialApp(
+                  theme: AppTheme.dark(),
+                  home: const Scaffold(body: GameLifeAnnouncer(enabled: true)),
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
 
-      container.read(localLifeChangeProvider.notifier).state =
-          const LifeChangeAnnouncement(
-        id: 1,
-        total: 39,
-        delta: -1,
-        source: LifeChangeSource.local,
-      );
-      await tester.pump();
-      expect(find.bySemanticsLabel('39 life'), findsNothing);
+        container
+            .read(localLifeChangeProvider.notifier)
+            .state = const LifeChangeAnnouncement(
+          id: 1,
+          total: 39,
+          delta: -1,
+          source: LifeChangeSource.local,
+        );
+        await tester.pump();
+        expect(find.bySemanticsLabel('39 life'), findsNothing);
 
-      await tester.pump(const Duration(milliseconds: 600));
-      expect(find.bySemanticsLabel('39 life'), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 600));
+        expect(find.bySemanticsLabel('39 life'), findsOneWidget);
 
-      container.read(localLifeChangeProvider.notifier).state =
-          const LifeChangeAnnouncement(
-        id: 2,
-        total: 35,
-        delta: -4,
-        source: LifeChangeSource.remote,
-        actorUsername: 'Bob',
-      );
-      await tester.pump();
-      expect(
-        find.bySemanticsLabel('Bob changed your life minus 4, 35 life'),
-        findsOneWidget,
-      );
-    } finally {
-      handle.dispose();
-    }
-  });
+        container
+            .read(localLifeChangeProvider.notifier)
+            .state = const LifeChangeAnnouncement(
+          id: 2,
+          total: 35,
+          delta: -4,
+          source: LifeChangeSource.remote,
+          actorUsername: 'Bob',
+        );
+        await tester.pump();
+        expect(
+          find.bySemanticsLabel('Bob changed your life minus 4, 35 life'),
+          findsOneWidget,
+        );
+      } finally {
+        handle.dispose();
+      }
+    },
+  );
 }

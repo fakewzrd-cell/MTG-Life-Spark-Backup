@@ -11,11 +11,14 @@ class ScryfallCard {
   final String name;
   final String? imageUrl; // null = offline / not found
   final String? oracleText;
+
   /// Scryfall `mana_cost`, e.g. `{2}{W}{U}`; may be null on some card layouts.
   final String? manaCost;
+
   /// Scryfall `type_line`, e.g. `Instant` or `Legendary Creature — Human Wizard`.
   final String? typeLine;
   final bool isPartner;
+
   /// Scryfall `color_identity`: subset of `W`,`U`,`B`,`R`,`G` (empty = colorless).
   final List<String> colorIdentity;
 
@@ -34,7 +37,10 @@ class ScryfallCard {
   static const offlineImageAsset = 'assets/placeholders/card_placeholder.png';
 
   /// Commander color identity union (partner decks): sorted WUBRG.
-  static List<String> unionColorIdentity(ScryfallCard primary, ScryfallCard? partner) {
+  static List<String> unionColorIdentity(
+    ScryfallCard primary,
+    ScryfallCard? partner,
+  ) {
     const order = ['W', 'U', 'B', 'R', 'G'];
     final set = <String>{};
     for (final c in primary.colorIdentity) {
@@ -52,11 +58,7 @@ class ScryfallCard {
 
 /// One official ruling from Scryfall (`/cards/{id}/rulings`).
 class ScryfallRuling {
-  const ScryfallRuling({
-    required this.comment,
-    this.publishedAt,
-    this.source,
-  });
+  const ScryfallRuling({required this.comment, this.publishedAt, this.source});
 
   final String comment;
   final String? publishedAt;
@@ -96,7 +98,9 @@ class ScryfallService {
     }
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     final data = json['data'] as List<dynamic>? ?? [];
-    return data.map((card) => _parseCard(card as Map<String, dynamic>)).toList();
+    return data
+        .map((card) => _parseCard(card as Map<String, dynamic>))
+        .toList();
   }
 
   /// Returns commanders matching [query].
@@ -121,7 +125,9 @@ class ScryfallService {
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     final data = json['data'] as List<dynamic>? ?? [];
 
-    return data.map((card) => _parseCard(card as Map<String, dynamic>)).toList();
+    return data
+        .map((card) => _parseCard(card as Map<String, dynamic>))
+        .toList();
   }
 
   // ── Variant decks (Planechase, Archenemy, Bounty) ─────────────────────────
@@ -256,25 +262,27 @@ class ScryfallService {
     } else {
       final faces = card['card_faces'] as List<dynamic>?;
       if (faces != null && faces.isNotEmpty) {
-        final faceUris = (faces[0] as Map<String, dynamic>)['image_uris']
-            as Map<String, dynamic>?;
-        imageUrl = faceUris?['art_crop'] as String? ?? faceUris?['normal'] as String?;
+        final faceUris =
+            (faces[0] as Map<String, dynamic>)['image_uris']
+                as Map<String, dynamic>?;
+        imageUrl =
+            faceUris?['art_crop'] as String? ?? faceUris?['normal'] as String?;
       }
     }
 
     final faces = card['card_faces'] as List<dynamic>?;
-    final firstFace = faces != null && faces.isNotEmpty
-        ? faces[0] as Map<String, dynamic>
-        : null;
+    final firstFace =
+        faces != null && faces.isNotEmpty
+            ? faces[0] as Map<String, dynamic>
+            : null;
 
-    final oracleText = card['oracle_text'] as String? ??
+    final oracleText =
+        card['oracle_text'] as String? ??
         (firstFace != null ? firstFace['oracle_text'] as String? : null);
 
     var manaCost = card['mana_cost'] as String?;
     if (manaCost == null || manaCost.isEmpty) {
-      manaCost = firstFace != null
-          ? firstFace['mana_cost'] as String?
-          : null;
+      manaCost = firstFace != null ? firstFace['mana_cost'] as String? : null;
     }
 
     var typeLine = card['type_line'] as String?;
@@ -287,9 +295,13 @@ class ScryfallService {
         keywords.contains('Partner') || keywords.contains('Friends forever');
 
     final ciRaw = card['color_identity'];
-    final colorIdentity = ciRaw is List
-        ? ciRaw.map((e) => e.toString()).where((s) => s.length == 1).toList()
-        : <String>[];
+    final colorIdentity =
+        ciRaw is List
+            ? ciRaw
+                .map((e) => e.toString())
+                .where((s) => s.length == 1)
+                .toList()
+            : <String>[];
 
     return ScryfallCard(
       id: id,

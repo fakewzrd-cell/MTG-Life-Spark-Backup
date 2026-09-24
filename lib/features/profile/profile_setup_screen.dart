@@ -38,13 +38,17 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _pickAvatar() async {
-    final result = await Navigator.of(context, rootNavigator: true).push<String?>(
+    final result = await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push<String?>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => ProfilePicturePickerScreen(
-          selectionMode: true,
-          initialImageRef: _avatarUrl,
-        ),
+        builder:
+            (_) => ProfilePicturePickerScreen(
+              selectionMode: true,
+              initialImageRef: _avatarUrl,
+            ),
       ),
     );
     if (!mounted || result == null) return;
@@ -85,109 +89,109 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
     return BlockSystemAppExit(
       child: Scaffold(
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: LayoutTokens.ctaHorizontal,
-                  ),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: LayoutTokens.gr6),
-                      Text(
-                        l10n.profileSetupTitle,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      SizedBox(height: LayoutTokens.gr1),
-                      Text(
-                        l10n.profileSetupSubtitle,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      SizedBox(height: LayoutTokens.gr5),
-                      Center(
-                        child: _SetupAvatarPicker(
-                          avatarUrl: _avatarUrl,
-                          colors: colors,
-                          size: _avatarSize,
-                          badgeSize: _cameraBadgeSize,
-                          choosePictureLabel: l10n.profileSetupChoosePicture,
-                          onTap: _saving ? null : _pickAvatar,
+        body: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: LayoutTokens.ctaHorizontal,
+                    ),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: LayoutTokens.gr5),
+                        Text(
+                          l10n.profileSetupTitle,
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr2),
-                      Center(
-                        child: TextButton(
-                          onPressed: _saving ? null : _pickAvatar,
-                          child: Text(
-                            _avatarUrl == null
-                                ? l10n.profileSetupChoosePicture
-                                : l10n.profileSetupChangePicture,
+                        SizedBox(height: LayoutTokens.gr1),
+                        Text(
+                          l10n.profileSetupSubtitle,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        SizedBox(height: LayoutTokens.gr5),
+                        Center(
+                          child: _SetupAvatarPicker(
+                            avatarUrl: _avatarUrl,
+                            colors: colors,
+                            size: _avatarSize,
+                            badgeSize: _cameraBadgeSize,
+                            choosePictureLabel: l10n.profileSetupChoosePicture,
+                            onTap: _saving ? null : _pickAvatar,
                           ),
                         ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr3),
-                      TextFormField(
-                        controller: _usernameController,
-                        decoration: InputDecoration(
-                          labelText: l10n.profileSetupUsername,
-                          hintText: l10n.profileSetupUsernameHint,
+                        SizedBox(height: LayoutTokens.gr2),
+                        Center(
+                          child: TextButton(
+                            onPressed: _saving ? null : _pickAvatar,
+                            child: Text(
+                              _avatarUrl == null
+                                  ? l10n.profileSetupChoosePicture
+                                  : l10n.profileSetupChangePicture,
+                            ),
+                          ),
                         ),
-                        autofocus: true,
-                        maxLength: 20,
-                        textCapitalization: TextCapitalization.words,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return l10n.profileSetupUsernameRequired;
-                          }
-                          if (v.trim().length < 2) {
-                            return l10n.profileSetupUsernameTooShort;
-                          }
-                          return null;
-                        },
+                        SizedBox(height: LayoutTokens.gr3),
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            labelText: l10n.profileSetupUsername,
+                            hintText: l10n.profileSetupUsernameHint,
+                          ),
+                          autofocus: true,
+                          maxLength: 20,
+                          textCapitalization: TextCapitalization.words,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return l10n.profileSetupUsernameRequired;
+                            }
+                            if (v.trim().length < 2) {
+                              return l10n.profileSetupUsernameTooShort;
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: LayoutTokens.gr4),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    LayoutTokens.ctaHorizontal,
+                    LayoutTokens.gr2,
+                    LayoutTokens.ctaHorizontal,
+                    LayoutTokens.gr5,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      UiButton(
+                        label: l10n.profileSetupContinue,
+                        loading: _saving,
+                        onPressed: _saving ? null : _save,
                       ),
-                      SizedBox(height: LayoutTokens.gr4),
+                      SizedBox(height: LayoutTokens.gr2),
+                      UiButton(
+                        label: l10n.onboardingSkip,
+                        variant: UiButtonVariant.secondary,
+                        enabled: !_saving,
+                        onPressed: _saving ? null : _skip,
+                      ),
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  LayoutTokens.ctaHorizontal,
-                  LayoutTokens.gr2,
-                  LayoutTokens.ctaHorizontal,
-                  LayoutTokens.gr5,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    UiButton(
-                      label: l10n.profileSetupContinue,
-                      loading: _saving,
-                      onPressed: _saving ? null : _save,
-                    ),
-                    SizedBox(height: LayoutTokens.gr2),
-                    UiButton(
-                      label: l10n.onboardingSkip,
-                      variant: UiButtonVariant.secondary,
-                      enabled: !_saving,
-                      onPressed: _saving ? null : _skip,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }

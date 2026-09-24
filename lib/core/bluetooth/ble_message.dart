@@ -15,11 +15,11 @@ class BleMessage {
   });
 
   Map<String, dynamic> toJson() => {
-        't': type.name,
-        'p': payload,
-        'seq': seqNum,
-        if (targetPlayerId != null) 'to': targetPlayerId,
-      };
+    't': type.name,
+    'p': payload,
+    'seq': seqNum,
+    if (targetPlayerId != null) 'to': targetPlayerId,
+  };
 
   factory BleMessage.fromJson(Map<String, dynamic> json) {
     final typeName = json['t'] as String?;
@@ -55,18 +55,15 @@ class BleMessage {
   // ── Convenience factories ──────────────────────────────────────────────────
 
   static BleMessage hello(int seqNum, {String? joinToken}) => BleMessage(
-        type: BleMessageType.hello,
-        payload: {
-          'version': kBleProtocolVersion,
-          if (joinToken != null && joinToken.isNotEmpty) 'token': joinToken,
-        },
-        seqNum: seqNum,
-      );
+    type: BleMessageType.hello,
+    payload: {
+      'version': kBleProtocolVersion,
+      if (joinToken != null && joinToken.isNotEmpty) 'token': joinToken,
+    },
+    seqNum: seqNum,
+  );
 
-  static BleMessage reject(
-    int seqNum, {
-    String reason = 'versionMismatch',
-  }) =>
+  static BleMessage reject(int seqNum, {String reason = 'versionMismatch'}) =>
       BleMessage(
         type: BleMessageType.reject,
         payload: {'reason': reason, 'requiredVersion': kBleProtocolVersion},
@@ -78,33 +75,24 @@ class BleMessage {
     int seqNum, {
     required String playerId,
     required String username,
-  }) =>
-      BleMessage(
-        type: BleMessageType.reconnectRequest,
-        payload: {
-          'pid': playerId,
-          'username': username,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.reconnectRequest,
+    payload: {'pid': playerId, 'username': username},
+    seqNum: seqNum,
+  );
 
   static BleMessage stateDelta({
     required int seqNum,
     required String playerId,
-    required String field, // 'life' | 'poison' | 'energy' | 'experience' | 'rad'
+    required String
+    field, // 'life' | 'poison' | 'energy' | 'experience' | 'rad'
     required int newValue,
     required int delta,
-  }) =>
-      BleMessage(
-        type: BleMessageType.stateDelta,
-        payload: {
-          'pid': playerId,
-          'field': field,
-          'val': newValue,
-          'delta': delta,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.stateDelta,
+    payload: {'pid': playerId, 'field': field, 'val': newValue, 'delta': delta},
+    seqNum: seqNum,
+  );
 
   static BleMessage commanderDamage({
     required int seqNum,
@@ -114,72 +102,68 @@ class BleMessage {
     required int amount,
     required int lifeAfter,
     required int totalPartnerDamage,
-  }) =>
-      BleMessage(
-        type: BleMessageType.commanderDamage,
-        payload: {
-          'from': fromPlayerId,
-          'pi': partnerIndex,
-          'to': toPlayerId,
-          'amt': amount,
-          'life': lifeAfter,
-          'totalDmg': totalPartnerDamage,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.commanderDamage,
+    payload: {
+      'from': fromPlayerId,
+      'pi': partnerIndex,
+      'to': toPlayerId,
+      'amt': amount,
+      'life': lifeAfter,
+      'totalDmg': totalPartnerDamage,
+    },
+    seqNum: seqNum,
+  );
 
   static BleMessage variantStateUpdate({
     required int seqNum,
     int? currentPlanarIndex,
     int? currentSchemeIndex,
     int? currentBountyIndex,
-  }) =>
-      BleMessage(
-        type: BleMessageType.variantStateUpdate,
-        payload: {
-          if (currentPlanarIndex != null) 'planar': currentPlanarIndex,
-          if (currentSchemeIndex != null) 'scheme': currentSchemeIndex,
-          if (currentBountyIndex != null) 'bounty': currentBountyIndex,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.variantStateUpdate,
+    payload: {
+      if (currentPlanarIndex != null) 'planar': currentPlanarIndex,
+      if (currentSchemeIndex != null) 'scheme': currentSchemeIndex,
+      if (currentBountyIndex != null) 'bounty': currentBountyIndex,
+    },
+    seqNum: seqNum,
+  );
 
   static BleMessage stackUpdate({
     required int seqNum,
     required Map<String, dynamic> payload,
-  }) =>
-      BleMessage(
-        type: BleMessageType.stackUpdate,
-        payload: payload,
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.stackUpdate,
+    payload: payload,
+    seqNum: seqNum,
+  );
 
   static BleMessage playerEliminated({
     required int seqNum,
     required String playerId,
-    required String reason, // 'life' | 'poison' | 'commanderDamage' | 'deckEmpty' | 'concede' | 'disconnect'
+    required String
+    reason, // 'life' | 'poison' | 'commanderDamage' | 'deckEmpty' | 'concede' | 'disconnect'
     String? killedByPlayerId,
-  }) =>
-      BleMessage(
-        type: BleMessageType.playerEliminated,
-        payload: {
-          'pid': playerId,
-          'reason': reason,
-          if (killedByPlayerId != null) 'killedBy': killedByPlayerId,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.playerEliminated,
+    payload: {
+      'pid': playerId,
+      'reason': reason,
+      if (killedByPlayerId != null) 'killedBy': killedByPlayerId,
+    },
+    seqNum: seqNum,
+  );
 
   /// Post-game social ballot so recipients can update honors locally.
   static BleMessage matchFeedback({
     required int seqNum,
     required Map<String, dynamic> feedbackJson,
-  }) =>
-      BleMessage(
-        type: BleMessageType.matchFeedback,
-        payload: feedbackJson,
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.matchFeedback,
+    payload: feedbackJson,
+    seqNum: seqNum,
+  );
 
   /// Shared table dice / coin flip so the whole pod sees the same result.
   static BleMessage tableToolResult({
@@ -190,19 +174,18 @@ class BleMessage {
     required String tool,
     int? dieValue,
     bool? coinHeads,
-  }) =>
-      BleMessage(
-        type: BleMessageType.tableToolResult,
-        payload: {
-          'id': id,
-          'pid': playerId,
-          'username': username,
-          'tool': tool,
-          if (dieValue != null) 'die': dieValue,
-          if (coinHeads != null) 'heads': coinHeads,
-        },
-        seqNum: seqNum,
-      );
+  }) => BleMessage(
+    type: BleMessageType.tableToolResult,
+    payload: {
+      'id': id,
+      'pid': playerId,
+      'username': username,
+      'tool': tool,
+      if (dieValue != null) 'die': dieValue,
+      if (coinHeads != null) 'heads': coinHeads,
+    },
+    seqNum: seqNum,
+  );
 
   /// Ephemeral private message to one seat (Overview whisper).
   static BleMessage playerWhisper({
@@ -212,17 +195,16 @@ class BleMessage {
     required String fromUsername,
     required String toPlayerId,
     required String text,
-  }) =>
-      BleMessage(
-        type: BleMessageType.playerWhisper,
-        payload: {
-          'id': id,
-          'from': fromPlayerId,
-          'fromName': fromUsername,
-          'to': toPlayerId,
-          'text': text,
-        },
-        seqNum: seqNum,
-        targetPlayerId: toPlayerId,
-      );
+  }) => BleMessage(
+    type: BleMessageType.playerWhisper,
+    payload: {
+      'id': id,
+      'from': fromPlayerId,
+      'fromName': fromUsername,
+      'to': toPlayerId,
+      'text': text,
+    },
+    seqNum: seqNum,
+    targetPlayerId: toPlayerId,
+  );
 }

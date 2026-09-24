@@ -54,20 +54,11 @@ class BrandedSplash extends StatefulWidget {
   /// Fraction of the shortest screen side used for the intro box.
   static const double introViewportFraction = 0.72;
 
-  /// Tagline under the logo animation (native / APK intro).
-  static const String tagline = 'Your MTG Companion';
-
-  /// Fade-in for [tagline] — timed to the LIFE SPARK wordmark in the clip.
-  static const taglineFade = Duration(milliseconds: 320);
-
   /// Fade the clip in from black once playback has started (no freeze-frame).
   static const introFade = Duration(milliseconds: 160);
 
   /// If the decoder never reports playback, leave black rather than hang forever.
   static const videoStartTimeout = Duration(milliseconds: 2000);
-
-  /// Source-media time when "LIFE SPARK" appears in [logoAnimationAsset] (~1.25s).
-  static const taglineAtSource = Duration(milliseconds: 1250);
 
   /// Brief hold after the clip ends before entering the app.
   static const taglineHold = Duration(milliseconds: 160);
@@ -93,7 +84,6 @@ class _BrandedSplashState extends State<BrandedSplash> {
   var _showLoadingCue = false;
   var _finishing = false;
   var _introFinished = false;
-  var _taglineVisible = false;
   var _videoReady = false;
   var _introOpaque = false;
 
@@ -140,7 +130,9 @@ class _BrandedSplashState extends State<BrandedSplash> {
       if (!mounted) return;
       await controller.setLooping(false);
       await controller.setVolume(0);
-      await controller.setPlaybackSpeed(BrandedSplash.logoAnimationPlaybackRate);
+      await controller.setPlaybackSpeed(
+        BrandedSplash.logoAnimationPlaybackRate,
+      );
       await controller.seekTo(Duration.zero);
       if (!mounted) return;
       controller.addListener(_onVideoTick);
@@ -184,18 +176,10 @@ class _BrandedSplashState extends State<BrandedSplash> {
     if (mounted) setState(() {});
   }
 
-  void _showTagline() {
-    if (_taglineVisible) return;
-    _taglineVisible = true;
-    if (mounted) setState(() {});
-  }
-
   void _markIntroFinished() {
     if (_introFinished) return;
     _introFinished = true;
-    _showTagline();
     if (mounted) setState(() {});
-    // Tagline is already fading in mid-clip — short hold after the end.
     if (_playVideo) {
       Future<void>.delayed(BrandedSplash.taglineHold, () {
         if (!mounted) return;
@@ -214,11 +198,6 @@ class _BrandedSplashState extends State<BrandedSplash> {
     final value = c.value;
     final duration = value.duration;
     if (duration <= Duration.zero) return;
-
-    // Match HTML splash: reveal when the LIFE SPARK title appears in-frame.
-    if (value.position >= BrandedSplash.taglineAtSource) {
-      _showTagline();
-    }
 
     final atEnd = value.isCompleted || value.position >= duration;
     if (!atEnd) return;
@@ -262,8 +241,10 @@ class _BrandedSplashState extends State<BrandedSplash> {
 
   double _introBoxSize(BuildContext context) {
     final shortest = MediaQuery.sizeOf(context).shortestSide;
-    return (shortest * BrandedSplash.introViewportFraction)
-        .clamp(220.0, BrandedSplash.introSize);
+    return (shortest * BrandedSplash.introViewportFraction).clamp(
+      220.0,
+      BrandedSplash.introSize,
+    );
   }
 
   @override
@@ -285,25 +266,6 @@ class _BrandedSplashState extends State<BrandedSplash> {
                 height: introSize,
                 child: _buildIntro(),
               ),
-              // Web HTML owns the tagline; native fades it in after the clip.
-              if (_playVideo) ...[
-                SizedBox(height: LayoutTokens.gr3),
-                AnimatedOpacity(
-                  opacity: _taglineVisible ? 1 : 0,
-                  duration: BrandedSplash.taglineFade,
-                  curve: Curves.easeOut,
-                  child: Text(
-                    BrandedSplash.tagline,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.82),
-                      fontSize: FontTokens.sm,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.6,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
               if (showLoading) ...[
                 SizedBox(height: LayoutTokens.gr4),
                 Text(

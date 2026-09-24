@@ -89,8 +89,7 @@ String? _symbolInnerToRelativePath(String inner) {
 
 bool _isWubrg(String c) => c.length == 1 && 'WUBRG'.contains(c);
 
-bool _isPhyrexianColored(String c) =>
-    c.length == 1 && 'WUBRG'.contains(c);
+bool _isPhyrexianColored(String c) => c.length == 1 && 'WUBRG'.contains(c);
 
 String? _atomicSymbolPath(String s) {
   if (s.length == 1) {

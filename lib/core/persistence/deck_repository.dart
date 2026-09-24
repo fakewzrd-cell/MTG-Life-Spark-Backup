@@ -19,7 +19,8 @@ class DeckRepository {
     final list =
         _box.values.where((d) => !isPreviewPlaceholderDeck(d)).toList();
     list.sort(
-      (a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+      (a, b) =>
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
     );
     return list;
   }
@@ -63,7 +64,8 @@ class DeckRepository {
   }
 
   String _uniqueCopyName(String base) {
-    final existing = _box.values.map((d) => d.displayName.toLowerCase()).toSet();
+    final existing =
+        _box.values.map((d) => d.displayName.toLowerCase()).toSet();
     var candidate = '$base (copy)';
     if (!existing.contains(candidate.toLowerCase())) return candidate;
     var n = 2;

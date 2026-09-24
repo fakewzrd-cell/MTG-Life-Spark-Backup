@@ -17,7 +17,10 @@ import 'game_colors.dart';
 import 'game_ui_tokens.dart';
 import '../../../ui/components/ui_snack_bar.dart';
 
-String _localizedDurationLabel(AppLocalizations l10n, AllianceDuration duration) {
+String _localizedDurationLabel(
+  AppLocalizations l10n,
+  AllianceDuration duration,
+) {
   switch (duration) {
     case AllianceDuration.endOfTurn:
       return l10n.allianceDurationEndOfTurn;
@@ -79,17 +82,17 @@ void handleAllianceUiEvent(
         fromUsername: event.otherUsername ?? l10n.allianceAPlayer,
         durationLabel: _localizeStoredDurationLabel(
           l10n,
-          event.durationLabel ??
-              allianceDurationLabel(AllianceDuration.manual),
+          event.durationLabel ?? allianceDurationLabel(AllianceDuration.manual),
         ),
       );
     case AllianceUiEventKind.allianceFormed:
       showAllianceFormedDialog(
         context: context,
         allyUsername: event.allyUsername ?? l10n.allianceYourAllyFallback,
-        durationLabel: event.durationLabel == null
-            ? null
-            : _localizeStoredDurationLabel(l10n, event.durationLabel),
+        durationLabel:
+            event.durationLabel == null
+                ? null
+                : _localizeStoredDurationLabel(l10n, event.durationLabel),
       );
     case AllianceUiEventKind.allianceDeclined:
       showUiSnackBar(context, l10n.allianceOfferDeclined);
@@ -126,141 +129,151 @@ Future<void> showProposeAllianceSheet({
   return showGameBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => StatefulBuilder(
-      builder: (context, setState) {
-        final colors = context.gameColors;
-        final l10n = AppLocalizations.of(context);
-        void sendWhisper() {
-          final local = ref.read(gameProvider).localPlayer;
-          if (local == null) return;
-          ref.read(gameProvider.notifier).proposeAlliance(
-                local.playerId,
-                target.playerId,
-                duration,
-                timing: timing,
-                delaySeconds: delaySeconds,
+    builder:
+        (ctx) => StatefulBuilder(
+          builder: (context, setState) {
+            final colors = context.gameColors;
+            final l10n = AppLocalizations.of(context);
+            void sendWhisper() {
+              final local = ref.read(gameProvider).localPlayer;
+              if (local == null) return;
+              ref
+                  .read(gameProvider.notifier)
+                  .proposeAlliance(
+                    local.playerId,
+                    target.playerId,
+                    duration,
+                    timing: timing,
+                    delaySeconds: delaySeconds,
+                  );
+              Navigator.pop(ctx);
+              showUiSnackBar(
+                context,
+                timing == AllianceDeliveryTiming.now
+                    ? l10n.allianceWhisperSent(target.username)
+                    : l10n.allianceWhisperScheduled(target.username),
               );
-          Navigator.pop(ctx);
-          showUiSnackBar(
-            context,
-            timing == AllianceDeliveryTiming.now
-                ? l10n.allianceWhisperSent(target.username)
-                : l10n.allianceWhisperScheduled(target.username),
-          );
-        }
+            }
 
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-            ),
-            child: GameSheetBody(
-              scrollable: true,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GameSheetHeader(
-                    title: l10n.allianceProposeTitle,
-                    subtitle: l10n.allianceProposeSubtitle(target.username),
-                  ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Text(
-                    l10n.allianceDurationSection,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: FontTokens.label,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: LayoutTokens.gr1),
-                  ...AllianceDuration.values.map((d) {
-                    final selected = duration == d;
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: LayoutTokens.gr1),
-                      child: ListTile(
-                        tileColor: selected
-                            ? colors.emphasis.withValues(alpha: OpacityTokens.subtle)
-                            : colors.backgroundSecondary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: RadiusTokens.radiusControlSm,
-                        ),
-                        title: Text(_localizedDurationLabel(l10n, d)),
-                        trailing: selected
-                            ? Icon(
-                                Icons.check_circle,
-                                color: colors.emphasis,
-                              )
-                            : null,
-                        onTap: () => setState(() => duration = d),
-                      ),
-                    );
-                  }),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Text(
-                    l10n.allianceWhenToDeliver,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: FontTokens.label,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: LayoutTokens.gr1),
-                  Wrap(
-                    spacing: LayoutTokens.gr1,
-                    runSpacing: LayoutTokens.gr1,
-                    children: AllianceDeliveryTiming.values.map((t) {
-                      final selected = timing == t;
-                      return ChoiceChip(
-                        label: Text(
-                          _localizedDeliveryLabel(
-                            l10n,
-                            t,
-                            seconds: delaySeconds,
-                          ),
-                        ),
-                        selected: selected,
-                        onSelected: (_) => setState(() => timing = t),
-                      );
-                    }).toList(),
-                  ),
-                  if (timing == AllianceDeliveryTiming.delaySeconds) ...[
-                    SizedBox(height: LayoutTokens.gr2),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Slider(
-                            value: delaySeconds.toDouble(),
-                            min: 10,
-                            max: 120,
-                            divisions: 11,
-                            label: l10n.allianceSecondsShort(delaySeconds),
-                            onChanged: (v) =>
-                                setState(() => delaySeconds = v.round()),
-                          ),
-                        ),
-                        Text(l10n.allianceSecondsShort(delaySeconds)),
-                      ],
-                    ),
-                  ],
-                  SizedBox(height: LayoutTokens.gr2),
-                  FilledButton(
-                    style: GameUiTokens.sheetPrimaryButton(
-                      context.gameColors.emphasis,
-                    ),
-                    onPressed: sendWhisper,
-                    child: Text(l10n.allianceSend),
-                  ),
-                ],
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(context).bottom,
               ),
-            ),
-          ),
-        );
-      },
-    ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+                ),
+                child: GameSheetBody(
+                  scrollable: true,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GameSheetHeader(
+                        title: l10n.allianceProposeTitle,
+                        subtitle: l10n.allianceProposeSubtitle(target.username),
+                      ),
+                      SizedBox(height: LayoutTokens.gr2),
+                      Text(
+                        l10n.allianceDurationSection,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: FontTokens.label,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr1),
+                      ...AllianceDuration.values.map((d) {
+                        final selected = duration == d;
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: LayoutTokens.gr1),
+                          child: ListTile(
+                            tileColor:
+                                selected
+                                    ? colors.emphasis.withValues(
+                                      alpha: OpacityTokens.subtle,
+                                    )
+                                    : colors.backgroundSecondary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: RadiusTokens.radiusXl,
+                            ),
+                            title: Text(_localizedDurationLabel(l10n, d)),
+                            trailing:
+                                selected
+                                    ? Icon(
+                                      Icons.check_circle,
+                                      color: colors.emphasis,
+                                    )
+                                    : null,
+                            onTap: () => setState(() => duration = d),
+                          ),
+                        );
+                      }),
+                      SizedBox(height: LayoutTokens.gr2),
+                      Text(
+                        l10n.allianceWhenToDeliver,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: FontTokens.label,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr1),
+                      Wrap(
+                        spacing: LayoutTokens.gr1,
+                        runSpacing: LayoutTokens.gr1,
+                        children:
+                            AllianceDeliveryTiming.values.map((t) {
+                              final selected = timing == t;
+                              return ChoiceChip(
+                                label: Text(
+                                  _localizedDeliveryLabel(
+                                    l10n,
+                                    t,
+                                    seconds: delaySeconds,
+                                  ),
+                                ),
+                                selected: selected,
+                                onSelected: (_) => setState(() => timing = t),
+                              );
+                            }).toList(),
+                      ),
+                      if (timing == AllianceDeliveryTiming.delaySeconds) ...[
+                        SizedBox(height: LayoutTokens.gr2),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Slider(
+                                value: delaySeconds.toDouble(),
+                                min: 10,
+                                max: 120,
+                                divisions: 11,
+                                label: l10n.allianceSecondsShort(delaySeconds),
+                                onChanged:
+                                    (v) => setState(
+                                      () => delaySeconds = v.round(),
+                                    ),
+                              ),
+                            ),
+                            Text(l10n.allianceSecondsShort(delaySeconds)),
+                          ],
+                        ),
+                      ],
+                      SizedBox(height: LayoutTokens.gr2),
+                      FilledButton(
+                        style: GameUiTokens.sheetPrimaryButton(
+                          context.gameColors.emphasis,
+                        ),
+                        onPressed: sendWhisper,
+                        child: Text(l10n.allianceSend),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
   );
 }
 
@@ -284,10 +297,7 @@ Future<void> showAllianceInviteDialog({
   );
   if (!context.mounted) return;
   final localId = ref.read(gameProvider).localPlayerId;
-  ref.read(gameProvider.notifier).respondToAlliance(
-        localId,
-        accepted == true,
-      );
+  ref.read(gameProvider.notifier).respondToAlliance(localId, accepted == true);
 }
 
 Future<void> showAllianceFormedDialog({
@@ -299,9 +309,10 @@ Future<void> showAllianceFormedDialog({
   await showGameConfirmDialog(
     context: context,
     title: l10n.allianceFormedTitle,
-    message: durationLabel != null
-        ? l10n.allianceFormedBody(allyUsername, durationLabel)
-        : l10n.allianceFormedBodyNoDuration(allyUsername),
+    message:
+        durationLabel != null
+            ? l10n.allianceFormedBody(allyUsername, durationLabel)
+            : l10n.allianceFormedBodyNoDuration(allyUsername),
     confirmLabel: l10n.allianceUnderstood,
   );
 }
@@ -361,9 +372,9 @@ class OverviewPlayerMarkerBadges extends StatelessWidget {
     if (badges.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: EdgeInsets.only(top: LayoutTokens.gr0 + 1),
+      padding: EdgeInsets.only(top: LayoutTokens.gr0),
       child: Wrap(
-        spacing: LayoutTokens.gr0 + 2,
+        spacing: LayoutTokens.gr1,
         runSpacing: LayoutTokens.gr0,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: badges,
@@ -374,12 +385,12 @@ class OverviewPlayerMarkerBadges extends StatelessWidget {
   Widget _chip(AppColorTokens colors, String label) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: LayoutTokens.gr0 + 2,
-        vertical: LayoutTokens.gr0 - 1,
+        horizontal: LayoutTokens.gr1,
+        vertical: LayoutTokens.gr0,
       ),
       decoration: BoxDecoration(
         color: colors.emphasis.withValues(alpha: OpacityTokens.subtle),
-        borderRadius: RadiusTokens.radiusControlSm,
+        borderRadius: RadiusTokens.radiusXl,
         border: Border.all(
           color: colors.emphasis.withValues(alpha: OpacityTokens.soft),
         ),
@@ -403,8 +414,9 @@ String? pendingAllianceLabel(
   AppLocalizations l10n,
 ) {
   if (playerId != game.localPlayerId) return null;
-  final scheduled =
-      game.scheduledProposalsFrom(playerId).where((p) => !p.delivered);
+  final scheduled = game
+      .scheduledProposalsFrom(playerId)
+      .where((p) => !p.delivered);
   if (scheduled.isNotEmpty) {
     final target = game.playerById(scheduled.first.toId)?.username ?? '?';
     return l10n.allianceWhisperPending(target);

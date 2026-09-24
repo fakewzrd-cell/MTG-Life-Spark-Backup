@@ -149,7 +149,6 @@ class ScopedGameplayDials extends ConsumerWidget {
     super.key,
     required this.playerId,
     required this.onAdjustCounter,
-    required this.onSetCounterAbsolute,
     required this.onAddDialToStrip,
     required this.onRemoveDialFromStrip,
     this.compactVertical = false,
@@ -157,7 +156,6 @@ class ScopedGameplayDials extends ConsumerWidget {
 
   final String playerId;
   final void Function(String field, int delta) onAdjustCounter;
-  final void Function(String field, int absoluteValue) onSetCounterAbsolute;
   final bool Function(String field) onAddDialToStrip;
   final void Function(String field) onRemoveDialFromStrip;
   final bool compactVertical;
@@ -178,7 +176,6 @@ class ScopedGameplayDials extends ConsumerWidget {
         isEliminated: player.isEliminated,
         compactVertical: compactVertical,
         onAdjustCounter: onAdjustCounter,
-        onSetCounterAbsolute: onSetCounterAbsolute,
         onAddDialToStrip: onAddDialToStrip,
         onRemoveDialFromStrip: onRemoveDialFromStrip,
       ),

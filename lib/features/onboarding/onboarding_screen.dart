@@ -87,22 +87,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(slides.length, (i) {
-                  return AnimatedContainer(
-                    duration: MotionTokens.standard,
-                    margin: EdgeInsets.symmetric(horizontal: LayoutTokens.gr0),
-                    width: _currentPage == i ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == i
-                          ? colors.primaryAccent
-                          : colors.textSecondary.withValues(
-                              alpha: OpacityTokens.moderate,
-                            ),
-                      borderRadius: RadiusTokens.radiusControlMd,
-                    ),
-                  );
-                }).toList(),
+                children:
+                    List.generate(slides.length, (i) {
+                      return AnimatedContainer(
+                        duration: MotionTokens.standard,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: LayoutTokens.gr0,
+                        ),
+                        width: _currentPage == i ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color:
+                              _currentPage == i
+                                  ? colors.primaryAccent
+                                  : colors.textSecondary.withValues(
+                                    alpha: OpacityTokens.moderate,
+                                  ),
+                          borderRadius: RadiusTokens.radiusXl,
+                        ),
+                      );
+                    }).toList(),
               ),
               SizedBox(height: LayoutTokens.gr5),
               Padding(
@@ -113,9 +117,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     UiButton(
-                      label: _currentPage == slides.length - 1
-                          ? l10n.onboardingReadyToPlay
-                          : l10n.onboardingNext,
+                      label:
+                          _currentPage == slides.length - 1
+                              ? l10n.onboardingReadyToPlay
+                              : l10n.onboardingNext,
                       onPressed: () => _next(slides.length),
                     ),
                     TextButton(
@@ -160,7 +165,7 @@ class _SlideView extends StatelessWidget {
     final isNarrow = MediaQuery.sizeOf(context).width < 360;
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isNarrow ? LayoutTokens.gr4 : LayoutTokens.gr6,
+        horizontal: isNarrow ? LayoutTokens.gr4 : LayoutTokens.gr5,
       ),
       child: SingleChildScrollView(
         child: ConstrainedBox(
@@ -208,8 +213,10 @@ class _SlideView extends StatelessWidget {
               SizedBox(height: LayoutTokens.gr4),
               Text(
                 slide.body,
-                style: Theme.of(context).textTheme.bodyLarge
-                    ?.copyWith(color: colors.textSecondary, height: 1.6),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: colors.textSecondary,
+                  height: 1.6,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

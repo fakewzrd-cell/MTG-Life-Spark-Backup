@@ -12,7 +12,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appTitle => 'Life Spark';
 
   @override
-  String get navProfile => 'プロフィール';
+  String get navProfile => 'プロフ';
 
   @override
   String get navLobby => 'ロビー';
@@ -67,8 +67,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsDarkAppearance => 'ダーク表示';
 
   @override
-  String get settingsDarkAppearanceSubtitle =>
-      'ライトモードは柔らかい背景を使用 — Fog や Slate をお試しください';
+  String get settingsDarkAppearanceSubtitle => '暗い背景を使います。オフにすると明るい画面になります。';
 
   @override
   String get settingsLanguage => '言語';
@@ -891,6 +890,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lookupEmptyPrompt => 'カード名を入力してルールを調べる。';
 
   @override
+  String get lookupRecentEmpty => 'まだ調べたカードはありません。';
+
+  @override
+  String get lookupBack => '戻る';
+
+  @override
   String lookupNoResults(String query) {
     return '“$query” のカードは見つかりませんでした。';
   }
@@ -1702,7 +1707,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String dialsAddCounterBody(int max) {
-    return 'ストリップ用トラッカーを選ぶ（最大 $max）。X でストリップから削除。';
+    return 'ストリップ用トラッカーを選ぶ（最大 $max）。カウンターを開いて削除。';
   }
 
   @override
@@ -1719,7 +1724,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dialsAddCounterTooltip => 'カウンターを追加';
 
   @override
-  String get dialsRemoveFromStrip => 'ストリップから削除';
+  String get dialsAddCounterChip => 'カウンター';
+
+  @override
+  String get dialsRemoveFromStrip => 'カウンターを削除';
 
   @override
   String get hubGuideTitle => 'クイックツアー';
@@ -1741,18 +1749,23 @@ class AppLocalizationsJa extends AppLocalizations {
       'ここでライフとカウンターを管理。ターン終了はフェイズバーの下 — ロビーでフェイズ追跡をオフにすると大きなターン終了ボタンになります。';
 
   @override
-  String get hubGuideSlideStackTitle => 'スタックと検索';
+  String get hubGuideSlideStackTitle => 'スタック';
 
   @override
-  String get hubGuideSlideStackBody =>
-      'スタックは Hold Priority と効果解決用。検索は席を離れず Scryfall — オラクルテキストと裁定。';
+  String get hubGuideSlideStackBody => 'スタックは Hold Priority と効果解決用。';
+
+  @override
+  String get hubGuideSlideLookupTitle => '検索';
+
+  @override
+  String get hubGuideSlideLookupBody => '検索は席を離れず Scryfall — オラクルテキストと裁定。';
 
   @override
   String get hubGuideSlideTableTitle => '卓の概要';
 
   @override
   String get hubGuideSlideTableBody =>
-      '卓でポッド全体を表示。ツールは全員が見るダイスとコイン。履歴はヘッダー。ターン終了は固定、投了はその下。';
+      '卓でポッド全体を表示。ツールは全員が見るダイスとコイン。履歴はヘッダー。ターン終了と投了は横並び。';
 
   @override
   String get hubGuideSlideCommanderTitle => 'あなたのターンと統率者';
@@ -2663,15 +2676,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get paletteSlate => 'スレート';
-
-  @override
-  String get paletteForest => 'フォレスト';
-
-  @override
-  String get paletteObsidian => 'オブシディアン';
-
-  @override
-  String get paletteFog => 'フォグ';
 
   @override
   String networkCannotReachHost(String error) {

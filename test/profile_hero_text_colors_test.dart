@@ -6,8 +6,6 @@ void main() {
     const darkOnAccentSchemes = [
       AppColorSchemeId.violet,
       AppColorSchemeId.slate,
-      AppColorSchemeId.forest,
-      AppColorSchemeId.obsidian,
     ];
     for (final id in darkOnAccentSchemes) {
       final palette = AppColorPalettes.byId(id);
@@ -19,7 +17,8 @@ void main() {
       expect(
         palette.onAccent.computeLuminance(),
         lessThan(palette.textPrimary.computeLuminance()),
-        reason: '${palette.label} onAccent is for accent buttons, not hero copy',
+        reason:
+            '${palette.label} onAccent is for accent buttons, not hero copy',
       );
     }
   });

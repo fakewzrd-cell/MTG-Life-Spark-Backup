@@ -16,5 +16,6 @@ enum SessionLinkStatus {
 /// the drop as a real leave. Covers Texts / app-switch on modern Android.
 const Duration kSessionReconnectGrace = Duration(seconds: 120);
 
-final sessionLinkStatusProvider =
-    StateProvider<SessionLinkStatus>((ref) => SessionLinkStatus.connected);
+final sessionLinkStatusProvider = StateProvider<SessionLinkStatus>(
+  (ref) => SessionLinkStatus.connected,
+);

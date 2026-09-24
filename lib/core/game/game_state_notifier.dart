@@ -42,6 +42,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
   Timer? _clientReconnectTimer;
   int _seqNum = 0;
   int _lifeAnnouncementId = 0;
+
   /// Client-only: host announced a deliberate session end; skip reconnect.
   bool _hostSessionEnded = false;
   static const _uuid = Uuid();
@@ -52,16 +53,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
   GameStateNotifier(this._ref) : super(GameState.empty());
 
   void _trimAndSetLogs(List<GameLogEntry> logs) {
-    final trimmed = logs.length > GameConstants.sessionLogCap
-        ? logs.sublist(logs.length - GameConstants.sessionLogCap)
-        : logs;
+    final trimmed =
+        logs.length > GameConstants.sessionLogCap
+            ? logs.sublist(logs.length - GameConstants.sessionLogCap)
+            : logs;
     state = state.copyWith(sessionActionLog: trimmed);
   }
 
   List<GameLogEntry> _logsWithAppended(String message, {int? turnNumber}) {
     final t = turnNumber ?? state.sessionTurnCounter;
-    final entry =
-        GameLogEntry(turnNumber: t, time: DateTime.now(), message: message);
+    final entry = GameLogEntry(
+      turnNumber: t,
+      time: DateTime.now(),
+      message: message,
+    );
     final logs = [...state.sessionActionLog, entry];
     return logs.length > GameConstants.sessionLogCap
         ? logs.sublist(logs.length - GameConstants.sessionLogCap)
@@ -87,10 +92,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   void _applyStackItems(List<StackItem> next) {
     final anchor = _stackApnapAnchorAfter(state.stackItems, next);
-    state = state.copyWith(
-      stackItems: next,
-      stackApnapAnchorPlayerId: anchor,
-    );
+    state = state.copyWith(stackItems: next, stackApnapAnchorPlayerId: anchor);
   }
 
   void _appendGameLog(String message, {int? turnNumber}) {
@@ -130,16 +132,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
     } else if (fromPlayerId == local && toPlayerId != local) {
       message = 'You dealt ${to.username} $sign commander damage';
     } else {
-      message =
-          '${from.username} → ${to.username}: Commander damage $sign';
+      message = '${from.username} → ${to.username}: Commander damage $sign';
     }
     _appendGameLog(message);
   }
 
-  List<PlayerGameState> _playersWithUndoOn(
-    String playerId,
-    UndoAction action,
-  ) {
+  List<PlayerGameState> _playersWithUndoOn(String playerId, UndoAction action) {
     return state.players.map((p) {
       if (p.playerId != playerId) return p;
       final stack = List<UndoAction>.from(p.undoStack)..add(action);
@@ -189,8 +187,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // ── Initialization ───────────────────────────────────────────────────────
 
   /// True when [initFromLobby] should run (fresh game from lobby).
-  bool shouldInitializeFromLobby() =>
-      shouldInitializeGameFromLobby(state);
+  bool shouldInitializeFromLobby() => shouldInitializeGameFromLobby(state);
 
   /// Shared guard for game init (also used in tests).
   static bool shouldInitializeGameFromLobby(GameState state) {
@@ -221,16 +218,19 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final deckRepo = _ref.read(deckRepositoryProvider);
     final localPlayerId = profile?.playerId ?? '';
     // Lobby host flag covers web practice sessions where no WS host runs.
-    final isHost = lobby.isHost ||
-        _ref.read(sessionRoleProvider) == SessionRole.host;
+    final isHost =
+        lobby.isHost || _ref.read(sessionRoleProvider) == SessionRole.host;
 
-    var players = lobby.players
-        .map((slot) => PlayerGameState.fromSlot(
-              slot: slot,
-              startingLife: lobby.config.startingLife,
-            ))
-        .map((p) => _enrichPlayerCommanderArt(p, profile, deckRepo))
-        .toList();
+    var players =
+        lobby.players
+            .map(
+              (slot) => PlayerGameState.fromSlot(
+                slot: slot,
+                startingLife: lobby.config.startingLife,
+              ),
+            )
+            .map((p) => _enrichPlayerCommanderArt(p, profile, deckRepo))
+            .toList();
 
     final singlePlayer = players.length == 1;
     final turnOrder = players.map((p) => p.playerId).toList();
@@ -300,14 +300,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
     String? commanderImageUrl,
     String? partnerCommanderImageUrl,
   }) {
-    final players = state.players.map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(
-        commanderImageUrl: commanderImageUrl ?? p.commanderImageUrl,
-        partnerCommanderImageUrl:
-            partnerCommanderImageUrl ?? p.partnerCommanderImageUrl,
-      );
-    }).toList();
+    final players =
+        state.players.map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(
+            commanderImageUrl: commanderImageUrl ?? p.commanderImageUrl,
+            partnerCommanderImageUrl:
+                partnerCommanderImageUrl ?? p.partnerCommanderImageUrl,
+          );
+        }).toList();
     state = state.copyWith(players: players);
   }
 
@@ -335,11 +336,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.isHost) {
       _hostRecordRoll(state.localPlayerId, roll);
     } else {
-      _send(BleMessage(
-        type: BleMessageType.firstPlayerRollSubmit,
-        payload: {'pid': state.localPlayerId, 'roll': roll},
-        seqNum: _nextSeq(),
-      ));
+      _send(
+        BleMessage(
+          type: BleMessageType.firstPlayerRollSubmit,
+          payload: {'pid': state.localPlayerId, 'roll': roll},
+          seqNum: _nextSeq(),
+        ),
+      );
     }
   }
 
@@ -354,15 +357,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.firstPlayerRolls.length < state.players.length) return;
 
     // Highest roll goes first; ties broken by first submission order
-    final sorted = state.players
-        .map((p) => MapEntry(p.playerId, state.firstPlayerRolls[p.playerId] ?? 0))
-        .toList()
-      ..sort((a, b) {
-        final cmp = b.value.compareTo(a.value);
-        if (cmp != 0) return cmp;
-        return state.turnOrder.indexOf(a.key)
-            .compareTo(state.turnOrder.indexOf(b.key));
-      });
+    final sorted =
+        state.players
+            .map(
+              (p) =>
+                  MapEntry(p.playerId, state.firstPlayerRolls[p.playerId] ?? 0),
+            )
+            .toList()
+          ..sort((a, b) {
+            final cmp = b.value.compareTo(a.value);
+            if (cmp != 0) return cmp;
+            return state.turnOrder
+                .indexOf(a.key)
+                .compareTo(state.turnOrder.indexOf(b.key));
+          });
 
     final turnOrder = sorted.map((e) => e.key).toList();
     final now = DateTime.now();
@@ -376,11 +384,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     _startTurnLimitTimer();
 
-    _send(BleMessage(
-      type: BleMessageType.firstPlayerTurnOrder,
-      payload: {'turnOrder': turnOrder},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.firstPlayerTurnOrder,
+        payload: {'turnOrder': turnOrder},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   /// Host-only: set seating / turn order. Preserves the current active player.
@@ -405,14 +415,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
       activePlayerIndex: nextIndex,
     );
     _appendGameLog('Turn order updated by host');
-    _send(BleMessage(
-      type: BleMessageType.turnOrderUpdate,
-      payload: {
-        'turnOrder': newOrder,
-        'activePlayerId': activeId,
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.turnOrderUpdate,
+        payload: {'turnOrder': newOrder, 'activePlayerId': activeId},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   bool _listEquals(List<String> a, List<String> b) {
@@ -424,18 +433,17 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   void _applyTurnOrderUpdate(Map<String, dynamic> payload) {
-    final order = (payload['turnOrder'] as List<dynamic>?)
+    final order =
+        (payload['turnOrder'] as List<dynamic>?)
             ?.map((e) => e as String)
             .toList() ??
         const <String>[];
     if (order.isEmpty) return;
-    final activeId = payload['activePlayerId'] as String? ?? state.activePlayerId;
+    final activeId =
+        payload['activePlayerId'] as String? ?? state.activePlayerId;
     var nextIndex = order.indexOf(activeId);
     if (nextIndex < 0) nextIndex = 0;
-    state = state.copyWith(
-      turnOrder: order,
-      activePlayerIndex: nextIndex,
-    );
+    state = state.copyWith(turnOrder: order, activePlayerIndex: nextIndex);
   }
 
   // ── Life ─────────────────────────────────────────────────────────────────
@@ -456,10 +464,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
       field: 'life',
       previousValue: player.life,
     );
-    final players = _playersWithUndoOn(playerId, undo).map((p) {
-      if (p.playerId != playerId) return p;
-      return p.copyWith(life: newLife, lifeChangeLog: newLog);
-    }).toList();
+    final players =
+        _playersWithUndoOn(playerId, undo).map((p) {
+          if (p.playerId != playerId) return p;
+          return p.copyWith(life: newLife, lifeChangeLog: newLog);
+        }).toList();
 
     state = state.copyWith(
       players: players,
@@ -475,13 +484,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       );
     }
 
-    _send(BleMessage.stateDelta(
-      seqNum: _nextSeq(),
-      playerId: playerId,
-      field: 'life',
-      newValue: newLife,
-      delta: delta,
-    ));
+    _send(
+      BleMessage.stateDelta(
+        seqNum: _nextSeq(),
+        playerId: playerId,
+        field: 'life',
+        newValue: newLife,
+        delta: delta,
+      ),
+    );
 
     _checkLossConditions();
   }
@@ -502,13 +513,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       field: field,
       previousValue: current,
     );
-    final players = _playersWithUndoOn(playerId, undo)
-        .map(
-          (p) => p.playerId == playerId
-              ? _setCounterValue(p, field, newValue)
-              : p,
-        )
-        .toList();
+    final players =
+        _playersWithUndoOn(playerId, undo)
+            .map(
+              (p) =>
+                  p.playerId == playerId
+                      ? _setCounterValue(p, field, newValue)
+                      : p,
+            )
+            .toList();
 
     final pl = player;
     final logMessage =
@@ -520,13 +533,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       sessionActionLog: _logsWithAppended(logMessage),
     );
 
-    _send(BleMessage.stateDelta(
-      seqNum: _nextSeq(),
-      playerId: playerId,
-      field: field,
-      newValue: newValue,
-      delta: delta,
-    ));
+    _send(
+      BleMessage.stateDelta(
+        seqNum: _nextSeq(),
+        playerId: playerId,
+        field: field,
+        newValue: newValue,
+        delta: delta,
+      ),
+    );
 
     if (field == 'poison' && delta > 0) {
       _ref.read(profileRepositoryProvider).addPoisonDealt(delta);
@@ -549,13 +564,16 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// Session-local custom dial metadata (labels). Values sync via normal state deltas.
   /// Returns false when the custom or strip limit is reached.
   bool registerCustomGameplayDial(
-      String playerId, String rawKey, String rawLabel) {
+    String playerId,
+    String rawKey,
+    String rawLabel,
+  ) {
     if (state.timeoutActive) return false;
     if (!_canMutatePlayer(playerId)) return false;
-    final key = rawKey
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9_]'), '');
+    final key = rawKey.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9_]'),
+      '',
+    );
     final label = rawLabel.trim();
     if (key.isEmpty || label.isEmpty) return false;
 
@@ -577,14 +595,18 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        final labels = Map<String, String>.from(p.customDialLabels);
-        labels[key] = label;
-        final vis = [...p.visibleGameplayDials];
-        if (!vis.contains(key)) vis.add(key);
-        return p.copyWith(customDialLabels: labels, visibleGameplayDials: vis);
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            final labels = Map<String, String>.from(p.customDialLabels);
+            labels[key] = label;
+            final vis = [...p.visibleGameplayDials];
+            if (!vis.contains(key)) vis.add(key);
+            return p.copyWith(
+              customDialLabels: labels,
+              visibleGameplayDials: vis,
+            );
+          }).toList(),
     );
     return true;
   }
@@ -611,11 +633,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        if (p.visibleGameplayDials.contains(f)) return p;
-        return p.copyWith(visibleGameplayDials: [...p.visibleGameplayDials, f]);
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            if (p.visibleGameplayDials.contains(f)) return p;
+            return p.copyWith(
+              visibleGameplayDials: [...p.visibleGameplayDials, f],
+            );
+          }).toList(),
     );
     return true;
   }
@@ -626,31 +651,34 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.timeoutActive) return;
     final f = field.trim().toLowerCase();
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        final next =
-            p.visibleGameplayDials.where((id) => id != f).toList(growable: false);
-        if (!p.customDialLabels.containsKey(f)) {
-          return p.copyWith(visibleGameplayDials: next);
-        }
-        final labels = Map<String, String>.from(p.customDialLabels)..remove(f);
-        final extras = Map<String, int>.from(p.extraDials)..remove(f);
-        return p.copyWith(
-          visibleGameplayDials: next,
-          customDialLabels: labels,
-          extraDials: extras,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            final next = p.visibleGameplayDials
+                .where((id) => id != f)
+                .toList(growable: false);
+            if (!p.customDialLabels.containsKey(f)) {
+              return p.copyWith(visibleGameplayDials: next);
+            }
+            final labels = Map<String, String>.from(p.customDialLabels)
+              ..remove(f);
+            final extras = Map<String, int>.from(p.extraDials)..remove(f);
+            return p.copyWith(
+              visibleGameplayDials: next,
+              customDialLabels: labels,
+              extraDials: extras,
+            );
+          }).toList(),
     );
   }
 
   int _getCounterValue(PlayerGameState p, String field) => switch (field) {
-        'poison' => p.poison,
-        'energy' => p.energy,
-        'experience' => p.experience,
-        'rad' => p.rad,
-        _ => p.extraDials[field] ?? 0,
-      };
+    'poison' => p.poison,
+    'energy' => p.energy,
+    'experience' => p.experience,
+    'rad' => p.rad,
+    _ => p.extraDials[field] ?? 0,
+  };
 
   PlayerGameState _setCounterValue(PlayerGameState p, String field, int value) {
     switch (field) {
@@ -689,30 +717,33 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final victim = _playerById(toPlayerId);
     if (victim == null || victim.isEliminated || delta == 0) return;
 
-    final currentDamage =
-        Map<String, List<int>>.from(victim.commanderDamage.map(
-      (k, v) => MapEntry(k, List<int>.from(v)),
-    ));
-    final fromDamage =
-        List<int>.from(currentDamage[fromPlayerId] ?? [0, 0]);
+    final currentDamage = Map<String, List<int>>.from(
+      victim.commanderDamage.map((k, v) => MapEntry(k, List<int>.from(v))),
+    );
+    final fromDamage = List<int>.from(currentDamage[fromPlayerId] ?? [0, 0]);
     while (fromDamage.length <= partnerIndex) {
       fromDamage.add(0);
     }
 
     final previousTrack = fromDamage[partnerIndex];
-    final nextTrack = (previousTrack + delta).clamp(0, GameConstants.counterMax);
+    final nextTrack = (previousTrack + delta).clamp(
+      0,
+      GameConstants.counterMax,
+    );
     if (nextTrack == previousTrack) return;
 
-    _pushUndo(UndoAction(
-      playerId: toPlayerId,
-      field: 'commanderDamage',
-      previousValue: previousTrack,
-      extra: {
-        'fromId': fromPlayerId,
-        'pi': partnerIndex,
-        'prevLife': victim.life,
-      },
-    ));
+    _pushUndo(
+      UndoAction(
+        playerId: toPlayerId,
+        field: 'commanderDamage',
+        previousValue: previousTrack,
+        extra: {
+          'fromId': fromPlayerId,
+          'pi': partnerIndex,
+          'prevLife': victim.life,
+        },
+      ),
+    );
 
     fromDamage[partnerIndex] = nextTrack;
     currentDamage[fromPlayerId] = fromDamage;
@@ -727,27 +758,30 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != toPlayerId) return p;
-        return p.copyWith(
-          life: newLife,
-          commanderDamage: currentDamage,
-          lifeChangeLog: newLog,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != toPlayerId) return p;
+            return p.copyWith(
+              life: newLife,
+              commanderDamage: currentDamage,
+              lifeChangeLog: newLog,
+            );
+          }).toList(),
     );
 
     _appendCommanderDamageLog(fromPlayerId, toPlayerId, appliedDelta);
 
-    _send(BleMessage.commanderDamage(
-      seqNum: _nextSeq(),
-      fromPlayerId: fromPlayerId,
-      partnerIndex: partnerIndex,
-      toPlayerId: toPlayerId,
-      amount: appliedDelta,
-      lifeAfter: newLife,
-      totalPartnerDamage: fromDamage[partnerIndex],
-    ));
+    _send(
+      BleMessage.commanderDamage(
+        seqNum: _nextSeq(),
+        fromPlayerId: fromPlayerId,
+        partnerIndex: partnerIndex,
+        toPlayerId: toPlayerId,
+        amount: appliedDelta,
+        lifeAfter: newLife,
+        totalPartnerDamage: fromDamage[partnerIndex],
+      ),
+    );
 
     _checkLossConditions();
 
@@ -763,29 +797,32 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.timeoutActive) return;
     if (!_canMutatePlayer(initiatingPlayerId)) return;
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.isEliminated) return p;
-        final xd = Map<String, int>.from(p.extraDials);
-        for (final e in xd.entries.toList()) {
-          if (e.value > 0) xd[e.key] = e.value + 1;
-        }
-        return p.copyWith(
-          poison: p.poison > 0 ? p.poison + 1 : p.poison,
-          energy: p.energy > 0 ? p.energy + 1 : p.energy,
-          experience: p.experience > 0 ? p.experience + 1 : p.experience,
-          rad: p.rad > 0 ? p.rad + 1 : p.rad,
-          extraDials: xd,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.isEliminated) return p;
+            final xd = Map<String, int>.from(p.extraDials);
+            for (final e in xd.entries.toList()) {
+              if (e.value > 0) xd[e.key] = e.value + 1;
+            }
+            return p.copyWith(
+              poison: p.poison > 0 ? p.poison + 1 : p.poison,
+              energy: p.energy > 0 ? p.energy + 1 : p.energy,
+              experience: p.experience > 0 ? p.experience + 1 : p.experience,
+              rad: p.rad > 0 ? p.rad + 1 : p.rad,
+              extraDials: xd,
+            );
+          }).toList(),
     );
 
     _appendGameLog('Proliferate: all players');
 
-    _send(BleMessage(
-      type: BleMessageType.proliferate,
-      payload: {'pid': initiatingPlayerId},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.proliferate,
+        payload: {'pid': initiatingPlayerId},
+        seqNum: _nextSeq(),
+      ),
+    );
 
     _checkLossConditions();
   }
@@ -798,17 +835,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final player = _playerById(playerId);
     if (player == null) return;
 
-    _pushUndo(UndoAction(
-      playerId: playerId,
-      field: 'commanderCast',
-      previousValue: player.commanderCastCount,
-    ));
+    _pushUndo(
+      UndoAction(
+        playerId: playerId,
+        field: 'commanderCast',
+        previousValue: player.commanderCastCount,
+      ),
+    );
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        return p.copyWith(commanderCastCount: p.commanderCastCount + 1);
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            return p.copyWith(commanderCastCount: p.commanderCastCount + 1);
+          }).toList(),
     );
 
     _sendCommanderCastDelta(playerId, 1);
@@ -820,28 +860,33 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final player = _playerById(playerId);
     if (player == null || player.commanderCastCount <= 0) return;
 
-    _pushUndo(UndoAction(
-      playerId: playerId,
-      field: 'commanderCast',
-      previousValue: player.commanderCastCount,
-    ));
+    _pushUndo(
+      UndoAction(
+        playerId: playerId,
+        field: 'commanderCast',
+        previousValue: player.commanderCastCount,
+      ),
+    );
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        return p.copyWith(commanderCastCount: p.commanderCastCount - 1);
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            return p.copyWith(commanderCastCount: p.commanderCastCount - 1);
+          }).toList(),
     );
 
     _sendCommanderCastDelta(playerId, -1);
   }
 
   void _sendCommanderCastDelta(String playerId, int delta) {
-    _send(BleMessage(
-      type: BleMessageType.commanderCastFromZone,
-      payload: {'pid': playerId, 'delta': delta},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.commanderCastFromZone,
+        payload: {'pid': playerId, 'delta': delta},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Undo ──────────────────────────────────────────────────────────────────
@@ -852,75 +897,84 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (player == null || player.undoStack.isEmpty) return;
 
     final action = player.undoStack.last;
-    final newStack =
-        List<UndoAction>.from(player.undoStack)..removeLast();
+    final newStack = List<UndoAction>.from(player.undoStack)..removeLast();
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        var updated = p.copyWith(undoStack: newStack);
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            var updated = p.copyWith(undoStack: newStack);
 
-        switch (action.field) {
-          case 'life':
-            updated = updated.copyWith(life: action.previousValue);
-          case 'poison':
-            updated = updated.copyWith(poison: action.previousValue);
-          case 'energy':
-            updated = updated.copyWith(energy: action.previousValue);
-          case 'experience':
-            updated = updated.copyWith(experience: action.previousValue);
-          case 'rad':
-            updated = updated.copyWith(rad: action.previousValue);
-          case 'commanderCast':
-            updated = updated.copyWith(commanderCastCount: action.previousValue);
-            break;
-          case 'commanderDamage':
-            final extra = action.extra!;
-            final fromId = extra['fromId'] as String;
-            final pi = extra['pi'] as int;
-            final prevLife = extra['prevLife'] as int;
-            final dmg =
-                Map<String, List<int>>.from(p.commanderDamage.map(
-              (k, v) => MapEntry(k, List<int>.from(v)),
-            ));
-            final fromDmg = List<int>.from(dmg[fromId] ?? [0, 0]);
-            while (fromDmg.length <= pi) {
-              fromDmg.add(0);
+            switch (action.field) {
+              case 'life':
+                updated = updated.copyWith(life: action.previousValue);
+              case 'poison':
+                updated = updated.copyWith(poison: action.previousValue);
+              case 'energy':
+                updated = updated.copyWith(energy: action.previousValue);
+              case 'experience':
+                updated = updated.copyWith(experience: action.previousValue);
+              case 'rad':
+                updated = updated.copyWith(rad: action.previousValue);
+              case 'commanderCast':
+                updated = updated.copyWith(
+                  commanderCastCount: action.previousValue,
+                );
+                break;
+              case 'commanderDamage':
+                final extra = action.extra!;
+                final fromId = extra['fromId'] as String;
+                final pi = extra['pi'] as int;
+                final prevLife = extra['prevLife'] as int;
+                final dmg = Map<String, List<int>>.from(
+                  p.commanderDamage.map(
+                    (k, v) => MapEntry(k, List<int>.from(v)),
+                  ),
+                );
+                final fromDmg = List<int>.from(dmg[fromId] ?? [0, 0]);
+                while (fromDmg.length <= pi) {
+                  fromDmg.add(0);
+                }
+                fromDmg[pi] = action.previousValue;
+                dmg[fromId] = fromDmg;
+                updated = updated.copyWith(
+                  life: prevLife,
+                  commanderDamage: dmg,
+                );
+                break;
+              default:
+                final m = Map<String, int>.from(p.extraDials);
+                m[action.field] = action.previousValue;
+                updated = updated.copyWith(extraDials: m);
             }
-            fromDmg[pi] = action.previousValue;
-            dmg[fromId] = fromDmg;
-            updated = updated.copyWith(life: prevLife, commanderDamage: dmg);
-            break;
-          default:
-            final m = Map<String, int>.from(p.extraDials);
-            m[action.field] = action.previousValue;
-            updated = updated.copyWith(extraDials: m);
-        }
-        return updated;
-      }).toList(),
+            return updated;
+          }).toList(),
     );
 
     _checkLossConditions();
 
-    _send(BleMessage(
-      type: BleMessageType.undoAction,
-      payload: {
-        'pid': playerId,
-        'field': action.field,
-        'prevValue': action.previousValue,
-        if (action.extra != null) 'extra': action.extra,
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.undoAction,
+        payload: {
+          'pid': playerId,
+          'field': action.field,
+          'prevValue': action.previousValue,
+          if (action.extra != null) 'extra': action.extra,
+        },
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void _pushUndo(UndoAction action) {
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != action.playerId) return p;
-        final stack = List<UndoAction>.from(p.undoStack)..add(action);
-        return p.copyWith(undoStack: stack);
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != action.playerId) return p;
+            final stack = List<UndoAction>.from(p.undoStack)..add(action);
+            return p.copyWith(undoStack: stack);
+          }).toList(),
     );
   }
 
@@ -931,20 +985,24 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (!state.planechaseEnabled || deckSize <= 0) return;
     final next = (state.currentPlanarIndex + 1) % deckSize;
     state = state.copyWith(currentPlanarIndex: next);
-    _send(BleMessage.variantStateUpdate(
-      seqNum: _nextSeq(),
-      currentPlanarIndex: next,
-    ));
+    _send(
+      BleMessage.variantStateUpdate(
+        seqNum: _nextSeq(),
+        currentPlanarIndex: next,
+      ),
+    );
   }
 
   /// Set current plane by index (e.g. after planar die roll).
   void setPlanarIndex(int index) {
     if (!state.planechaseEnabled) return;
     state = state.copyWith(currentPlanarIndex: index);
-    _send(BleMessage.variantStateUpdate(
-      seqNum: _nextSeq(),
-      currentPlanarIndex: index,
-    ));
+    _send(
+      BleMessage.variantStateUpdate(
+        seqNum: _nextSeq(),
+        currentPlanarIndex: index,
+      ),
+    );
   }
 
   /// Advance to next scheme (Archenemy reveals at start of turn).
@@ -952,10 +1010,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (!state.archenemyEnabled || deckSize <= 0) return;
     final next = (state.currentSchemeIndex + 1) % deckSize;
     state = state.copyWith(currentSchemeIndex: next);
-    _send(BleMessage.variantStateUpdate(
-      seqNum: _nextSeq(),
-      currentSchemeIndex: next,
-    ));
+    _send(
+      BleMessage.variantStateUpdate(
+        seqNum: _nextSeq(),
+        currentSchemeIndex: next,
+      ),
+    );
   }
 
   /// Advance to next bounty.
@@ -963,10 +1023,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (!state.bountyEnabled || deckSize <= 0) return;
     final next = (state.currentBountyIndex + 1) % deckSize;
     state = state.copyWith(currentBountyIndex: next);
-    _send(BleMessage.variantStateUpdate(
-      seqNum: _nextSeq(),
-      currentBountyIndex: next,
-    ));
+    _send(
+      BleMessage.variantStateUpdate(
+        seqNum: _nextSeq(),
+        currentBountyIndex: next,
+      ),
+    );
   }
 
   // ── Turn & Phase ──────────────────────────────────────────────────────────
@@ -977,17 +1039,23 @@ class GameStateNotifier extends StateNotifier<GameState> {
     _cancelTurnLimitTimer();
 
     // Expire end-of-turn alliances
-    final expiredIds = state.alliances
-        .where((a) =>
-            a.duration == AllianceDuration.endOfTurn &&
-            a.isExpiredAtTurnEnd(
-                state.activePlayerIndex, state.roundNumber))
-        .expand((a) => [a.proposerId, a.targetId])
-        .toSet();
+    final expiredIds =
+        state.alliances
+            .where(
+              (a) =>
+                  a.duration == AllianceDuration.endOfTurn &&
+                  a.isExpiredAtTurnEnd(
+                    state.activePlayerIndex,
+                    state.roundNumber,
+                  ),
+            )
+            .expand((a) => [a.proposerId, a.targetId])
+            .toSet();
 
-    var alliances = state.alliances
-        .where((a) => !expiredIds.any((id) => a.involves(id)))
-        .toList();
+    var alliances =
+        state.alliances
+            .where((a) => !expiredIds.any((id) => a.involves(id)))
+            .toList();
 
     // Find next living player
     final n = state.turnOrder.length;
@@ -999,24 +1067,27 @@ class GameStateNotifier extends StateNotifier<GameState> {
       nextIndex = (nextIndex + 1) % n;
     }
 
-    final newRound = nextIndex <= state.activePlayerIndex
-        ? state.roundNumber + 1
-        : state.roundNumber;
+    final newRound =
+        nextIndex <= state.activePlayerIndex
+            ? state.roundNumber + 1
+            : state.roundNumber;
     final roundAdvanced = newRound > state.roundNumber;
 
     // Expire end-of-round alliances on round change
     if (newRound > state.roundNumber) {
-      alliances = alliances
-          .where((a) =>
-              !(a.duration == AllianceDuration.endOfRound &&
-                  a.isExpiredAtTurnEnd(nextIndex, newRound)))
-          .toList();
+      alliances =
+          alliances
+              .where(
+                (a) =>
+                    !(a.duration == AllianceDuration.endOfRound &&
+                        a.isExpiredAtTurnEnd(nextIndex, newRound)),
+              )
+              .toList();
     }
 
     // Also sync ally reference on PlayerGameState when alliances expire
-    final aliveAllyIds = alliances
-        .expand((a) => [a.proposerId, a.targetId])
-        .toSet();
+    final aliveAllyIds =
+        alliances.expand((a) => [a.proposerId, a.targetId]).toSet();
 
     final now = DateTime.now();
     final ending = state.playerById(state.activePlayerId);
@@ -1029,7 +1100,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
     );
     var turnLogs = [...state.sessionActionLog, turnEndEntry];
     if (turnLogs.length > GameConstants.sessionLogCap) {
-      turnLogs = turnLogs.sublist(turnLogs.length - GameConstants.sessionLogCap);
+      turnLogs = turnLogs.sublist(
+        turnLogs.length - GameConstants.sessionLogCap,
+      );
     }
 
     state = state.copyWith(
@@ -1042,26 +1115,28 @@ class GameStateNotifier extends StateNotifier<GameState> {
       turnStartTime: now,
       sessionTurnCounter: tn + 1,
       sessionActionLog: turnLogs,
-      players: state.players.map((p) {
-        if (p.allyPlayerId != null &&
-            !aliveAllyIds.contains(p.playerId)) {
-          return p.copyWith(allyPlayerId: null);
-        }
-        return p;
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.allyPlayerId != null && !aliveAllyIds.contains(p.playerId)) {
+              return p.copyWith(allyPlayerId: null);
+            }
+            return p;
+          }).toList(),
     );
 
-    _send(BleMessage(
-      type: BleMessageType.turnEnd,
-      payload: {
-        'nextIndex': nextIndex,
-        'round': newRound,
-        'turnStartTime': now.toIso8601String(),
-        'sessionTurnCounter': tn + 1,
-        'turnEndLog': turnEndEntry.toJson(),
-      },
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.turnEnd,
+        payload: {
+          'nextIndex': nextIndex,
+          'round': newRound,
+          'turnStartTime': now.toIso8601String(),
+          'sessionTurnCounter': tn + 1,
+          'turnEndLog': turnEndEntry.toJson(),
+        },
+        seqNum: _nextSeq(),
+      ),
+    );
 
     _processScheduledAllianceDeliveries(
       endedTurnIndex: endingTurnIndex,
@@ -1096,11 +1171,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
     final next = state.currentPhase.next;
     state = state.copyWith(currentPhase: next);
-    _send(BleMessage(
-      type: BleMessageType.phaseAdvance,
-      payload: {'phase': next.name},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.phaseAdvance,
+        payload: {'phase': next.name},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   /// Host-only correction: step the turn phase backward (same sync as advance).
@@ -1108,11 +1185,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.priorityHeld || state.timeoutActive) return;
     final prev = state.currentPhase.previous;
     state = state.copyWith(currentPhase: prev);
-    _send(BleMessage(
-      type: BleMessageType.phaseAdvance,
-      payload: {'phase': prev.name},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.phaseAdvance,
+        payload: {'phase': prev.name},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   /// Set the current phase directly (picker / carousel).
@@ -1123,34 +1202,38 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (!state.isHost && !isActivePlayer) return;
     if (phase == state.currentPhase) return;
     state = state.copyWith(currentPhase: phase);
-    _send(BleMessage(
-      type: BleMessageType.phaseAdvance,
-      payload: {'phase': phase.name},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.phaseAdvance,
+        payload: {'phase': phase.name},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void holdPriority(String playerId) {
     if (!_canMutatePlayer(playerId)) return;
-    state = state.copyWith(
-        priorityHeld: true, priorityHolderId: playerId);
-    _send(BleMessage(
-      type: BleMessageType.priorityHold,
-      payload: {'pid': playerId},
-      seqNum: _nextSeq(),
-    ));
+    state = state.copyWith(priorityHeld: true, priorityHolderId: playerId);
+    _send(
+      BleMessage(
+        type: BleMessageType.priorityHold,
+        payload: {'pid': playerId},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void releasePriority(String playerId) {
     if (!_canMutatePlayer(playerId)) return;
     if (state.priorityHolderId != playerId) return;
-    state = state.copyWith(
-        priorityHeld: false, priorityHolderId: null);
-    _send(BleMessage(
-      type: BleMessageType.priorityRelease,
-      payload: {'pid': playerId},
-      seqNum: _nextSeq(),
-    ));
+    state = state.copyWith(priorityHeld: false, priorityHolderId: null);
+    _send(
+      BleMessage(
+        type: BleMessageType.priorityRelease,
+        payload: {'pid': playerId},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Timeout ───────────────────────────────────────────────────────────────
@@ -1163,14 +1246,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       timeoutDurationSeconds: durationSeconds,
     );
     if (durationSeconds != null) {
-      _timeoutTimer =
-          Timer(Duration(seconds: durationSeconds), endTimeout);
+      _timeoutTimer = Timer(Duration(seconds: durationSeconds), endTimeout);
     }
-    _send(BleMessage(
-      type: BleMessageType.timeoutStart,
-      payload: {if (durationSeconds != null) 'duration': durationSeconds},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.timeoutStart,
+        payload: {if (durationSeconds != null) 'duration': durationSeconds},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void endTimeout() {
@@ -1180,11 +1264,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
       timeoutStartTime: null,
       timeoutDurationSeconds: null,
     );
-    _send(BleMessage(
-      type: BleMessageType.timeoutEnd,
-      payload: {},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.timeoutEnd,
+        payload: {},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Alliance System ───────────────────────────────────────────────────────
@@ -1205,8 +1291,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final id = _uuid.v4();
     final deliverAt = switch (timing) {
-      AllianceDeliveryTiming.delaySeconds =>
-        DateTime.now().add(Duration(seconds: delaySeconds)),
+      AllianceDeliveryTiming.delaySeconds => DateTime.now().add(
+        Duration(seconds: delaySeconds),
+      ),
       _ => null,
     };
     final deliverNow = timing == AllianceDeliveryTiming.now;
@@ -1240,12 +1327,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
       );
     }
 
-    _send(BleMessage(
-      type: BleMessageType.alliancePropose,
-      payload: proposal.toJson(),
-      seqNum: _nextSeq(),
-      targetPlayerId: deliverNow ? toId : null,
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.alliancePropose,
+        payload: proposal.toJson(),
+        seqNum: _nextSeq(),
+        targetPlayerId: deliverNow ? toId : null,
+      ),
+    );
   }
 
   void respondToAlliance(String targetId, bool accept) {
@@ -1263,29 +1352,33 @@ class GameStateNotifier extends StateNotifier<GameState> {
         const AllianceUiEvent(kind: AllianceUiEventKind.allianceDeclined),
         forPlayerId: proposal.fromId,
       );
-      _send(BleMessage(
-        type: BleMessageType.allianceDeclined,
+      _send(
+        BleMessage(
+          type: BleMessageType.allianceDeclined,
+          payload: {
+            'from': proposal.fromId,
+            'to': targetId,
+            'proposalId': proposal.id,
+          },
+          seqNum: _nextSeq(),
+          targetPlayerId: proposal.fromId,
+        ),
+      );
+    }
+
+    _send(
+      BleMessage(
+        type: BleMessageType.allianceRespond,
         payload: {
           'from': proposal.fromId,
           'to': targetId,
+          'accept': accept,
           'proposalId': proposal.id,
         },
         seqNum: _nextSeq(),
-        targetPlayerId: proposal.fromId,
-      ));
-    }
-
-    _send(BleMessage(
-      type: BleMessageType.allianceRespond,
-      payload: {
-        'from': proposal.fromId,
-        'to': targetId,
-        'accept': accept,
-        'proposalId': proposal.id,
-      },
-      seqNum: _nextSeq(),
-      targetPlayerId: accept ? null : proposal.fromId,
-    ));
+        targetPlayerId: accept ? null : proposal.fromId,
+      ),
+    );
   }
 
   void revealAlliance(String playerId) {
@@ -1294,9 +1387,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final updated = alliance.copyWith(isRevealed: true);
     state = state.copyWith(
-      alliances: state.alliances
-          .map((a) => a.id == alliance.id ? updated : a)
-          .toList(),
+      alliances:
+          state.alliances
+              .map((a) => a.id == alliance.id ? updated : a)
+              .toList(),
     );
 
     final aName = _playerById(alliance.proposerId)?.username ?? '?';
@@ -1310,11 +1404,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
       ),
     );
 
-    _send(BleMessage(
-      type: BleMessageType.allianceReveal,
-      payload: {'allianceId': alliance.id},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.allianceReveal,
+        payload: {'allianceId': alliance.id},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void breakAlliance(String playerId, {bool betrayal = false}) {
@@ -1324,9 +1420,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (betrayal && !alliance.isRevealed) {
       final revealed = alliance.copyWith(isRevealed: true);
       state = state.copyWith(
-        alliances: state.alliances
-            .map((a) => a.id == alliance.id ? revealed : a)
-            .toList(),
+        alliances:
+            state.alliances
+                .map((a) => a.id == alliance.id ? revealed : a)
+                .toList(),
       );
       final aName = _playerById(alliance.proposerId)?.username ?? '?';
       final bName = _playerById(alliance.targetId)?.username ?? '?';
@@ -1352,11 +1449,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     _removeAlliance(alliance);
-    _send(BleMessage(
-      type: BleMessageType.allianceBreak,
-      payload: {'pid': playerId, 'betrayal': betrayal},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.allianceBreak,
+        payload: {'pid': playerId, 'betrayal': betrayal},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void _formAlliance(AllianceProposal proposal) {
@@ -1364,9 +1463,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
       state = state.copyWith(
         pendingProposals:
             state.pendingProposals.where((p) => p.id != proposal.id).toList(),
-        scheduledProposals: state.scheduledProposals
-            .where((p) => p.id != proposal.id)
-            .toList(),
+        scheduledProposals:
+            state.scheduledProposals.where((p) => p.id != proposal.id).toList(),
       );
       return;
     }
@@ -1380,23 +1478,23 @@ class GameStateNotifier extends StateNotifier<GameState> {
     );
     final newProposals =
         state.pendingProposals.where((p) => p.id != proposal.id).toList();
-    final newScheduled = state.scheduledProposals
-        .where((p) => p.id != proposal.id)
-        .toList();
+    final newScheduled =
+        state.scheduledProposals.where((p) => p.id != proposal.id).toList();
 
     state = state.copyWith(
       alliances: [...state.alliances, alliance],
       pendingProposals: newProposals,
       scheduledProposals: newScheduled,
-      players: state.players.map((p) {
-        if (p.playerId == proposal.fromId) {
-          return p.copyWith(allyPlayerId: proposal.toId);
-        }
-        if (p.playerId == proposal.toId) {
-          return p.copyWith(allyPlayerId: proposal.fromId);
-        }
-        return p;
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId == proposal.fromId) {
+              return p.copyWith(allyPlayerId: proposal.toId);
+            }
+            if (p.playerId == proposal.toId) {
+              return p.copyWith(allyPlayerId: proposal.fromId);
+            }
+            return p;
+          }).toList(),
     );
 
     final allyName = _playerById(proposal.toId)?.username;
@@ -1427,12 +1525,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
   void _removeAlliance(Alliance alliance) {
     state = state.copyWith(
       alliances: state.alliances.where((a) => a.id != alliance.id).toList(),
-      players: state.players.map((p) {
-        if (alliance.involves(p.playerId)) {
-          return p.copyWith(allyPlayerId: null);
-        }
-        return p;
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (alliance.involves(p.playerId)) {
+              return p.copyWith(allyPlayerId: null);
+            }
+            return p;
+          }).toList(),
     );
   }
 
@@ -1476,10 +1575,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     state = state.copyWith(
       scheduledProposals: remaining,
-      pendingProposals: [
-        ...state.pendingProposals,
-        ...due,
-      ],
+      pendingProposals: [...state.pendingProposals, ...due],
     );
 
     for (final proposal in due) {
@@ -1491,12 +1587,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
         ),
         forPlayerId: proposal.toId,
       );
-      _send(BleMessage(
-        type: BleMessageType.alliancePropose,
-        payload: proposal.toJson(),
-        seqNum: _nextSeq(),
-        targetPlayerId: proposal.toId,
-      ));
+      _send(
+        BleMessage(
+          type: BleMessageType.alliancePropose,
+          payload: proposal.toJson(),
+          seqNum: _nextSeq(),
+          targetPlayerId: proposal.toId,
+        ),
+      );
     }
   }
 
@@ -1513,31 +1611,37 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   void setMonarch(String? playerId) {
     state = state.copyWith(monarchPlayerId: playerId);
-    _send(BleMessage(
-      type: BleMessageType.monarchChange,
-      payload: {'pid': playerId ?? ''},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.monarchChange,
+        payload: {'pid': playerId ?? ''},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   void setInitiative(String? playerId) {
     state = state.copyWith(initiativePlayerId: playerId);
-    _send(BleMessage(
-      type: BleMessageType.initiativeChange,
-      payload: {'pid': playerId ?? ''},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.initiativeChange,
+        payload: {'pid': playerId ?? ''},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Day/Night ─────────────────────────────────────────────────────────────
 
   void setDayNight(DayNightState newState) {
     state = state.copyWith(dayNight: newState);
-    _send(BleMessage(
-      type: BleMessageType.dayNightChange,
-      payload: {'state': newState.name},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.dayNightChange,
+        payload: {'state': newState.name},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Teams ────────────────────────────────────────────────────────────────
@@ -1548,11 +1652,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     state = state.copyWith(
       teamAssignments: {...state.teamAssignments, playerId: teamIndex},
     );
-    _send(BleMessage(
-      type: BleMessageType.teamAssign,
-      payload: {'pid': playerId, 'team': teamIndex},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.teamAssign,
+        payload: {'pid': playerId, 'team': teamIndex},
+        seqNum: _nextSeq(),
+      ),
+    );
     if (state.isHost) {
       _hostRebuildTurnOrderByTeams();
     }
@@ -1573,10 +1679,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
   void broadcastMatchFeedback(GameFeedback feedback) {
     if (state.localPlayerId.isEmpty) return;
     if (_ref.read(sessionServiceProvider) == null) return;
-    _send(BleMessage.matchFeedback(
-      seqNum: _nextSeq(),
-      feedbackJson: feedback.toJson(),
-    ));
+    _send(
+      BleMessage.matchFeedback(
+        seqNum: _nextSeq(),
+        feedbackJson: feedback.toJson(),
+      ),
+    );
   }
 
   /// Roll / flip a shared table tool and show the result to every seat.
@@ -1602,19 +1710,21 @@ class GameStateNotifier extends StateNotifier<GameState> {
       coinHeads: coinHeads,
     );
     _publishTableToolAnnouncement(announcement, appendLog: true);
-    _send(BleMessage.tableToolResult(
-      seqNum: _nextSeq(),
-      id: announcement.id,
-      playerId: announcement.playerId,
-      username: announcement.username,
-      tool: switch (kind) {
-        TableToolKind.d6 => 'd6',
-        TableToolKind.d20 => 'd20',
-        TableToolKind.coin => 'coin',
-      },
-      dieValue: dieValue,
-      coinHeads: coinHeads,
-    ));
+    _send(
+      BleMessage.tableToolResult(
+        seqNum: _nextSeq(),
+        id: announcement.id,
+        playerId: announcement.playerId,
+        username: announcement.username,
+        tool: switch (kind) {
+          TableToolKind.d6 => 'd6',
+          TableToolKind.d20 => 'd20',
+          TableToolKind.coin => 'coin',
+        },
+        dieValue: dieValue,
+        coinHeads: coinHeads,
+      ),
+    );
   }
 
   void dismissTableToolAnnouncement() {
@@ -1661,8 +1771,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.players.where((p) => !p.isEliminated).length < 2) return false;
 
     final last = _lastWhisperSentTo[toPlayerId];
-    if (last != null &&
-        DateTime.now().difference(last) < _whisperMinInterval) {
+    if (last != null && DateTime.now().difference(last) < _whisperMinInterval) {
       return false;
     }
 
@@ -1711,11 +1820,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final player = _playerById(playerId);
     if (player == null || player.isEliminated) return;
     _eliminatePlayer(playerId, 'concede', null, broadcast: false);
-    _send(BleMessage(
-      type: BleMessageType.concede,
-      payload: {'pid': playerId},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.concede,
+        payload: {'pid': playerId},
+        seqNum: _nextSeq(),
+      ),
+    );
   }
 
   // ── Loss Condition Checker ────────────────────────────────────────────────
@@ -1739,8 +1850,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
         for (final entry in player.commanderDamage.entries) {
           for (int pi = 0; pi < entry.value.length; pi++) {
             if (entry.value[pi] >= GameConstants.commanderDamageKo) {
-              _eliminatePlayer(
-                  player.playerId, 'commanderDamage', entry.key);
+              _eliminatePlayer(player.playerId, 'commanderDamage', entry.key);
               break;
             }
           }
@@ -1775,25 +1885,28 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final clearInitiative = state.initiativePlayerId == playerId;
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != playerId) return p;
-        return p.copyWith(
-          isEliminated: true,
-          eliminationReason: reason,
-          killedByPlayerId: killedBy,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != playerId) return p;
+            return p.copyWith(
+              isEliminated: true,
+              eliminationReason: reason,
+              killedByPlayerId: killedBy,
+            );
+          }).toList(),
       monarchPlayerId: clearMonarch ? null : state.monarchPlayerId,
       initiativePlayerId: clearInitiative ? null : state.initiativePlayerId,
     );
 
     if (broadcast && state.isHost) {
-      _send(BleMessage.playerEliminated(
-        seqNum: _nextSeq(),
-        playerId: playerId,
-        reason: reason,
-        killedByPlayerId: killedBy,
-      ));
+      _send(
+        BleMessage.playerEliminated(
+          seqNum: _nextSeq(),
+          playerId: playerId,
+          reason: reason,
+          killedByPlayerId: killedBy,
+        ),
+      );
     }
 
     _checkGameOver();
@@ -1809,8 +1922,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
     if (alive.length <= 1) {
       final winner = alive.isEmpty ? null : alive.first;
-      state = state.copyWith(
-          gameOver: true, winnerPlayerId: winner?.playerId);
+      state = state.copyWith(gameOver: true, winnerPlayerId: winner?.playerId);
     }
   }
 
@@ -1858,7 +1970,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
     _mutateStack(
       op: 'add',
       item: item,
-      log: '${_playerLabel(owner)} added “$trimmed”${parentId != null ? ' (response)' : ''}',
+      log:
+          '${_playerLabel(owner)} added “$trimmed”${parentId != null ? ' (response)' : ''}',
     );
   }
 
@@ -1910,8 +2023,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       op: 'status',
       id: id,
       status: status,
-      log:
-          '${_playerLabel(item.playerId)}’s “${item.name}” $logLabel',
+      log: '${_playerLabel(item.playerId)}’s “${item.name}” $logLabel',
     );
   }
 
@@ -1920,11 +2032,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (state.stackItems.isEmpty) return;
     if (!state.isHost && state.players.length > 1) return;
 
-    _mutateStack(
-      op: 'replace',
-      items: const [],
-      log: 'Cleared stack',
-    );
+    _mutateStack(op: 'replace', items: const [], log: 'Cleared stack');
   }
 
   StackItem? _stackItemById(String id) {
@@ -1956,23 +2064,26 @@ class GameStateNotifier extends StateNotifier<GameState> {
       case 'add':
         next = [...state.stackItems, item!];
       case 'rename':
-        next = state.stackItems
-            .map(
-              (i) => i.id == id
-                  ? i.copyWith(
-                      name: name,
-                      oracleText: oracleText,
-                      manaCost: manaCost,
-                      imageUrl: imageUrl,
-                      typeLine: typeLine,
-                    )
-                  : i,
-            )
-            .toList();
+        next =
+            state.stackItems
+                .map(
+                  (i) =>
+                      i.id == id
+                          ? i.copyWith(
+                            name: name,
+                            oracleText: oracleText,
+                            manaCost: manaCost,
+                            imageUrl: imageUrl,
+                            typeLine: typeLine,
+                          )
+                          : i,
+                )
+                .toList();
       case 'status':
-        next = state.stackItems
-            .map((i) => i.id == id ? i.copyWith(status: status) : i)
-            .toList();
+        next =
+            state.stackItems
+                .map((i) => i.id == id ? i.copyWith(status: status) : i)
+                .toList();
       case 'replace':
         next = items!;
       default:
@@ -2015,19 +2126,21 @@ class GameStateNotifier extends StateNotifier<GameState> {
         final id = payload['id'] as String?;
         final name = payload['name'] as String?;
         if (id != null && name != null) {
-          next = next
-              .map(
-                (i) => i.id == id
-                    ? i.copyWith(
-                        name: name,
-                        oracleText: payload['oracleText'] as String?,
-                        manaCost: payload['manaCost'] as String?,
-                        imageUrl: payload['imageUrl'] as String?,
-                        typeLine: payload['typeLine'] as String?,
-                      )
-                    : i,
-              )
-              .toList();
+          next =
+              next
+                  .map(
+                    (i) =>
+                        i.id == id
+                            ? i.copyWith(
+                              name: name,
+                              oracleText: payload['oracleText'] as String?,
+                              manaCost: payload['manaCost'] as String?,
+                              imageUrl: payload['imageUrl'] as String?,
+                              typeLine: payload['typeLine'] as String?,
+                            )
+                            : i,
+                  )
+                  .toList();
         }
       case 'status':
         final id = payload['id'] as String?;
@@ -2038,14 +2151,17 @@ class GameStateNotifier extends StateNotifier<GameState> {
             orElse: () => StackItemStatus.active,
           );
           next =
-              next.map((i) => i.id == id ? i.copyWith(status: status) : i).toList();
+              next
+                  .map((i) => i.id == id ? i.copyWith(status: status) : i)
+                  .toList();
         }
       case 'replace':
         final list = payload['items'] as List<dynamic>?;
         if (list != null) {
-          next = list
-              .map((e) => StackItem.fromJson(e as Map<String, dynamic>))
-              .toList();
+          next =
+              list
+                  .map((e) => StackItem.fromJson(e as Map<String, dynamic>))
+                  .toList();
         }
       default:
         return;
@@ -2119,7 +2235,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
     _beginClientHostLinkRecovery();
   }
 
-  void _markPeerReconnecting(String playerId, {required bool awaitingDecision}) {
+  void _markPeerReconnecting(
+    String playerId, {
+    required bool awaitingDecision,
+  }) {
     if (playerId.isEmpty || playerId == state.localPlayerId) return;
     final player = _playerById(playerId);
     if (player == null || player.isEliminated) return;
@@ -2180,11 +2299,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
     // when it arrives first and the disconnect handler no-ops.
     _eliminatePlayer(playerId, 'disconnect', null, broadcast: false);
     _appendGameLog('${player.username} left the game');
-    _send(BleMessage(
-      type: BleMessageType.playerDisconnected,
-      payload: {'pid': playerId},
-      seqNum: _nextSeq(),
-    ));
+    _send(
+      BleMessage(
+        type: BleMessageType.playerDisconnected,
+        payload: {'pid': playerId},
+        seqNum: _nextSeq(),
+      ),
+    );
     _ref.read(playerLeftUiEventProvider.notifier).state = PlayerLeftUiEvent(
       username: player.username,
       gameEnded: state.gameOver,
@@ -2213,8 +2334,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     });
 
     _clientReconnectTimer?.cancel();
-    _clientReconnectTimer =
-        Timer.periodic(const Duration(seconds: 3), (_) {
+    _clientReconnectTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (state.gameOver || state.players.isEmpty) {
         _stopClientReconnectLoop();
         return;
@@ -2327,11 +2447,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
         final pid = msg.payload['pid'] as String? ?? '';
         final delta = (msg.payload['delta'] as num?)?.toInt() ?? 1;
         state = state.copyWith(
-          players: state.players.map((p) {
-            if (p.playerId != pid) return p;
-            final next = (p.commanderCastCount + delta).clamp(0, 999);
-            return p.copyWith(commanderCastCount: next);
-          }).toList(),
+          players:
+              state.players.map((p) {
+                if (p.playerId != pid) return p;
+                final next = (p.commanderCastCount + delta).clamp(0, 999);
+                return p.copyWith(commanderCastCount: next);
+              }).toList(),
         );
       case BleMessageType.phaseAdvance:
         final phaseName = msg.payload['phase'] as String? ?? '';
@@ -2353,14 +2474,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
         );
       case BleMessageType.timeoutEnd:
         state = state.copyWith(
-            timeoutActive: false, timeoutStartTime: null, timeoutDurationSeconds: null);
+          timeoutActive: false,
+          timeoutStartTime: null,
+          timeoutDurationSeconds: null,
+        );
       case BleMessageType.monarchChange:
         final pid = msg.payload['pid'] as String?;
-        state = state.copyWith(monarchPlayerId: pid?.isEmpty == true ? null : pid);
+        state = state.copyWith(
+          monarchPlayerId: pid?.isEmpty == true ? null : pid,
+        );
       case BleMessageType.initiativeChange:
         final pid = msg.payload['pid'] as String?;
         state = state.copyWith(
-            initiativePlayerId: pid?.isEmpty == true ? null : pid);
+          initiativePlayerId: pid?.isEmpty == true ? null : pid,
+        );
       case BleMessageType.dayNightChange:
         final dn = DayNightState.values.firstWhere(
           (d) => d.name == msg.payload['state'],
@@ -2378,9 +2505,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
         if (a != null) {
           if (betrayal && !a.isRevealed) {
             state = state.copyWith(
-              alliances: state.alliances
-                  .map((x) => x.id == a.id ? x.copyWith(isRevealed: true) : x)
-                  .toList(),
+              alliances:
+                  state.alliances
+                      .map(
+                        (x) => x.id == a.id ? x.copyWith(isRevealed: true) : x,
+                      )
+                      .toList(),
             );
           }
           _removeAlliance(a);
@@ -2388,21 +2518,21 @@ class GameStateNotifier extends StateNotifier<GameState> {
       case BleMessageType.allianceReveal:
         final allianceId = msg.payload['allianceId'] as String? ?? '';
         state = state.copyWith(
-          alliances: state.alliances
-              .map(
-                (a) => a.id == allianceId ? a.copyWith(isRevealed: true) : a,
-              )
-              .toList(),
+          alliances:
+              state.alliances
+                  .map(
+                    (a) =>
+                        a.id == allianceId ? a.copyWith(isRevealed: true) : a,
+                  )
+                  .toList(),
         );
-        final revealed = state.alliances
-            .where((a) => a.id == allianceId)
-            .firstOrNull;
+        final revealed =
+            state.alliances.where((a) => a.id == allianceId).firstOrNull;
         if (revealed != null) {
           _emitAllianceEvent(
             AllianceUiEvent(
               kind: AllianceUiEventKind.allianceRevealed,
-              otherUsername:
-                  _playerById(revealed.proposerId)?.username,
+              otherUsername: _playerById(revealed.proposerId)?.username,
               allyUsername: _playerById(revealed.targetId)?.username,
             ),
           );
@@ -2412,12 +2542,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
         final toId = msg.payload['to'] as String? ?? '';
         final proposalId = msg.payload['proposalId'] as String? ?? '';
         state = state.copyWith(
-          pendingProposals: state.pendingProposals
-              .where((p) => p.id != proposalId)
-              .toList(),
-          scheduledProposals: state.scheduledProposals
-              .where((p) => p.id != proposalId)
-              .toList(),
+          pendingProposals:
+              state.pendingProposals.where((p) => p.id != proposalId).toList(),
+          scheduledProposals:
+              state.scheduledProposals
+                  .where((p) => p.id != proposalId)
+                  .toList(),
         );
         if (fromId == state.localPlayerId) {
           _emitAllianceEvent(
@@ -2449,12 +2579,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
           final pid = msg.payload['pid'] as String? ?? '';
           if (pid.isNotEmpty) {
             _clearPeerLinkIssue(pid);
-            _send(BleMessage(
-              type: BleMessageType.stateSnapshot,
-              payload: buildSnapshot(),
-              seqNum: _nextSeq(),
-              targetPlayerId: pid,
-            ));
+            _send(
+              BleMessage(
+                type: BleMessageType.stateSnapshot,
+                payload: buildSnapshot(),
+                seqNum: _nextSeq(),
+                targetPlayerId: pid,
+              ),
+            );
           }
         }
       case BleMessageType.stateSnapshot:
@@ -2497,7 +2629,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
         }
         break;
       case BleMessageType.firstPlayerTurnOrder:
-        final order = (msg.payload['turnOrder'] as List<dynamic>?)
+        final order =
+            (msg.payload['turnOrder'] as List<dynamic>?)
                 ?.map((e) => e as String)
                 .toList() ??
             [];
@@ -2526,7 +2659,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
         msg.type != BleMessageType.playerReconnecting &&
         msg.type != BleMessageType.reconnectRequest &&
         msg.type != BleMessageType.hostEndedSession) {
-      _ref.read(sessionServiceProvider)?.send(
+      _ref
+          .read(sessionServiceProvider)
+          ?.send(
             msg,
             targetPlayerId: msg.targetPlayerId,
             excludePlayerId: msg.originPlayerId,
@@ -2542,25 +2677,26 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final newValue = (rawVal as num).toInt();
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != pid) return p;
-        switch (field) {
-          case 'life':
-            return p.copyWith(life: newValue);
-          case 'poison':
-            return p.copyWith(poison: newValue);
-          case 'energy':
-            return p.copyWith(energy: newValue);
-          case 'experience':
-            return p.copyWith(experience: newValue);
-          case 'rad':
-            return p.copyWith(rad: newValue);
-          default:
-            final m = Map<String, int>.from(p.extraDials);
-            m[field] = newValue;
-            return p.copyWith(extraDials: m);
-        }
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != pid) return p;
+            switch (field) {
+              case 'life':
+                return p.copyWith(life: newValue);
+              case 'poison':
+                return p.copyWith(poison: newValue);
+              case 'energy':
+                return p.copyWith(energy: newValue);
+              case 'experience':
+                return p.copyWith(experience: newValue);
+              case 'rad':
+                return p.copyWith(rad: newValue);
+              default:
+                final m = Map<String, int>.from(p.extraDials);
+                m[field] = newValue;
+                return p.copyWith(extraDials: m);
+            }
+          }).toList(),
     );
 
     final delta = (payload['delta'] as num?)?.toInt() ?? 0;
@@ -2621,9 +2757,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final victim = state.playerById(toId);
     if (victim == null) return;
 
-    final dmg = Map<String, List<int>>.from(victim.commanderDamage.map(
-      (k, v) => MapEntry(k, List<int>.from(v)),
-    ));
+    final dmg = Map<String, List<int>>.from(
+      victim.commanderDamage.map((k, v) => MapEntry(k, List<int>.from(v))),
+    );
     final fromDmg = List<int>.from(dmg[fromId] ?? [0, 0]);
     while (fromDmg.length <= pi) {
       fromDmg.add(0);
@@ -2643,13 +2779,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
     dmg[fromId] = fromDmg;
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != toId) return p;
-        return p.copyWith(
-          life: newLife,
-          commanderDamage: dmg,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.playerId != toId) return p;
+            return p.copyWith(life: newLife, commanderDamage: dmg);
+          }).toList(),
     );
 
     if (amount != 0) {
@@ -2674,62 +2808,66 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final extra = payload['extra'] as Map<String, dynamic>?;
 
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.playerId != pid) return p;
-        switch (field) {
-          case 'life':
-            return p.copyWith(life: prevValue);
-          case 'poison':
-            return p.copyWith(poison: prevValue);
-          case 'energy':
-            return p.copyWith(energy: prevValue);
-          case 'experience':
-            return p.copyWith(experience: prevValue);
-          case 'rad':
-            return p.copyWith(rad: prevValue);
-          case 'commanderCast':
-            return p.copyWith(commanderCastCount: prevValue);
-          case 'commanderDamage':
-            if (extra == null) return p;
-            final fromId = extra['fromId'] as String;
-            final pi = extra['pi'] as int;
-            final prevLife = extra['prevLife'] as int;
-            final dmg = Map<String, List<int>>.from(p.commanderDamage.map(
-              (k, v) => MapEntry(k, List<int>.from(v)),
-            ));
-            final fromDmg = List<int>.from(dmg[fromId] ?? [0, 0]);
-            while (fromDmg.length <= pi) {
-              fromDmg.add(0);
+      players:
+          state.players.map((p) {
+            if (p.playerId != pid) return p;
+            switch (field) {
+              case 'life':
+                return p.copyWith(life: prevValue);
+              case 'poison':
+                return p.copyWith(poison: prevValue);
+              case 'energy':
+                return p.copyWith(energy: prevValue);
+              case 'experience':
+                return p.copyWith(experience: prevValue);
+              case 'rad':
+                return p.copyWith(rad: prevValue);
+              case 'commanderCast':
+                return p.copyWith(commanderCastCount: prevValue);
+              case 'commanderDamage':
+                if (extra == null) return p;
+                final fromId = extra['fromId'] as String;
+                final pi = extra['pi'] as int;
+                final prevLife = extra['prevLife'] as int;
+                final dmg = Map<String, List<int>>.from(
+                  p.commanderDamage.map(
+                    (k, v) => MapEntry(k, List<int>.from(v)),
+                  ),
+                );
+                final fromDmg = List<int>.from(dmg[fromId] ?? [0, 0]);
+                while (fromDmg.length <= pi) {
+                  fromDmg.add(0);
+                }
+                fromDmg[pi] = prevValue;
+                dmg[fromId] = fromDmg;
+                return p.copyWith(life: prevLife, commanderDamage: dmg);
+              default:
+                final m = Map<String, int>.from(p.extraDials);
+                m[field] = prevValue;
+                return p.copyWith(extraDials: m);
             }
-            fromDmg[pi] = prevValue;
-            dmg[fromId] = fromDmg;
-            return p.copyWith(life: prevLife, commanderDamage: dmg);
-          default:
-            final m = Map<String, int>.from(p.extraDials);
-            m[field] = prevValue;
-            return p.copyWith(extraDials: m);
-        }
-      }).toList(),
+          }).toList(),
     );
     _checkLossConditions();
   }
 
   void _applyProliferate() {
     state = state.copyWith(
-      players: state.players.map((p) {
-        if (p.isEliminated) return p;
-        final xd = Map<String, int>.from(p.extraDials);
-        for (final e in xd.entries.toList()) {
-          if (e.value > 0) xd[e.key] = e.value + 1;
-        }
-        return p.copyWith(
-          poison: p.poison > 0 ? p.poison + 1 : p.poison,
-          energy: p.energy > 0 ? p.energy + 1 : p.energy,
-          experience: p.experience > 0 ? p.experience + 1 : p.experience,
-          rad: p.rad > 0 ? p.rad + 1 : p.rad,
-          extraDials: xd,
-        );
-      }).toList(),
+      players:
+          state.players.map((p) {
+            if (p.isEliminated) return p;
+            final xd = Map<String, int>.from(p.extraDials);
+            for (final e in xd.entries.toList()) {
+              if (e.value > 0) xd[e.key] = e.value + 1;
+            }
+            return p.copyWith(
+              poison: p.poison > 0 ? p.poison + 1 : p.poison,
+              energy: p.energy > 0 ? p.energy + 1 : p.energy,
+              experience: p.experience > 0 ? p.experience + 1 : p.experience,
+              rad: p.rad > 0 ? p.rad + 1 : p.rad,
+              extraDials: xd,
+            );
+          }).toList(),
     );
     _appendGameLog('Proliferate: all players');
     _checkLossConditions();
@@ -2739,10 +2877,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final nextIndex = (payload['nextIndex'] as num?)?.toInt() ?? 0;
     final round = (payload['round'] as num?)?.toInt() ?? state.roundNumber;
     final turnStartStr = payload['turnStartTime'] as String?;
-    final turnStart = turnStartStr != null
-        ? DateTime.tryParse(turnStartStr)
-        : DateTime.now();
-    final stc = (payload['sessionTurnCounter'] as num?)?.toInt() ??
+    final turnStart =
+        turnStartStr != null ? DateTime.tryParse(turnStartStr) : DateTime.now();
+    final stc =
+        (payload['sessionTurnCounter'] as num?)?.toInt() ??
         state.sessionTurnCounter + 1;
     final logJson = payload['turnEndLog'] as Map<String, dynamic>?;
     var logs = state.sessionActionLog;
@@ -2810,8 +2948,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     AllianceProposal? proposal;
     for (final p in state.pendingProposals) {
-      if (p.id == proposalId ||
-          (p.fromId == fromId && p.toId == toId)) {
+      if (p.id == proposalId || (p.fromId == fromId && p.toId == toId)) {
         proposal = p;
         break;
       }
@@ -2840,10 +2977,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
       seqNum: msg.seqNum,
       targetPlayerId: msg.targetPlayerId,
     );
-    _ref.read(sessionServiceProvider)?.send(
-          stamped,
-          targetPlayerId: msg.targetPlayerId,
-        );
+    _ref
+        .read(sessionServiceProvider)
+        ?.send(stamped, targetPlayerId: msg.targetPlayerId);
   }
 
   void _ingestRemoteMatchFeedback(BleMessage msg) {
@@ -2861,10 +2997,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
       // Fire-and-forget; host rebroadcast still proceeds synchronously.
       Future<void>(() async {
-        await _ref.read(progressionServiceProvider).saveFeedback(
-              feedback,
-              awardGiverXp: false,
-            );
+        await _ref
+            .read(progressionServiceProvider)
+            .saveFeedback(feedback, awardGiverXp: false);
         bumpProfileRevisionRef(_ref);
       });
     } catch (_) {

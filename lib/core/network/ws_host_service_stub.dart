@@ -20,7 +20,8 @@ class WsHostService implements BleService {
   final String joinToken;
 
   final _messageController = StreamController<BleMessage>.broadcast();
-  final _connectionController = StreamController<BleConnectionEvent>.broadcast();
+  final _connectionController =
+      StreamController<BleConnectionEvent>.broadcast();
 
   int get port => 0;
 
@@ -40,13 +41,15 @@ class WsHostService implements BleService {
   @override
   Future<void> initialize() async {
     if (reconnectGrace.isNegative) return;
-    _connectionController.add(const BleConnectionEvent(
-      playerId: '',
-      status: BleConnectionStatus.error,
-      errorMessage:
-          'Hosting is not available in the browser. Use the mobile app or '
-          'run the app locally on your computer to host and show a QR code.',
-    ));
+    _connectionController.add(
+      const BleConnectionEvent(
+        playerId: '',
+        status: BleConnectionStatus.error,
+        errorMessage:
+            'Hosting is not available in the browser. Use the mobile app or '
+            'run the app locally on your computer to host and show a QR code.',
+      ),
+    );
   }
 
   @override

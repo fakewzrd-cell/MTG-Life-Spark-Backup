@@ -74,9 +74,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
       ),
 
       // Divider — replaces deprecated dividerColor
@@ -103,18 +101,19 @@ class AppTheme {
       ),
 
       // Icon
-      iconTheme: IconThemeData(
-        color: ColorTokens.textPrimary,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: ColorTokens.textPrimary, size: 24),
 
       // NavigationBar (M3 bottom navigation)
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: ColorTokens.surface,
-        surfaceTintColor: ColorTokens.primaryAccent.withValues(alpha: OpacityTokens.faint),
+        surfaceTintColor: ColorTokens.primaryAccent.withValues(
+          alpha: OpacityTokens.faint,
+        ),
         elevation: ElevationTokens.md,
         height: LayoutTokens.bottomNavHeight,
-        indicatorColor: ColorTokens.primaryAccent.withValues(alpha: OpacityTokens.soft),
+        indicatorColor: ColorTokens.primaryAccent.withValues(
+          alpha: OpacityTokens.soft,
+        ),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return GoogleFonts.lato(
@@ -133,15 +132,9 @@ class AppTheme {
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(
-              color: ColorTokens.primaryAccent,
-              size: 24,
-            );
+            return IconThemeData(color: ColorTokens.primaryAccent, size: 24);
           }
-          return IconThemeData(
-            color: ColorTokens.textMuted,
-            size: 24,
-          );
+          return IconThemeData(color: ColorTokens.textMuted, size: 24);
         }),
       ),
 
@@ -155,9 +148,7 @@ class AppTheme {
           elevation: 0,
           shadowColor: Colors.transparent,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -174,9 +165,7 @@ class AppTheme {
           elevation: ElevationTokens.none,
           shadowColor: Colors.transparent,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -191,9 +180,7 @@ class AppTheme {
           foregroundColor: ColorTokens.textPrimary,
           side: BorderSide(color: ColorTokens.borderSubtle),
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -221,9 +208,7 @@ class AppTheme {
         elevation: ElevationTokens.lg,
         focusElevation: 6,
         hoverElevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
       ),
 
       // Input / TextField
@@ -235,29 +220,23 @@ class AppTheme {
           vertical: SpacingTokens.md,
         ),
         border: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
-          borderSide: BorderSide(
-            color: ColorTokens.borderSubtle,
-            width: 1,
-          ),
+          borderRadius: RadiusTokens.radiusXl,
+          borderSide: BorderSide(color: ColorTokens.borderSubtle, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
-          borderSide: BorderSide(
-            color: ColorTokens.primaryAccent,
-            width: 2,
-          ),
+          borderRadius: RadiusTokens.radiusXl,
+          borderSide: BorderSide(color: ColorTokens.primaryAccent, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(color: ColorTokens.danger, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(color: ColorTokens.danger, width: 2),
         ),
         labelStyle: TextStyle(color: ColorTokens.textSecondary),
@@ -283,10 +262,11 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         side: BorderSide(color: ColorTokens.borderSubtle),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
+        padding: const EdgeInsets.symmetric(
+          horizontal: LayoutTokens.gr1,
+          vertical: LayoutTokens.gr0,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         elevation: 0,
         pressElevation: 0,
       ),
@@ -295,7 +275,7 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: ColorTokens.surfaceElevated,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusLg),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
         titleTextStyle: GoogleFonts.lato(
           fontSize: 24,
           fontWeight: FontWeight.w700,
@@ -313,7 +293,7 @@ class AppTheme {
         backgroundColor: ColorTokens.surfaceElevated,
         contentTextStyle: TextStyle(color: ColorTokens.textPrimary),
         actionTextColor: ColorTokens.primaryAccent,
-        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusMd),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
         behavior: SnackBarBehavior.floating,
         elevation: ElevationTokens.lg,
       ),
@@ -354,7 +334,7 @@ class AppTheme {
         }),
         checkColor: WidgetStateProperty.all(ColorTokens.onAccent),
         side: BorderSide(color: ColorTokens.borderSubtle, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXs),
       ),
 
       // Radio
@@ -384,13 +364,10 @@ class AppTheme {
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
           color: ColorTokens.surfaceElevated,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           border: Border.all(color: ColorTokens.borderSubtle),
         ),
-        textStyle: TextStyle(
-          color: ColorTokens.textPrimary,
-          fontSize: 12,
-        ),
+        textStyle: TextStyle(color: ColorTokens.textPrimary, fontSize: 12),
       ),
 
       useMaterial3: true,
@@ -449,16 +426,13 @@ class AppTheme {
       textTheme: textTheme,
 
       // ── Component themes ──────────────────────────────────────────────
-
       cardTheme: CardThemeData(
         color: ColorTokens.lightSurface,
         elevation: ElevationTokens.none,
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
       ),
 
       dividerTheme: DividerThemeData(
@@ -482,17 +456,18 @@ class AppTheme {
         iconTheme: IconThemeData(color: ColorTokens.lightTextPrimary),
       ),
 
-      iconTheme: IconThemeData(
-        color: ColorTokens.lightTextPrimary,
-        size: 24,
-      ),
+      iconTheme: IconThemeData(color: ColorTokens.lightTextPrimary, size: 24),
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: ColorTokens.lightSurface,
-        surfaceTintColor: ColorTokens.lightPrimaryAccent.withValues(alpha: OpacityTokens.faint),
+        surfaceTintColor: ColorTokens.lightPrimaryAccent.withValues(
+          alpha: OpacityTokens.faint,
+        ),
         elevation: ElevationTokens.md,
         height: LayoutTokens.bottomNavHeight,
-        indicatorColor: ColorTokens.lightPrimaryAccent.withValues(alpha: OpacityTokens.soft),
+        indicatorColor: ColorTokens.lightPrimaryAccent.withValues(
+          alpha: OpacityTokens.soft,
+        ),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return GoogleFonts.lato(
@@ -516,10 +491,7 @@ class AppTheme {
               size: 24,
             );
           }
-          return IconThemeData(
-            color: ColorTokens.lightTextMuted,
-            size: 24,
-          );
+          return IconThemeData(color: ColorTokens.lightTextMuted, size: 24);
         }),
       ),
 
@@ -532,9 +504,7 @@ class AppTheme {
           elevation: 0,
           shadowColor: Colors.transparent,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -550,9 +520,7 @@ class AppTheme {
           elevation: ElevationTokens.none,
           shadowColor: Colors.transparent,
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -566,9 +534,7 @@ class AppTheme {
           foregroundColor: ColorTokens.lightTextPrimary,
           side: BorderSide(color: ColorTokens.lightBorderSubtle),
           minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           textStyle: GoogleFonts.lato(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -594,9 +560,7 @@ class AppTheme {
         elevation: ElevationTokens.lg,
         focusElevation: 6,
         hoverElevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusMd,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
@@ -607,29 +571,29 @@ class AppTheme {
           vertical: SpacingTokens.md,
         ),
         border: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(
             color: ColorTokens.lightBorderSubtle,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(
             color: ColorTokens.lightPrimaryAccent,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(color: ColorTokens.danger, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(color: ColorTokens.danger, width: 2),
         ),
         labelStyle: TextStyle(color: ColorTokens.lightTextSecondary),
@@ -654,10 +618,11 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         side: BorderSide(color: ColorTokens.lightBorderSubtle),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
+        padding: const EdgeInsets.symmetric(
+          horizontal: LayoutTokens.gr1,
+          vertical: LayoutTokens.gr0,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         elevation: 0,
         pressElevation: 0,
       ),
@@ -665,7 +630,7 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: ColorTokens.lightSurface,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusLg),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
         titleTextStyle: GoogleFonts.lato(
           fontSize: 24,
           fontWeight: FontWeight.w700,
@@ -680,10 +645,9 @@ class AppTheme {
 
       snackBarTheme: SnackBarThemeData(
         backgroundColor: ColorTokens.lightSurfaceElevated,
-        contentTextStyle:
-            TextStyle(color: ColorTokens.lightTextPrimary),
+        contentTextStyle: TextStyle(color: ColorTokens.lightTextPrimary),
         actionTextColor: ColorTokens.lightPrimaryAccent,
-        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusMd),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
         behavior: SnackBarBehavior.floating,
         elevation: ElevationTokens.lg,
       ),
@@ -723,7 +687,7 @@ class AppTheme {
           ColorTokens.onColor(ColorTokens.lightPrimaryAccent),
         ),
         side: BorderSide(color: ColorTokens.lightBorderSubtle, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXs),
       ),
 
       radioTheme: RadioThemeData(
@@ -750,13 +714,10 @@ class AppTheme {
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
           color: ColorTokens.lightSurfaceElevated,
-          borderRadius: RadiusTokens.radiusSm,
+          borderRadius: RadiusTokens.radiusXl,
           border: Border.all(color: ColorTokens.lightBorderSubtle),
         ),
-        textStyle: TextStyle(
-          color: ColorTokens.lightTextPrimary,
-          fontSize: 12,
-        ),
+        textStyle: TextStyle(color: ColorTokens.lightTextPrimary, fontSize: 12),
       ),
 
       useMaterial3: true,

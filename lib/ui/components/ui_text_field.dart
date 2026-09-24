@@ -50,18 +50,15 @@ class UiTextField extends StatelessWidget {
           vertical: SpacingTokens.md,
         ),
         border: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
-          borderSide: BorderSide(
-            color: colors.primaryAccent,
-            width: 2,
-          ),
+          borderRadius: RadiusTokens.radiusXl,
+          borderSide: BorderSide(color: colors.primaryAccent, width: 2),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: RadiusTokens.radiusMd,
+          borderRadius: RadiusTokens.radiusXl,
           borderSide: BorderSide(
             color: colors.borderSubtle.withValues(alpha: 0.5),
           ),

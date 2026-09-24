@@ -13,15 +13,15 @@ double _contrast(Color a, Color b) {
 }
 
 void main() {
-  test('appearance palettes include Obsidian and Fog', () {
-    expect(
-      AppColorPalettes.all.map((p) => p.id),
-      containsAll([AppColorSchemeId.obsidian, AppColorSchemeId.fog]),
-    );
-    expect(AppColorPalettes.parse('obsidian'), AppColorSchemeId.obsidian);
-    expect(AppColorPalettes.parse('fog'), AppColorSchemeId.fog);
-    expect(AppColorPalettes.byId(AppColorSchemeId.obsidian).label, 'Obsidian');
-    expect(AppColorPalettes.byId(AppColorSchemeId.fog).label, 'Fog');
+  test('appearance offers violet, slate, and crimson', () {
+    expect(AppColorPalettes.all.map((p) => p.id), [
+      AppColorSchemeId.violet,
+      AppColorSchemeId.slate,
+      AppColorSchemeId.crimson,
+    ]);
+    expect(AppColorPalettes.parse('forest'), AppColorSchemeId.violet);
+    expect(AppColorPalettes.parse('obsidian'), AppColorSchemeId.violet);
+    expect(AppColorPalettes.parse('fog'), AppColorSchemeId.violet);
   });
 
   test('dark palette accents have AA label contrast', () {
@@ -216,12 +216,15 @@ void main() {
         AppColorTokens.fromPalette(palette),
         AppColorTokens.fromLightPalette(palette),
       ]) {
-        for (final tier in ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond']) {
+        for (final tier in [
+          'Bronze',
+          'Silver',
+          'Gold',
+          'Platinum',
+          'Diamond',
+        ]) {
           expect(
-            _contrast(
-              wizardTierColor(tier, tokens),
-              tokens.backgroundPrimary,
-            ),
+            _contrast(wizardTierColor(tier, tokens), tokens.backgroundPrimary),
             greaterThanOrEqualTo(4.5),
             reason:
                 '${palette.label} $tier must meet WCAG AA on the page background',

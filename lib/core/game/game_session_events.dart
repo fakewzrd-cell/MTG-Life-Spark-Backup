@@ -5,17 +5,15 @@ import '../../l10n/app_localizations.dart';
 /// Fired when a remote player leaves/disconnects mid-match so the UI can toast
 /// and (when the table ends) land on the feedback screen.
 class PlayerLeftUiEvent {
-  const PlayerLeftUiEvent({
-    required this.username,
-    required this.gameEnded,
-  });
+  const PlayerLeftUiEvent({required this.username, required this.gameEnded});
 
   final String username;
   final bool gameEnded;
 }
 
-final playerLeftUiEventProvider =
-    StateProvider<PlayerLeftUiEvent?>((ref) => null);
+final playerLeftUiEventProvider = StateProvider<PlayerLeftUiEvent?>(
+  (ref) => null,
+);
 
 /// Fired when the host deliberately ends the session (not a transient drop).
 final hostEndedSessionUiEventProvider = StateProvider<bool>((ref) => false);
@@ -36,8 +34,9 @@ class PeerLinkIssue {
 }
 
 /// playerId → soft-drop status (cleared when they reconnect or are removed).
-final peerLinkIssuesProvider =
-    StateProvider<Map<String, PeerLinkIssue>>((ref) => {});
+final peerLinkIssuesProvider = StateProvider<Map<String, PeerLinkIssue>>(
+  (ref) => {},
+);
 
 /// Bumped when a peer's grace expires so the host UI can prompt once.
 final peerReconnectDecisionTickProvider = StateProvider<int>((ref) => 0);
@@ -61,8 +60,9 @@ class LifeChangeAnnouncement {
   final String? actorUsername;
 }
 
-final localLifeChangeProvider =
-    StateProvider<LifeChangeAnnouncement?>((ref) => null);
+final localLifeChangeProvider = StateProvider<LifeChangeAnnouncement?>(
+  (ref) => null,
+);
 
 /// Shared mid-match dice / coin announcement (ephemeral UI, not game state).
 enum TableToolKind { d6, d20, coin }
@@ -95,17 +95,17 @@ class TableToolAnnouncement {
   }
 
   String get toolLabel => switch (kind) {
-        TableToolKind.d6 => 'd6',
-        TableToolKind.d20 => 'd20',
-        TableToolKind.coin => 'Coin',
-      };
+    TableToolKind.d6 => 'd6',
+    TableToolKind.d20 => 'd20',
+    TableToolKind.coin => 'Coin',
+  };
 
   /// English headline for match history logs (stable wire copy).
   String get headline => switch (kind) {
-        TableToolKind.d6 => '$username rolled a $resultLabel',
-        TableToolKind.d20 => '$username rolled a $resultLabel',
-        TableToolKind.coin => '$username flipped $resultLabel',
-      };
+    TableToolKind.d6 => '$username rolled a $resultLabel',
+    TableToolKind.d20 => '$username rolled a $resultLabel',
+    TableToolKind.coin => '$username flipped $resultLabel',
+  };
 
   String localizedResultLabel(AppLocalizations l10n) {
     switch (kind) {
@@ -118,18 +118,17 @@ class TableToolAnnouncement {
   }
 
   String localizedToolLabel(AppLocalizations l10n) => switch (kind) {
-        TableToolKind.d6 => l10n.tableToolsD6,
-        TableToolKind.d20 => l10n.tableToolsD20,
-        TableToolKind.coin => l10n.tableToolsCoin,
-      };
+    TableToolKind.d6 => l10n.tableToolsD6,
+    TableToolKind.d20 => l10n.tableToolsD20,
+    TableToolKind.coin => l10n.tableToolsCoin,
+  };
 
   String localizedHeadline(AppLocalizations l10n) {
-    final name =
-        username.isEmpty ? l10n.tableToolPlayerFallback : username;
+    final name = username.isEmpty ? l10n.tableToolPlayerFallback : username;
     final result = localizedResultLabel(l10n);
     return switch (kind) {
-      TableToolKind.d6 || TableToolKind.d20 =>
-        l10n.tableToolRolledHeadline(name, result),
+      TableToolKind.d6 ||
+      TableToolKind.d20 => l10n.tableToolRolledHeadline(name, result),
       TableToolKind.coin => l10n.tableToolFlippedHeadline(name, result),
     };
   }
@@ -152,21 +151,22 @@ class TableToolAnnouncement {
   }
 
   Map<String, dynamic> toPayload() => {
-        'id': id,
-        'pid': playerId,
-        'username': username,
-        'tool': switch (kind) {
-          TableToolKind.d6 => 'd6',
-          TableToolKind.d20 => 'd20',
-          TableToolKind.coin => 'coin',
-        },
-        if (dieValue != null) 'die': dieValue,
-        if (coinHeads != null) 'heads': coinHeads,
-      };
+    'id': id,
+    'pid': playerId,
+    'username': username,
+    'tool': switch (kind) {
+      TableToolKind.d6 => 'd6',
+      TableToolKind.d20 => 'd20',
+      TableToolKind.coin => 'coin',
+    },
+    if (dieValue != null) 'die': dieValue,
+    if (coinHeads != null) 'heads': coinHeads,
+  };
 }
 
-final tableToolAnnouncementProvider =
-    StateProvider<TableToolAnnouncement?>((ref) => null);
+final tableToolAnnouncementProvider = StateProvider<TableToolAnnouncement?>(
+  (ref) => null,
+);
 
 /// Ephemeral private note from another player (not logged to the table).
 class PlayerWhisperAnnouncement {
@@ -195,12 +195,12 @@ class PlayerWhisperAnnouncement {
   }
 
   Map<String, dynamic> toPayload() => {
-        'id': id,
-        'from': fromPlayerId,
-        'fromName': fromUsername,
-        'to': toPlayerId,
-        'text': text,
-      };
+    'id': id,
+    'from': fromPlayerId,
+    'fromName': fromUsername,
+    'to': toPlayerId,
+    'text': text,
+  };
 }
 
 final playerWhisperAnnouncementProvider =

@@ -52,9 +52,10 @@ class PlayerSlot {
       username: username ?? this.username,
       commanderName: commanderName ?? this.commanderName,
       commanderImageUrl: commanderImageUrl ?? this.commanderImageUrl,
-      partnerCommanderName: identical(partnerCommanderName, _sentinelPartner)
-          ? this.partnerCommanderName
-          : partnerCommanderName as String?,
+      partnerCommanderName:
+          identical(partnerCommanderName, _sentinelPartner)
+              ? this.partnerCommanderName
+              : partnerCommanderName as String?,
       partnerCommanderImageUrl:
           identical(partnerCommanderImageUrl, _sentinelPartnerImg)
               ? this.partnerCommanderImageUrl
@@ -63,12 +64,14 @@ class PlayerSlot {
       playerColor: playerColor,
       isHost: isHost ?? this.isHost,
       isReady: isReady ?? this.isReady,
-      selectedDeckId: identical(selectedDeckId, _sentinelDeck)
-          ? this.selectedDeckId
-          : selectedDeckId as String?,
-      commanderColorIdentity: identical(commanderColorIdentity, _sentinelCi)
-          ? this.commanderColorIdentity
-          : List<String>.from(commanderColorIdentity as List<String>),
+      selectedDeckId:
+          identical(selectedDeckId, _sentinelDeck)
+              ? this.selectedDeckId
+              : selectedDeckId as String?,
+      commanderColorIdentity:
+          identical(commanderColorIdentity, _sentinelCi)
+              ? this.commanderColorIdentity
+              : List<String>.from(commanderColorIdentity as List<String>),
     );
   }
 
@@ -78,19 +81,19 @@ class PlayerSlot {
   static const Object _sentinelPartnerImg = Object();
 
   Map<String, dynamic> toJson() => {
-        'pid': playerId,
-        'username': username,
-        'commanderName': commanderName,
-        'commanderImageUrl': commanderImageUrl,
-        'partnerCommanderName': partnerCommanderName,
-        'partnerCommanderImageUrl': partnerCommanderImageUrl,
-        'hasPartner': hasPartner,
-        'colorValue': playerColor.toARGB32(),
-        'isHost': isHost,
-        'isReady': isReady,
-        'selectedDeckId': selectedDeckId,
-        'commanderColorIdentity': commanderColorIdentity,
-      };
+    'pid': playerId,
+    'username': username,
+    'commanderName': commanderName,
+    'commanderImageUrl': commanderImageUrl,
+    'partnerCommanderName': partnerCommanderName,
+    'partnerCommanderImageUrl': partnerCommanderImageUrl,
+    'hasPartner': hasPartner,
+    'colorValue': playerColor.toARGB32(),
+    'isHost': isHost,
+    'isReady': isReady,
+    'selectedDeckId': selectedDeckId,
+    'commanderColorIdentity': commanderColorIdentity,
+  };
 
   factory PlayerSlot.fromJson(Map<String, dynamic> json) {
     final ci = json['commanderColorIdentity'];

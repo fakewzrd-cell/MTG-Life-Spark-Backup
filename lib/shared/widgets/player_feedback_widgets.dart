@@ -62,9 +62,10 @@ class PlayerFeedbackRow extends StatelessWidget {
             tooltip: isLiked ? l10n.feedbackClearLike : l10n.feedbackLike,
             onPressed: onLike,
             style: IconButton.styleFrom(
-              backgroundColor: isLiked
-                  ? colors.success.withValues(alpha: OpacityTokens.soft)
-                  : Colors.transparent,
+              backgroundColor:
+                  isLiked
+                      ? colors.success.withValues(alpha: OpacityTokens.soft)
+                      : Colors.transparent,
               minimumSize: const Size(
                 LayoutTokens.minTapTarget,
                 LayoutTokens.minTapTarget,
@@ -81,9 +82,12 @@ class PlayerFeedbackRow extends StatelessWidget {
                 isDisliked ? l10n.feedbackClearDislike : l10n.feedbackDislike,
             onPressed: onDislike,
             style: IconButton.styleFrom(
-              backgroundColor: isDisliked
-                  ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
-                  : Colors.transparent,
+              backgroundColor:
+                  isDisliked
+                      ? colors.primaryAccent.withValues(
+                        alpha: OpacityTokens.soft,
+                      )
+                      : Colors.transparent,
               minimumSize: const Size(
                 LayoutTokens.minTapTarget,
                 LayoutTokens.minTapTarget,
@@ -142,15 +146,15 @@ class PlayerFeedbackVoteDropdown extends StatelessWidget {
             filled: true,
             fillColor: colors.backgroundSecondary,
             border: OutlineInputBorder(
-              borderRadius: RadiusTokens.radiusLg,
+              borderRadius: RadiusTokens.radiusXl,
               borderSide: BorderSide(color: colors.backgroundSecondary),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: RadiusTokens.radiusLg,
+              borderRadius: RadiusTokens.radiusXl,
               borderSide: BorderSide(color: colors.backgroundSecondary),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: RadiusTokens.radiusLg,
+              borderRadius: RadiusTokens.radiusXl,
               borderSide: BorderSide(color: colors.primaryAccent),
             ),
             contentPadding: EdgeInsets.symmetric(

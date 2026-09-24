@@ -1,12 +1,5 @@
 /// Official constructed / multiplayer formats for lobby and match configuration.
-enum GameFormat {
-  standard,
-  pioneer,
-  modern,
-  legacy,
-  vintage,
-  commander,
-}
+enum GameFormat { standard, pioneer, modern, legacy, vintage, commander }
 
 extension GameFormatDetails on GameFormat {
   String get displayName => switch (this) {
