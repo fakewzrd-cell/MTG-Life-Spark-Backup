@@ -43,6 +43,24 @@ cp android/keystore.properties.example android/keystore.properties
 
 Release builds read `android/keystore.properties`; the file is gitignored.
 
+### Android release optimization
+
+Release builds enable R8 code optimization, obfuscation, and resource shrinking.
+Flutter supplies the Android optimization defaults and plugin keep rules; keep
+`isMinifyEnabled` and `isShrinkResources` enabled in `android/app/build.gradle.kts`.
+
+Build a Play bundle with an unused version code (34 replaces the published 33):
+
+```bash
+flutter build appbundle --release --build-number=34
+```
+
+The bundle is written to `build/app/outputs/bundle/release/app-release.aab`.
+Before production rollout, test this optimized build through Play internal testing:
+launch the app, start a game, scan a QR code and join a LAN session, search for
+cards, play video, pick an image, and export/import a backup. Uploading a new
+bundle lets Google Play reassess the code optimization warning.
+
 ### Web / Vercel
 
 The repo includes `vercel.json` and `scripts/build_web_vercel.sh` for static web builds. LAN WebSocket hosting from a browser tab is limited by browser security — use mobile/desktop apps for hosting a session when possible.

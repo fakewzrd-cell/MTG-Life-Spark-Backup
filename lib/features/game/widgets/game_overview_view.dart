@@ -1009,26 +1009,13 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       margin: EdgeInsets.only(bottom: LayoutTokens.gr2),
       decoration: BoxDecoration(
-        gradient:
-            showAsActive
-                ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [borderColor.withValues(alpha: 0.24), colors.surface],
-                )
-                : null,
         color:
             p.isEliminated
                 ? colors.backgroundSecondary.withValues(
                   alpha: OpacityTokens.half,
                 )
-                : showAsActive
-                ? null
-                : isLocal
-                ? colors.surface.withValues(alpha: OpacityTokens.nearOpaque)
                 : colors.surface,
         borderRadius: RadiusTokens.radiusXl,
-        border: showAsActive ? Border.all(color: borderColor, width: 2) : null,
       ),
       child: ClipRRect(
         borderRadius: RadiusTokens.radiusXl,

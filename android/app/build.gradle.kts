@@ -55,8 +55,9 @@ android {
                 // Fallback for local release builds until keystore.properties is configured.
                 signingConfigs.getByName("debug")
             }
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Keep Flutter's R8 optimization and plugin keep rules enabled for Play releases.
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
 }

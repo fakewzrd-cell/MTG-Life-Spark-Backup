@@ -88,13 +88,31 @@ class _OverviewCommanderArtBackdropState
 
     return Positioned.fill(
       child: IgnorePointer(
-        child: Opacity(
-          opacity: widget.opacity,
-          child: CachedNetworkImage(
-            key: ValueKey(url),
-            imageUrl: url,
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: FractionallySizedBox(
+            widthFactor: 0.46,
+            heightFactor: 1,
+            child: ShaderMask(
+              blendMode: BlendMode.dstIn,
+              shaderCallback: (bounds) {
+                return const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Color(0x00000000), Color(0xFFFFFFFF)],
+                  stops: [0.0, 0.62],
+                ).createShader(bounds);
+              },
+              child: Opacity(
+                opacity: widget.opacity <= 0.25 ? 0.9 : widget.opacity,
+                child: CachedNetworkImage(
+                  key: ValueKey(url),
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.centerRight,
+                ),
+              ),
+            ),
           ),
         ),
       ),

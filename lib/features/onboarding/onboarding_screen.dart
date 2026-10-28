@@ -10,6 +10,8 @@ import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/widgets/block_system_app_exit.dart';
+import '../../shared/widgets/brand_logo.dart';
+import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/components/ui_button.dart';
@@ -28,19 +30,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<_OnboardingSlide> _slidesFor(AppLocalizations l10n) => [
     _OnboardingSlide(
-      icon: Icons.favorite,
+      frame: _OnboardingFrame.logo,
+      title: l10n.onboardingSlide1Title,
+      body: l10n.onboardingSlide1Body,
+    ),
+    _OnboardingSlide(
+      frame: _OnboardingFrame.life,
       title: l10n.onboardingSlide3Title,
       body: l10n.onboardingSlide3Body,
     ),
     _OnboardingSlide(
-      icon: Icons.qr_code_scanner_rounded,
+      frame: _OnboardingFrame.join,
       title: l10n.onboardingSlide2Title,
       body: l10n.onboardingSlide2Body,
-    ),
-    _OnboardingSlide(
-      icon: Icons.timer_outlined,
-      title: l10n.onboardingSlide4Title,
-      body: l10n.onboardingSlide4Body,
     ),
   ];
 
@@ -143,13 +145,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
+enum _OnboardingFrame { logo, life, join }
+
 class _OnboardingSlide {
-  final IconData icon;
+  final _OnboardingFrame frame;
   final String title;
   final String body;
 
   const _OnboardingSlide({
-    required this.icon,
+    required this.frame,
     required this.title,
     required this.body,
   });
@@ -175,35 +179,7 @@ class _SlideView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colors.primaryAccent.withValues(
-                        alpha: OpacityTokens.soft,
-                      ),
-                      colors.primaryAccent.withValues(
-                        alpha: OpacityTokens.faint,
-                      ),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primaryAccent.withValues(
-                        alpha: OpacityTokens.soft,
-                      ),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Icon(slide.icon, size: 52, color: colors.primaryAccent),
-              ),
+              _OnboardingFrameArt(frame: slide.frame),
               SizedBox(height: LayoutTokens.gr5),
               Text(
                 slide.title,
@@ -223,6 +199,85 @@ class _SlideView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _OnboardingFrameArt extends StatelessWidget {
+  const _OnboardingFrameArt({required this.frame});
+
+  final _OnboardingFrame frame;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (frame) {
+      _OnboardingFrame.logo => const BrandLogo(
+        layout: BrandLogoLayout.vertical,
+        height: 120,
+      ),
+      _OnboardingFrame.life => const _LifeFrame(),
+      _OnboardingFrame.join => const _JoinFrame(),
+    };
+  }
+}
+
+class _LifeFrame extends StatelessWidget {
+  const _LifeFrame();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    return Container(
+      width: 240,
+      height: 132,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: RadiusTokens.radiusXl,
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 56,
+            child: Icon(Icons.remove_rounded, color: colors.primaryAccent),
+          ),
+          Expanded(
+            child: Text(
+              '40',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: FontTokens.displayLife,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+                height: 1,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 56,
+            child: Icon(Icons.add_rounded, color: colors.primaryAccent),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JoinFrame extends StatelessWidget {
+  const _JoinFrame();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    return Container(
+      width: 148,
+      height: 148,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: RadiusTokens.radiusLg,
+        border: Border.all(color: colors.borderSubtle),
+      ),
+      child: Icon(Icons.qr_code_2_rounded, size: 88, color: colors.textPrimary),
     );
   }
 }

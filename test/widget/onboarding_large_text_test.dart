@@ -9,8 +9,9 @@ import '../support/test_l10n.dart';
 import '../support/test_settings_repository.dart';
 
 void main() {
-  testWidgets('onboarding body text is fully readable at 200% text scale',
-      (tester) async {
+  testWidgets('onboarding body text is fully readable at 200% text scale', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360 * 3, 640 * 3);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);
@@ -18,22 +19,28 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          settingsRepositoryProvider
-              .overrideWithValue(TestSettingsRepository()),
+          settingsRepositoryProvider.overrideWithValue(
+            TestSettingsRepository(),
+          ),
         ],
         child: MaterialApp(
           theme: AppTheme.dark(),
           localizationsDelegates: testLocalizationDelegates,
           supportedLocales: testSupportedLocales,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: const TextScaler.linear(2.0)),
-            child: child!,
-          ),
+          builder:
+              (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(2.0)),
+                child: child!,
+              ),
           home: const OnboardingScreen(),
         ),
       ),
     );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
 
     final bodyFinder = find.textContaining('Hold to change by 5');

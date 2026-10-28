@@ -78,7 +78,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(cardLookupSessionProvider.notifier).clear();
     final settings = ref.read(settingsRepositoryProvider).settings;
     _enteredWithHiddenSystemBars = settings.hideSystemBars;
     if (settings.keepDisplayAwake) {
@@ -93,6 +92,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       setState(() => _localInitTimedOut = true);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Clearing during initState updates a provider while the tree is building.
+      ref.read(cardLookupSessionProvider.notifier).clear();
       _listenForGameOver();
       _startShakeDetector();
       final lobby = ref.read(lobbyProvider);

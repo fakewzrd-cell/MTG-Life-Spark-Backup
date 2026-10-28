@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../ui/theme/app_color_tokens.dart';
 import '../../../ui/tokens/motion_tokens.dart';
-
-import 'package:flutter/services.dart';
 
 import '../../../core/game/commander_identity_colors.dart';
 import '../../../l10n/app_localizations.dart';
@@ -52,10 +52,12 @@ class LifeCounterWidget extends StatefulWidget {
 }
 
 class _LifeCounterWidgetState extends State<LifeCounterWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _deltaAnim;
   late Animation<double> _deltaFade;
   late Animation<Offset> _deltaSlide;
+  late AnimationController _pulse;
+  late Animation<double> _pulseScale;
 
   int? _lastDelta;
   Timer? _holdTimer;
@@ -84,11 +86,40 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
       begin: Offset.zero,
       end: const Offset(0, -1.5),
     ).animate(CurvedAnimation(parent: _deltaAnim, curve: holdThenMove));
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _pulseScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 1.06,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 40,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.06,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 60,
+      ),
+    ]).animate(_pulse);
+  }
+
+  @override
+  void didUpdateWidget(LifeCounterWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.isEliminated && oldWidget.life != widget.life) {
+      _pulse.forward(from: 0);
+    }
   }
 
   @override
   void dispose() {
     _deltaAnim.dispose();
+    _pulse.dispose();
     _holdTimer?.cancel();
     super.dispose();
   }
@@ -186,7 +217,17 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
   }
 
   Color _deltaColor(AppColorTokens colors) =>
-      (_lastDelta ?? 0) > 0 ? colors.success : colors.textSecondary;
+      (_lastDelta ?? 0) > 0 ? colors.success : colors.error;
+
+  TextStyle _lifeTextStyle(double size, Color color) =>
+      GoogleFonts.barlowCondensed(
+        fontSize: size,
+        fontWeight: FontWeight.w600,
+        color: color,
+        letterSpacing: -0.5,
+        height: 0.9,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
 
   // ── Build ──────────────────────────────────────────────────────────────
 
@@ -215,13 +256,23 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
             label: l10n.lifeA11yEliminatedAt('${widget.life}'),
             child: Center(
               child: ExcludeSemantics(
-                child: Text(
-                  '☠',
-                  style: TextStyle(
-                    fontSize: (hBody * 0.45).clamp(40.0, 96.0),
-                    fontWeight: FontWeight.w700,
-                    color: colors.textSecondary,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.person_off_rounded,
+                      size: (hBody * 0.28).clamp(36.0, 64.0),
+                      color: colors.textSecondary,
+                    ),
+                    SizedBox(height: LayoutTokens.gr1),
+                    Text(
+                      '${widget.life}',
+                      style: _lifeTextStyle(
+                        (hBody * 0.28).clamp(28.0, 56.0),
+                        colors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -266,22 +317,19 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
                           onHorizontalDragCancel: () => _wheelDragAccum = 0,
                           behavior: HitTestBehavior.translucent,
                           child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.center,
-                              child: Text(
-                                '${widget.life}',
-                                maxLines: 1,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: baseFontSize,
-                                  fontWeight: FontWeight.w700,
-                                  color: _lifeColor(colors),
-                                  letterSpacing: -1,
-                                  height: 1.0,
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures(),
-                                  ],
+                            child: ScaleTransition(
+                              scale: _pulseScale,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${widget.life}',
+                                  maxLines: 1,
+                                  textAlign: TextAlign.center,
+                                  style: _lifeTextStyle(
+                                    baseFontSize,
+                                    _lifeColor(colors),
+                                  ),
                                 ),
                               ),
                             ),
@@ -315,19 +363,16 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
                                 child: Transform.translate(
                                   offset: Offset(
                                     0,
-                                    -(baseFontSize / 2 +
-                                        deltaFontSize / 2 +
-                                        6),
+                                    -(baseFontSize / 2 + deltaFontSize / 2 + 6),
                                   ),
                                   child: Text(
                                     _lastDelta! > 0
                                         ? '+$_lastDelta'
                                         : '$_lastDelta',
-                                    style: TextStyle(
-                                      fontSize: deltaFontSize,
-                                      fontWeight: FontWeight.bold,
-                                      color: _deltaColor(colors),
-                                    ),
+                                    style: _lifeTextStyle(
+                                      deltaFontSize,
+                                      _deltaColor(colors),
+                                    ).copyWith(fontWeight: FontWeight.w700),
                                   ),
                                 ),
                               ),
@@ -349,7 +394,7 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
 }
 
 /// Flat ± step control — matches custom counter dial step rows (no circle).
-class _LifeEdgeStepStrip extends StatelessWidget {
+class _LifeEdgeStepStrip extends StatefulWidget {
   const _LifeEdgeStepStrip({
     required this.width,
     required this.icon,
@@ -369,21 +414,53 @@ class _LifeEdgeStepStrip extends StatelessWidget {
   final VoidCallback onLongPressCancel;
 
   @override
+  State<_LifeEdgeStepStrip> createState() => _LifeEdgeStepStripState();
+}
+
+class _LifeEdgeStepStripState extends State<_LifeEdgeStepStrip> {
+  var _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
     return SizedBox(
-      width: width,
+      width: widget.width,
       child: Semantics(
         button: true,
-        label: semanticsLabel,
+        label: widget.semanticsLabel,
         child: GestureDetector(
-          onTap: onTap,
-          onLongPressStart: (_) => onLongPressStart(),
-          onLongPressEnd: (_) => onLongPressEnd(),
-          onLongPressCancel: onLongPressCancel,
+          onTapDown: (_) => _setPressed(true),
+          onTapUp: (_) => _setPressed(false),
+          onTapCancel: () => _setPressed(false),
+          onTap: widget.onTap,
+          onLongPressStart: (_) {
+            _setPressed(true);
+            widget.onLongPressStart();
+          },
+          onLongPressEnd: (_) {
+            _setPressed(false);
+            widget.onLongPressEnd();
+          },
+          onLongPressCancel: () {
+            _setPressed(false);
+            widget.onLongPressCancel();
+          },
           behavior: HitTestBehavior.opaque,
-          child: Center(
-            child: Icon(icon, size: 28, color: colors.primaryAccent),
+          child: AnimatedContainer(
+            duration: MotionTokens.fast,
+            curve: Curves.easeOut,
+            color:
+                _pressed
+                    ? colors.primaryAccent.withValues(alpha: OpacityTokens.soft)
+                    : Colors.transparent,
+            child: Center(
+              child: Icon(widget.icon, size: 28, color: colors.primaryAccent),
+            ),
           ),
         ),
       ),

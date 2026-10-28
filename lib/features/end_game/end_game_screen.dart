@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../ui/theme/app_color_tokens.dart';
 import '../../core/network/session_providers.dart';
@@ -23,7 +22,6 @@ import '../../shared/widgets/block_system_app_exit.dart';
 import '../../shared/widgets/player_feedback_widgets.dart';
 import '../../ui/components/ui_button.dart';
 import '../../ui/tokens/layout_tokens.dart';
-import '../../ui/tokens/color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
@@ -141,6 +139,11 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
             ? game.playerById(game.winnerPlayerId!)
             : null;
     final isWinner = winner?.playerId == game.localPlayerId;
+    final profile = ref.read(profileRepositoryProvider).getProfile();
+    final (int, int)? xpProgress =
+        profile != null && (_result?.awardsProgression ?? false)
+            ? ref.read(profileRepositoryProvider).computeXpProgress(profile.xp)
+            : null;
 
     return BlockSystemAppExit(
       child: Scaffold(
@@ -210,58 +213,18 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
                       children: [
                         SizedBox(height: LayoutTokens.gr4),
 
-                        // ── Winner spotlight ──────────────────────────────────
-                        _WinnerBanner(
+                        _MatchPoster(
                           winner: winner,
                           isLocalWinner: isWinner,
                           noWinnerHeadline: _noWinnerHeadline(game, l10n),
+                          result: _result,
+                          xpInLevel: xpProgress?.$1,
+                          xpNeeded: xpProgress?.$2,
                         ),
 
                         SizedBox(height: LayoutTokens.gr4),
 
-                        // ── Level-up animation ─────────────────────────────────
-                        if (_result != null && _result!.leveledUp)
-                          _LevelUpCard(result: _result!),
-
-                        // ── XP earned (competitive matches only) ──────────────
-                        if (_result != null && _result!.awardsProgression)
-                          _XpCard(result: _result!, isWinner: isWinner),
-
-                        SizedBox(height: LayoutTokens.gr2),
-
-                        // ── Final standings ────────────────────────────────────
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: LayoutTokens.shellPageInset,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.endGameFinalStandings,
-                                style: TypographyTokens.sectionTitle(
-                                  colors.textSecondary,
-                                ).copyWith(
-                                  fontSize: FontTokens.label,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                              SizedBox(height: LayoutTokens.gr1),
-                              ...game.players.map(
-                                (p) => _FinalPlayerRow(
-                                  p: p,
-                                  isWinner: p.playerId == game.winnerPlayerId,
-                                  isLocal: p.playerId == game.localPlayerId,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(height: LayoutTokens.gr4),
-
-                        // ── Post-game feedback (like/dislike + star) ─
+                        // ── Post-game feedback sits under the poster ──────────
                         if (_result != null && _result!.matchId.isNotEmpty)
                           _FeedbackCard(
                             game: game,
@@ -305,6 +268,38 @@ class _EndGameScreenState extends ConsumerState<EndGameScreen> {
                                 (pid) => setState(() => _starPlayerId = pid),
                             onSubmit: () => _submitFeedback(game),
                           ),
+
+                        SizedBox(height: LayoutTokens.gr4),
+
+                        // ── Final standings ────────────────────────────────────
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: LayoutTokens.shellPageInset,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.endGameFinalStandings,
+                                style: TypographyTokens.sectionTitle(
+                                  colors.textSecondary,
+                                ).copyWith(
+                                  fontSize: FontTokens.label,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              SizedBox(height: LayoutTokens.gr1),
+                              ...game.players.map(
+                                (p) => _FinalPlayerRow(
+                                  p: p,
+                                  isWinner: p.playerId == game.winnerPlayerId,
+                                  isLocal: p.playerId == game.localPlayerId,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                         SizedBox(height: LayoutTokens.gr5),
 
@@ -352,189 +347,154 @@ String _noWinnerHeadline(GameState game, AppLocalizations l10n) {
   return l10n.endGameOverNoWinner;
 }
 
-// ── Winner Banner ────────────────────────────────────────────────────────────
+// ── Match poster ─────────────────────────────────────────────────────────────
 
-class _WinnerBanner extends StatelessWidget {
+class _MatchPoster extends StatelessWidget {
   final PlayerGameState? winner;
   final bool isLocalWinner;
   final String noWinnerHeadline;
+  final ProgressResult? result;
+  final int? xpInLevel;
+  final int? xpNeeded;
 
-  const _WinnerBanner({
+  const _MatchPoster({
     required this.winner,
     required this.isLocalWinner,
     required this.noWinnerHeadline,
+    required this.result,
+    required this.xpInLevel,
+    required this.xpNeeded,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    if (winner == null) {
-      return Padding(
-        padding: EdgeInsets.all(LayoutTokens.shellPageInset),
-        child: Text(
-          noWinnerHeadline,
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontSize: FontTokens.headline,
-            fontWeight: FontWeight.w700,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
+    final seat = winner;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: LayoutTokens.shellPageInset),
-      child: Column(
-        children: [
-          Text(
-            isLocalWinner ? l10n.endGameYouWin : l10n.endGameWinner,
-            style: TypographyTokens.headline(
-              context,
-            ).copyWith(color: colors.emphasis),
-          ),
-          SizedBox(height: LayoutTokens.gr3),
-
-          // Commander art
-          if (winner!.commanderImageUrl != null)
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: winner!.playerColor.withValues(alpha: 0.2),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: RadiusTokens.radiusXl,
+        ),
+        child: ClipRRect(
+          borderRadius: RadiusTokens.radiusXl,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PosterArt(
+                winner: seat,
+                fallback: colors.backgroundSecondary,
+                fade: colors.surface,
               ),
-              child: ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: winner!.commanderImageUrl!,
-                  fit: BoxFit.cover,
-                  errorWidget:
-                      (_, __, ___) => CircleAvatar(
-                        backgroundColor: winner!.playerColor,
-                        child: Text(
-                          winner!.username.isNotEmpty
-                              ? winner!.username[0].toUpperCase()
-                              : '?',
-                          style: TextStyle(
-                            color: ColorTokens.onColor(winner!.playerColor),
-                            fontSize: FontTokens.displayCommander,
-                            fontWeight: FontWeight.bold,
-                          ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  LayoutTokens.gr3,
+                  LayoutTokens.gr3,
+                  LayoutTokens.gr3,
+                  LayoutTokens.gr4,
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      seat == null
+                          ? noWinnerHeadline
+                          : (isLocalWinner
+                              ? l10n.endGameYouWin
+                              : l10n.endGameWinner),
+                      textAlign: TextAlign.center,
+                      style: TypographyTokens.headline(context).copyWith(
+                        color:
+                            seat == null ? colors.textPrimary : colors.emphasis,
+                      ),
+                    ),
+                    if (seat != null) ...[
+                      SizedBox(height: LayoutTokens.gr1),
+                      Text(
+                        seat.username,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: seat.playerColor,
+                          fontSize: FontTokens.headline,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                      if (seat.commanderName != null)
+                        Text(
+                          seat.commanderName!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: colors.textSecondary,
+                            fontSize: FontTokens.hudSm,
+                          ),
+                        ),
+                    ],
+                    if (result != null &&
+                        result!.awardsProgression &&
+                        xpInLevel != null &&
+                        xpNeeded != null &&
+                        xpNeeded! > 0) ...[
+                      SizedBox(height: LayoutTokens.gr3),
+                      _RankBar(
+                        result: result!,
+                        xpInLevel: xpInLevel!,
+                        xpNeeded: xpNeeded!,
+                        isWinner: isLocalWinner,
+                      ),
+                    ],
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PosterArt extends StatelessWidget {
+  const _PosterArt({
+    required this.winner,
+    required this.fallback,
+    required this.fade,
+  });
+
+  final PlayerGameState? winner;
+  final Color fallback;
+  final Color fade;
+
+  @override
+  Widget build(BuildContext context) {
+    final seat = winner;
+    final url = seat?.commanderImageUrl;
+    final hasArt = url != null && url.isNotEmpty;
+
+    return SizedBox(
+      height: 220,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (hasArt)
+            CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              errorWidget: (_, __, ___) => ColoredBox(color: fallback),
             )
           else
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: winner!.playerColor,
-              child: Text(
-                winner!.username.isNotEmpty
-                    ? winner!.username[0].toUpperCase()
-                    : '?',
-                style: TextStyle(
-                  color: ColorTokens.onColor(winner!.playerColor),
-                  fontSize: FontTokens.displayCommander,
-                  fontWeight: FontWeight.bold,
-                ),
+            ColoredBox(color: seat?.playerColor ?? fallback),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [fade.withValues(alpha: 0), fade],
+                stops: const [0.42, 1],
               ),
             ),
-
-          SizedBox(height: LayoutTokens.gr2),
-          Text(
-            winner!.username,
-            style: TextStyle(
-              color: winner!.playerColor,
-              fontSize: FontTokens.headline,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          if (winner!.commanderName != null)
-            Text(
-              winner!.commanderName!,
-              style: TextStyle(
-                color: colors.textSecondary,
-                fontSize: FontTokens.hudSm,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Level Up Card ─────────────────────────────────────────────────────────────
-
-class _LevelUpCard extends StatelessWidget {
-  final ProgressResult result;
-
-  const _LevelUpCard({required this.result});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
-    final l10n = AppLocalizations.of(context);
-    final oldRank = wizardRankTitle(l10n, result.oldLevel);
-    final newRank = wizardRankTitle(l10n, result.newLevel);
-    return Container(
-      margin: EdgeInsets.fromLTRB(
-        LayoutTokens.shellPageInset,
-        LayoutTokens.gr1,
-        LayoutTokens.shellPageInset,
-        0,
-      ),
-      padding: EdgeInsets.all(LayoutTokens.gr3),
-      decoration: BoxDecoration(
-        color: colors.emphasis.withValues(alpha: OpacityTokens.subtle),
-        borderRadius: RadiusTokens.radiusXl,
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 64,
-            height: 64,
-            child: Lottie.asset(
-              'assets/animations/level_up.json',
-              repeat: false,
-              errorBuilder:
-                  (_, __, ___) => Icon(
-                    Icons.arrow_upward,
-                    size: 48,
-                    color: colors.emphasis,
-                  ),
-            ),
-          ),
-          SizedBox(width: LayoutTokens.gr3),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.endGameRankUp,
-                style: TextStyle(
-                  color: colors.emphasis,
-                  fontSize: FontTokens.bodyLg,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              Text(
-                l10n.endGameRankTransition(result.oldLevel, result.newLevel),
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: FontTokens.sm,
-                ),
-              ),
-              if (oldRank != newRank)
-                Text(
-                  '$oldRank → $newRank',
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: FontTokens.sm,
-                  ),
-                ),
-            ],
           ),
         ],
       ),
@@ -542,61 +502,34 @@ class _LevelUpCard extends StatelessWidget {
   }
 }
 
-// ── XP Card ──────────────────────────────────────────────────────────────────
+class _RankBar extends StatelessWidget {
+  const _RankBar({
+    required this.result,
+    required this.xpInLevel,
+    required this.xpNeeded,
+    required this.isWinner,
+  });
 
-class _XpCard extends StatelessWidget {
   final ProgressResult result;
+  final int xpInLevel;
+  final int xpNeeded;
   final bool isWinner;
 
-  const _XpCard({required this.result, required this.isWinner});
-
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    return Container(
-      margin: EdgeInsets.fromLTRB(
-        LayoutTokens.shellPageInset,
-        LayoutTokens.gr1,
-        LayoutTokens.shellPageInset,
-        0,
-      ),
-      padding: EdgeInsets.all(LayoutTokens.gr3),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: RadiusTokens.radiusXl,
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.star, color: colors.emphasis, size: 24),
-          SizedBox(width: LayoutTokens.gr2),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.endGameXpGained(result.xpGained),
-                style: TextStyle(
-                  color: colors.emphasis,
-                  fontSize: FontTokens.bodyLg,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                isWinner
-                    ? l10n.endGameWinBonusIncluded
-                    : l10n.endGameParticipationXp,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: FontTokens.hudXs,
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
+    final fraction = (xpInLevel / xpNeeded).clamp(0.0, 1.0);
+    final rank = wizardRankTitle(l10n, result.newLevel);
+    final oldRank = wizardRankTitle(l10n, result.oldLevel);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
                 l10n.endGameRankLevel(result.newLevel),
                 style: TextStyle(
                   color: colors.textPrimary,
@@ -604,18 +537,60 @@ class _XpCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
-                wizardRankTitle(l10n, result.newLevel),
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: FontTokens.hudXs,
-                  fontWeight: FontWeight.w500,
-                ),
+            ),
+            Text(
+              rank,
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: FontTokens.hudXs,
+                fontWeight: FontWeight.w600,
               ),
-            ],
+            ),
+          ],
+        ),
+        SizedBox(height: LayoutTokens.gr1),
+        ClipRRect(
+          borderRadius: RadiusTokens.radiusPill,
+          child: LinearProgressIndicator(
+            value: fraction,
+            minHeight: 8,
+            backgroundColor: colors.backgroundSecondary,
+            color: colors.emphasis,
+          ),
+        ),
+        SizedBox(height: LayoutTokens.gr1),
+        Text(
+          l10n.endGameXpGained(result.xpGained),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: colors.emphasis,
+            fontSize: FontTokens.hudSm,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          isWinner ? l10n.endGameWinBonusIncluded : l10n.endGameParticipationXp,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontSize: FontTokens.hudXs,
+          ),
+        ),
+        if (result.leveledUp) ...[
+          SizedBox(height: LayoutTokens.gr1),
+          Text(
+            oldRank == rank
+                ? l10n.endGameRankTransition(result.oldLevel, result.newLevel)
+                : '$oldRank → $rank',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: FontTokens.hudSm,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
-      ),
+      ],
     );
   }
 }
