@@ -10,6 +10,9 @@ class ScryfallCard {
   final String? id;
   final String name;
   final String? imageUrl; // null = offline / not found
+
+  /// Full card face (`normal`), distinct from the art crop in [imageUrl].
+  final String? cardFaceUrl;
   final String? oracleText;
 
   /// Scryfall `mana_cost`, e.g. `{2}{W}{U}`; may be null on some card layouts.
@@ -22,15 +25,24 @@ class ScryfallCard {
   /// Scryfall `color_identity`: subset of `W`,`U`,`B`,`R`,`G` (empty = colorless).
   final List<String> colorIdentity;
 
+  /// Scryfall `produced_mana`: colors this card can add (`W`,`U`,`B`,`R`,`G`,`C`).
+  final List<String> producedMana;
+
+  /// Names of tokens listed on this card (`all_parts` where component is token).
+  final List<String> tokenNames;
+
   const ScryfallCard({
     this.id,
     required this.name,
     this.imageUrl,
+    this.cardFaceUrl,
     this.oracleText,
     this.manaCost,
     this.typeLine,
     this.isPartner = false,
     this.colorIdentity = const [],
+    this.producedMana = const [],
+    this.tokenNames = const [],
   });
 
   /// Local placeholder path when the network is unavailable.
@@ -215,6 +227,56 @@ class ScryfallService {
     }
   }
 
+  /// Exact-name lookup for a deck list. Scryfall accepts 75 names per request.
+  ///
+  /// Cards that are not found are omitted. A failed request returns the cards
+  /// collected so far so a partial album can still render.
+  Future<List<ScryfallCard>> fetchCardsByNames(List<String> names) async {
+    final unique = <String>[];
+    final seen = <String>{};
+    for (final raw in names) {
+      final name = raw.trim();
+      final key = name.toLowerCase();
+      if (name.isEmpty || !seen.add(key)) continue;
+      unique.add(name);
+    }
+    if (unique.isEmpty) return const [];
+
+    final found = <ScryfallCard>[];
+    const batchSize = 75;
+    for (var start = 0; start < unique.length; start += batchSize) {
+      if (start > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      final end =
+          start + batchSize > unique.length ? unique.length : start + batchSize;
+      final chunk = unique.sublist(start, end);
+      try {
+        final uri = Uri.parse('$_base/cards/collection');
+        final response = await _client
+            .post(
+              uri,
+              headers: {..._headers, 'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'identifiers': [
+                  for (final name in chunk) {'name': name},
+                ],
+              }),
+            )
+            .timeout(const Duration(seconds: 20));
+        if (response.statusCode != 200) continue;
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = json['data'] as List<dynamic>? ?? [];
+        for (final raw in data) {
+          if (raw is Map<String, dynamic>) found.add(_parseCard(raw));
+        }
+      } catch (e, st) {
+        appLog('Scryfall collection fetch failed', error: e, stackTrace: st);
+      }
+    }
+    return found;
+  }
+
   /// Official Wizards / Scryfall rulings for a card UUID from [ScryfallCard.id].
   ///
   /// Empty list: the card has no rulings, or [cardId] is missing.
@@ -248,6 +310,15 @@ class ScryfallService {
     }
   }
 
+  static String? _imageUri(Map<String, dynamic>? uris, List<String> keys) {
+    if (uris == null) return null;
+    for (final key in keys) {
+      final value = uris[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
   // ── Parsing ───────────────────────────────────────────────────────────────
 
   ScryfallCard _parseCard(Map<String, dynamic> card) {
@@ -255,20 +326,23 @@ class ScryfallService {
     final name = card['name'] as String? ?? '';
 
     // Double-faced cards store images in card_faces[].
-    String? imageUrl;
     final imageUris = card['image_uris'] as Map<String, dynamic>?;
-    if (imageUris != null) {
-      imageUrl = (imageUris['art_crop'] ?? imageUris['normal']) as String?;
-    } else {
-      final faces = card['card_faces'] as List<dynamic>?;
-      if (faces != null && faces.isNotEmpty) {
-        final faceUris =
-            (faces[0] as Map<String, dynamic>)['image_uris']
-                as Map<String, dynamic>?;
-        imageUrl =
-            faceUris?['art_crop'] as String? ?? faceUris?['normal'] as String?;
-      }
+    Map<String, dynamic>? faceUris;
+    final earlyFaces = card['card_faces'] as List<dynamic>?;
+    if (imageUris == null && earlyFaces != null && earlyFaces.isNotEmpty) {
+      faceUris =
+          (earlyFaces[0] as Map<String, dynamic>)['image_uris']
+              as Map<String, dynamic>?;
     }
+    final uris = imageUris ?? faceUris;
+    final imageUrl = _imageUri(uris, const ['art_crop', 'normal']);
+    final cardFaceUrl = _imageUri(uris, const [
+      'normal',
+      'large',
+      'png',
+      'border_crop',
+      'art_crop',
+    ]);
 
     final faces = card['card_faces'] as List<dynamic>?;
     final firstFace =
@@ -303,15 +377,41 @@ class ScryfallService {
                 .toList()
             : <String>[];
 
+    final producedRaw = card['produced_mana'];
+    final producedMana =
+        producedRaw is List
+            ? producedRaw.map((e) => e.toString()).toList()
+            : <String>[];
+
+    final tokenNames = <String>[];
+    final parts = card['all_parts'];
+    if (parts is List) {
+      final seenTokens = <String>{};
+      for (final part in parts) {
+        if (part is! Map) continue;
+        if (part['component'] != 'token') continue;
+        final tokenName = part['name'] as String?;
+        if (tokenName == null ||
+            tokenName.isEmpty ||
+            !seenTokens.add(tokenName)) {
+          continue;
+        }
+        tokenNames.add(tokenName);
+      }
+    }
+
     return ScryfallCard(
       id: id,
       name: name,
       imageUrl: imageUrl,
+      cardFaceUrl: cardFaceUrl,
       oracleText: oracleText,
       manaCost: manaCost,
       typeLine: typeLine,
       isPartner: isPartner,
       colorIdentity: colorIdentity,
+      producedMana: producedMana,
+      tokenNames: tokenNames,
     );
   }
 }

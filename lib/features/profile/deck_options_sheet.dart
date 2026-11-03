@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,16 +5,15 @@ import '../../core/game/game_format.dart';
 import '../../core/models/player_deck.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/deck_style_l10n.dart';
-import '../../shared/widgets/deck_tile_visual.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
-import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 
-/// Actions available from the deck detail / options sheet.
+/// Actions in the deck options sheet.
 enum DeckSheetAction {
-  togglePin,
+  pasteList,
+  copyList,
   changeFormat,
   changeStyle,
   editCover,
@@ -24,7 +22,7 @@ enum DeckSheetAction {
   delete,
 }
 
-/// Detail + actions sheet when tapping a deck in [DecksManageScreen].
+/// Options for one deck. The deck page and the library both open this.
 Future<DeckSheetAction?> showDeckDetailSheet(
   BuildContext context,
   PlayerDeck deck,
@@ -64,23 +62,6 @@ Future<bool> showDeleteDeckConfirm(
   return ok == true;
 }
 
-String _deckDetailSubtitle(AppLocalizations l10n, PlayerDeck deck) {
-  final parts = <String>[
-    deck.gameFormat.displayName,
-    deck.hasDeckStyle
-        ? localizedDeckStyleName(l10n, deck.deckStyle!)
-        : l10n.deckOptionsStyleNotSet,
-  ];
-  if (deck.commanderName.isNotEmpty) {
-    parts.add(
-      deck.hasPartner
-          ? '${deck.commanderName} // ${deck.partnerCommanderName}'
-          : deck.commanderName,
-    );
-  }
-  return parts.join(' · ');
-}
-
 class _DeckDetailSheet extends StatelessWidget {
   const _DeckDetailSheet({required this.deck});
 
@@ -99,7 +80,6 @@ class _DeckDetailSheet extends StatelessWidget {
         deck.isCommanderDeck
             ? l10n.deckOptionsEditCommanders
             : l10n.deckOptionsEditCover;
-    final wr = deck.gamesPlayed == 0 ? null : (deck.winRate * 100).round();
 
     return GameSheetBody(
       // Scroll when the action list exceeds short viewports. Dismiss stays on
@@ -109,64 +89,17 @@ class _DeckDetailSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GameSheetHeader(
-              title: deck.displayName,
-              subtitle: _deckDetailSubtitle(l10n, deck),
-              showHandle: false,
-            ),
-            SizedBox(height: LayoutTokens.gr3),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _DeckDetailCoverThumb(deck: deck, colors: colors),
-                SizedBox(width: LayoutTokens.gr3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        wr == null
-                            ? l10n.deckOptionsNoGamesYet
-                            : l10n.deckOptionsWinRate('$wr'),
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: FontTokens.body,
-                        ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr0),
-                      Text(
-                        l10n.statsRecordFooter(
-                          deck.wins,
-                          deck.losses,
-                          deck.gamesPlayed,
-                        ),
-                        style: TextStyle(
-                          color: colors.textSecondary,
-                          fontSize: FontTokens.sm,
-                        ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr2),
-                      DeckWinLossRatioBar(
-                        deck: deck,
-                        colors: colors,
-                        height: 8,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: LayoutTokens.gr3),
             _DeckOptionTile(
               colors: colors,
-              icon:
-                  deck.isPinned
-                      ? Icons.push_pin_rounded
-                      : Icons.push_pin_outlined,
-              title:
-                  deck.isPinned ? l10n.deckOptionsUnpin : l10n.deckOptionsPin,
-              onTap: () => _pick(context, DeckSheetAction.togglePin),
+              icon: Icons.content_paste_outlined,
+              title: l10n.deckAlbumPaste,
+              onTap: () => _pick(context, DeckSheetAction.pasteList),
+            ),
+            _DeckOptionTile(
+              colors: colors,
+              icon: Icons.copy_outlined,
+              title: l10n.deckAlbumExport,
+              onTap: () => _pick(context, DeckSheetAction.copyList),
             ),
             _DeckOptionTile(
               colors: colors,
@@ -223,46 +156,6 @@ class _DeckDetailSheet extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DeckDetailCoverThumb extends StatelessWidget {
-  const _DeckDetailCoverThumb({required this.deck, required this.colors});
-
-  final PlayerDeck deck;
-  final AppColorTokens colors;
-
-  @override
-  Widget build(BuildContext context) {
-    final url = deck.commanderImageUrl;
-    return ClipRRect(
-      borderRadius: RadiusTokens.radiusXl,
-      child: SizedBox(
-        width: 56,
-        height: 78,
-        child:
-            url != null && url.isNotEmpty
-                ? CachedNetworkImage(
-                  imageUrl: url,
-                  fit: BoxFit.cover,
-                  errorWidget:
-                      (_, __, ___) => ColoredBox(
-                        color: colors.surface,
-                        child: Icon(
-                          Icons.style_outlined,
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                )
-                : ColoredBox(
-                  color: colors.surface,
-                  child: Icon(
-                    Icons.style_outlined,
-                    color: colors.textSecondary,
-                  ),
-                ),
       ),
     );
   }

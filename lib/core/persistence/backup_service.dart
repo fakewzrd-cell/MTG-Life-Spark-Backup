@@ -7,8 +7,13 @@ import 'package:intl/intl.dart';
 
 import '../../shared/utils/profile_avatar_storage.dart';
 import '../debug/app_log.dart';
+import '../models/collection_entry.dart';
+import '../models/owned_album.dart';
+import '../models/deck_card_entry.dart';
 import '../models/player_identity.dart';
 import 'backup_codec.dart';
+import 'collection_repository.dart';
+import 'deck_list_repository.dart';
 import 'deck_repository.dart';
 import 'feedback_repository.dart';
 import 'match_repository.dart';
@@ -23,17 +28,38 @@ class BackupService {
     required DeckRepository deckRepo,
     required MatchRepository matchRepo,
     required FeedbackRepository feedbackRepo,
+    DeckListRepository? deckListRepo,
+    CollectionRepository? collectionRepo,
   }) : _profileRepo = profileRepo,
        _settingsRepo = settingsRepo,
        _deckRepo = deckRepo,
        _matchRepo = matchRepo,
-       _feedbackRepo = feedbackRepo;
+       _feedbackRepo = feedbackRepo,
+       _deckListRepo = deckListRepo ?? DeckListRepository(),
+       _collectionRepo = collectionRepo ?? CollectionRepository();
 
   final ProfileRepository _profileRepo;
   final SettingsRepository _settingsRepo;
   final DeckRepository _deckRepo;
   final MatchRepository _matchRepo;
   final FeedbackRepository _feedbackRepo;
+  final DeckListRepository _deckListRepo;
+  final CollectionRepository _collectionRepo;
+
+  Future<List<DeckCardEntry>> _deckEntries() async {
+    await _deckListRepo.init();
+    return _deckListRepo.getAll();
+  }
+
+  Future<List<CollectionEntry>> _collectionEntries() async {
+    await _collectionRepo.init();
+    return _collectionRepo.getAll();
+  }
+
+  Future<List<OwnedAlbum>> _ownedAlbums() async {
+    await _collectionRepo.init();
+    return _collectionRepo.getAlbums();
+  }
 
   static const _backupExtensions = <String>['lifespark', 'json'];
   static const _backupMimes = <String>[
@@ -64,6 +90,9 @@ class BackupService {
       commanderStats: _profileRepo.getAllCommanderStats(),
       matches: _matchRepo.snapshotAll(),
       feedbackByKey: _feedbackRepo.snapshotRaw(),
+      deckEntries: await _deckEntries(),
+      collectionEntries: await _collectionEntries(),
+      ownedAlbums: await _ownedAlbums(),
       profileAvatarImageBase64: avatarBytes?.base64,
       profileAvatarImageMime: avatarBytes?.mime,
     );
@@ -96,6 +125,9 @@ class BackupService {
     await _deckRepo.replaceAll(backup.decks);
     await _matchRepo.replaceAll(backup.matches);
     await _feedbackRepo.replaceRaw(backup.feedbackByKey);
+    await _deckListRepo.replaceAll(backup.deckEntries);
+    await _collectionRepo.replaceAll(backup.collectionEntries);
+    await _collectionRepo.replaceAlbums(backup.ownedAlbums);
   }
 
   /// Materialize embedded avatar bytes / clear stale local paths before commit.
@@ -120,6 +152,9 @@ class BackupService {
         commanderStats: prepared.commanderStats,
         matches: prepared.matches,
         feedbackByKey: prepared.feedbackByKey,
+        deckEntries: prepared.deckEntries,
+        collectionEntries: prepared.collectionEntries,
+        ownedAlbums: prepared.ownedAlbums,
         profileAvatarImageBase64: prepared.profileAvatarImageBase64,
         profileAvatarImageMime: prepared.profileAvatarImageMime,
       );

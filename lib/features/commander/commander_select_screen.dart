@@ -8,9 +8,12 @@ import '../../ui/tokens/motion_tokens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/deck/bracket_names.dart';
+import '../../core/deck/commander_list_move.dart';
 import '../../core/game/game_format.dart';
 import '../../core/game/lobby_state.dart';
 import '../../core/game/scryfall_service.dart';
+import '../../core/models/deck_card_entry.dart';
 import '../../core/models/player_deck.dart';
 import '../../core/persistence/providers.dart';
 import '../../l10n/app_localizations.dart';
@@ -73,6 +76,7 @@ class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
   ScryfallCard? _partner;
   bool _pickingPartner = false; // true when user is selecting the 2nd card
   var _seededFromLobby = false;
+  List<ScryfallCard> _deckCommanders = const [];
 
   /// Dual-commander UI is available for commander-style picks; partner is optional.
   bool get _offersPartnerSlot => _isCommanderPick;
@@ -96,8 +100,56 @@ class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
   void initState() {
     super.initState();
     if (widget.editDeckId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadEditDeck());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadEditDeck();
+        _loadDeckCommanders();
+      });
     }
+  }
+
+  Future<void> _loadDeckCommanders() async {
+    final deckId = widget.editDeckId;
+    if (deckId == null || !_isCommanderPick) return;
+    final listRepo = ref.read(deckListRepositoryProvider);
+    await listRepo.init();
+    final names = [
+      for (final entry in listRepo.entriesFor(deckId))
+        if (entry.deckBoard == DeckBoard.main) entry.name,
+    ];
+    if (!mounted || names.isEmpty) return;
+    final fetched = await ref
+        .read(scryfallServiceProvider)
+        .fetchCardsByNames(names);
+    if (!mounted) return;
+    final cards = [
+      for (final card in fetched)
+        if (_canLead(card) || card.isPartner) card,
+    ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    setState(() => _deckCommanders = cards);
+  }
+
+  bool _canLead(ScryfallCard card) {
+    final type = card.typeLine?.toLowerCase() ?? '';
+    final oracle = card.oracleText?.toLowerCase() ?? '';
+    if (oracle.contains("can't be your commander") ||
+        oracle.contains('cannot be your commander')) {
+      return false;
+    }
+    final legendaryCreature =
+        type.contains('legendary') && type.contains('creature');
+    return legendaryCreature || oracle.contains('can be your commander');
+  }
+
+  List<ScryfallCard> get _inDeckChoices {
+    if (!_isCommanderPick) return const [];
+    final blocked = _pickingPartner ? _primary?.name : null;
+    final blockedKey = blocked == null ? '' : bracketNameKey(blocked);
+    return [
+      for (final card in _deckCommanders)
+        if (_pickingPartner ? card.isPartner : _canLead(card))
+          if (blockedKey.isEmpty || bracketNameKey(card.name) != blockedKey)
+            card,
+    ];
   }
 
   void _loadEditDeck() {
@@ -264,6 +316,27 @@ class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
         _primary!,
         usePartner ? _partner : null,
       );
+      if (_isCommanderPick) {
+        final move = planCommanderListMove(
+          oldCommander: deck.commanderName,
+          oldPartner: deck.partnerCommanderName,
+          newCommander: _primary!.name,
+          newPartner: usePartner ? _partner?.name : null,
+        );
+        final listRepo = ref.read(deckListRepositoryProvider);
+        await listRepo.init();
+        for (final name in move.removeFromMain) {
+          await listRepo.changeCount(
+            deck.id,
+            name,
+            board: DeckBoard.main,
+            delta: -1,
+          );
+        }
+        for (final name in move.addToMain) {
+          await listRepo.addOneToMain(deck.id, name);
+        }
+      }
       deck.commanderName = _primary!.name;
       deck.commanderImageUrl = _primary!.imageUrl;
       deck.commanderManaCost = _hiveManaCost(_primary!.manaCost);
@@ -360,6 +433,12 @@ class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
                     fontSize: FontTokens.sm,
                   ),
                 ),
+              ),
+            if (_inDeckChoices.isNotEmpty)
+              _InDeckStrip(
+                cards: _inDeckChoices,
+                selectedName: _pickingPartner ? _partner?.name : _primary?.name,
+                onTap: _onCardTap,
               ),
 
             // Search bar
@@ -484,6 +563,105 @@ class _CommanderSelectScreenState extends ConsumerState<CommanderSelectScreen> {
           onTap: () => _onCardTap(card),
         );
       },
+    );
+  }
+}
+
+class _InDeckStrip extends StatelessWidget {
+  const _InDeckStrip({
+    required this.cards,
+    required this.selectedName,
+    required this.onTap,
+  });
+
+  final List<ScryfallCard> cards;
+  final String? selectedName;
+  final ValueChanged<ScryfallCard> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    final l10n = AppLocalizations.of(context);
+    final selectedKey =
+        selectedName == null ? '' : bracketNameKey(selectedName!);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        LayoutTokens.gr3,
+        LayoutTokens.gr2,
+        0,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.commanderSelectInDeck,
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: FontTokens.caption,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: LayoutTokens.gr1),
+          SizedBox(
+            height: 128,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(right: LayoutTokens.gr3),
+              itemCount: cards.length,
+              separatorBuilder: (_, __) => SizedBox(width: LayoutTokens.gr2),
+              itemBuilder: (context, index) {
+                final card = cards[index];
+                final selected = bracketNameKey(card.name) == selectedKey;
+                final image = card.cardFaceUrl ?? card.imageUrl;
+                return GestureDetector(
+                  onTap: () => onTap(card),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(RadiusTokens.md),
+                      border: Border.all(
+                        color:
+                            selected
+                                ? colors.primaryAccent
+                                : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(RadiusTokens.md - 2),
+                      child: SizedBox(
+                        width: 92,
+                        height: 128,
+                        child:
+                            image == null || image.isEmpty
+                                ? ColoredBox(
+                                  color: colors.surface,
+                                  child: Icon(
+                                    Icons.style,
+                                    color: colors.textSecondary,
+                                  ),
+                                )
+                                : CachedNetworkImage(
+                                  imageUrl: image,
+                                  fit: BoxFit.cover,
+                                  errorWidget:
+                                      (_, __, ___) => ColoredBox(
+                                        color: colors.surface,
+                                        child: Icon(
+                                          Icons.style,
+                                          color: colors.textSecondary,
+                                        ),
+                                      ),
+                                ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

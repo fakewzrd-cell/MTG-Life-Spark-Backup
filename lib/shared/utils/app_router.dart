@@ -11,6 +11,8 @@ import '../../features/profile/welcome_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/profile/profile_picture_picker_screen.dart';
+import '../../features/profile/collection_album_screen.dart';
+import '../../features/profile/deck_album_screen.dart';
 import '../../features/profile/decks_manage_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/feedback/feedback_screen.dart';
@@ -162,6 +164,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.decks,
                 builder: (context, state) => const DecksManageScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'collection',
+                    builder: (context, state) => const CollectionAlbumScreen(),
+                  ),
+                  GoRoute(
+                    path: ':deckId',
+                    builder:
+                        (context, state) => DeckAlbumScreen(
+                          deckId: state.pathParameters['deckId'] ?? '',
+                        ),
+                  ),
+                ],
               ),
             ],
           ),

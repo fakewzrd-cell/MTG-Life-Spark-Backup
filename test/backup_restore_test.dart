@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mgt_life_spark/core/models/app_settings.dart';
+import 'package:mgt_life_spark/core/models/collection_entry.dart';
+import 'package:mgt_life_spark/core/models/deck_card_entry.dart';
 import 'package:mgt_life_spark/core/models/commander_stats.dart';
 import 'package:mgt_life_spark/core/models/game_feedback.dart';
 import 'package:mgt_life_spark/core/models/match_record.dart';
@@ -43,6 +45,12 @@ void main() {
     }
     if (!Hive.isAdapterRegistered(6)) {
       Hive.registerAdapter(PlayerDeckAdapter());
+    }
+    if (!Hive.isAdapterRegistered(7)) {
+      Hive.registerAdapter(DeckCardEntryAdapter());
+    }
+    if (!Hive.isAdapterRegistered(8)) {
+      Hive.registerAdapter(CollectionEntryAdapter());
     }
   });
 
@@ -144,82 +152,86 @@ void main() {
     );
   }
 
-  test('export then restore retains games, sparks, and behaviour source',
-      () async {
-    await seedFullProfile();
+  test(
+    'export then restore retains games, sparks, and behaviour source',
+    () async {
+      await seedFullProfile();
 
-    final exported = await backupService.buildBackup();
-    expect(exported.version, kLifeSparkBackupVersion);
-    expect(exported.matches, hasLength(1));
-    expect(exported.feedbackByKey, isNotEmpty);
-    expect(exported.profile.honorsStarReceived, 3);
-    expect(exported.profile.likesReceived, 4);
+      final exported = await backupService.buildBackup();
+      expect(exported.version, kLifeSparkBackupVersion);
+      expect(exported.matches, hasLength(1));
+      expect(exported.feedbackByKey, isNotEmpty);
+      expect(exported.profile.honorsStarReceived, 3);
+      expect(exported.profile.likesReceived, 4);
 
-    // Simulate a different phone state before restore.
-    await matchRepo.clearAll();
-    await feedbackRepo.clearAll();
-    await profileRepo.saveProfile(
-      PlayerProfile(
-        username: 'Other',
-        playerId: 'pid-other',
-        likesReceived: 0,
-        dislikesReceived: 0,
-        honorsStarReceived: 0,
-      ),
-    );
-    await deckRepo.replaceAll(const []);
-    expect(matchRepo.getAllMatches(), isEmpty);
-    expect(feedbackRepo.allFeedback(), isEmpty);
+      // Simulate a different phone state before restore.
+      await matchRepo.clearAll();
+      await feedbackRepo.clearAll();
+      await profileRepo.saveProfile(
+        PlayerProfile(
+          username: 'Other',
+          playerId: 'pid-other',
+          likesReceived: 0,
+          dislikesReceived: 0,
+          honorsStarReceived: 0,
+        ),
+      );
+      await deckRepo.replaceAll(const []);
+      expect(matchRepo.getAllMatches(), isEmpty);
+      expect(feedbackRepo.allFeedback(), isEmpty);
 
-    final restored = await backupService.restoreBackup(exported);
+      final restored = await backupService.restoreBackup(exported);
 
-    expect(restored.profile.username, 'Federick');
-    expect(restored.profile.playerId, 'pid-local');
-    expect(profileRepo.getProfile()!.honorsStarReceived, 3);
-    expect(profileRepo.getProfile()!.likesReceived, 4);
-    expect(profileRepo.getProfile()!.dislikesReceived, 1);
-    expect(matchRepo.getAllMatches().map((m) => m.matchId), ['match-keep']);
-    expect(deckRepo.getAll().single.id, 'deck-1');
+      expect(restored.profile.username, 'Federick');
+      expect(restored.profile.playerId, 'pid-local');
+      expect(profileRepo.getProfile()!.honorsStarReceived, 3);
+      expect(profileRepo.getProfile()!.likesReceived, 4);
+      expect(profileRepo.getProfile()!.dislikesReceived, 1);
+      expect(matchRepo.getAllMatches().map((m) => m.matchId), ['match-keep']);
+      expect(deckRepo.getAll().single.id, 'deck-1');
 
-    final ballots = feedbackRepo.allFeedback().toList();
-    expect(ballots, hasLength(1));
-    expect(ballots.single.starPlayerId, 'pid-local');
-    expect(ballots.single.likePlayerIds, contains('pid-local'));
+      final ballots = feedbackRepo.allFeedback().toList();
+      expect(ballots, hasLength(1));
+      expect(ballots.single.starPlayerId, 'pid-local');
+      expect(ballots.single.likePlayerIds, contains('pid-local'));
 
-    // Startup-style recompute with playerId should keep / sync social totals.
-    await profileRepo.recomputeSocialStatsFromFeedback(
-      feedbackRepo,
-      profileRepo.getProfile()!.playerId,
-    );
-    final after = profileRepo.getProfile()!;
-    expect(after.likesReceived, 1);
-    expect(after.honorsStarReceived, 1);
-    expect(after.dislikesReceived, 0);
-  });
+      // Startup-style recompute with playerId should keep / sync social totals.
+      await profileRepo.recomputeSocialStatsFromFeedback(
+        feedbackRepo,
+        profileRepo.getProfile()!.playerId,
+      );
+      final after = profileRepo.getProfile()!;
+      expect(after.likesReceived, 1);
+      expect(after.honorsStarReceived, 1);
+      expect(after.dislikesReceived, 0);
+    },
+  );
 
-  test('empty feedback recompute does not wipe restored sparks/behaviour',
-      () async {
-    await profileRepo.saveProfile(
-      PlayerProfile(
-        username: 'Federick',
-        playerId: 'pid-local',
-        likesReceived: 9,
-        dislikesReceived: 2,
-        honorsStarReceived: 5,
-      ),
-    );
-    expect(feedbackRepo.allFeedback(), isEmpty);
+  test(
+    'empty feedback recompute does not wipe restored sparks/behaviour',
+    () async {
+      await profileRepo.saveProfile(
+        PlayerProfile(
+          username: 'Federick',
+          playerId: 'pid-local',
+          likesReceived: 9,
+          dislikesReceived: 2,
+          honorsStarReceived: 5,
+        ),
+      );
+      expect(feedbackRepo.allFeedback(), isEmpty);
 
-    await profileRepo.recomputeSocialStatsFromFeedback(
-      feedbackRepo,
-      'pid-local',
-    );
+      await profileRepo.recomputeSocialStatsFromFeedback(
+        feedbackRepo,
+        'pid-local',
+      );
 
-    final p = profileRepo.getProfile()!;
-    expect(p.likesReceived, 9);
-    expect(p.dislikesReceived, 2);
-    expect(p.honorsStarReceived, 5);
-  });
+      final p = profileRepo.getProfile()!;
+      expect(p.likesReceived, 9);
+      expect(p.dislikesReceived, 2);
+      expect(p.honorsStarReceived, 5);
+    },
+  );
 
   test('recompute matches ballots by playerId, not username', () async {
     await profileRepo.saveProfile(
@@ -325,7 +337,9 @@ void main() {
       },
     );
 
-    final again = backupService.decodeBackup(backupService.encodeBackup(backup));
+    final again = backupService.decodeBackup(
+      backupService.encodeBackup(backup),
+    );
     expect(again.matches.single.matchId, 'm1');
     expect(again.feedbackByKey['m1::voter'], isNotNull);
     expect(again.version, 2);

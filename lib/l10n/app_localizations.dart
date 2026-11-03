@@ -3779,6 +3779,12 @@ abstract class AppLocalizations {
   /// **'Confirm'**
   String get commanderSelectConfirm;
 
+  /// No description provided for @commanderSelectInDeck.
+  ///
+  /// In en, this message translates to:
+  /// **'In this deck'**
+  String get commanderSelectInDeck;
+
   /// No description provided for @commanderSelectScryfallCommanderHelp.
   ///
   /// In en, this message translates to:
@@ -3802,12 +3808,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Partner'**
   String get commanderSelectLabelPartner;
-
-  /// No description provided for @commanderSelectOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'optional'**
-  String get commanderSelectOptional;
 
   /// No description provided for @deckOptionsDeleteTitle.
   ///
@@ -3844,30 +3844,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit cover card'**
   String get deckOptionsEditCover;
-
-  /// No description provided for @deckOptionsNoGamesYet.
-  ///
-  /// In en, this message translates to:
-  /// **'No games yet'**
-  String get deckOptionsNoGamesYet;
-
-  /// No description provided for @deckOptionsWinRate.
-  ///
-  /// In en, this message translates to:
-  /// **'{rate}% win rate'**
-  String deckOptionsWinRate(String rate);
-
-  /// No description provided for @deckOptionsUnpin.
-  ///
-  /// In en, this message translates to:
-  /// **'Unpin from top'**
-  String get deckOptionsUnpin;
-
-  /// No description provided for @deckOptionsPin.
-  ///
-  /// In en, this message translates to:
-  /// **'Pin to top'**
-  String get deckOptionsPin;
 
   /// No description provided for @deckOptionsChangeFormat.
   ///
@@ -4895,24 +4871,6 @@ abstract class AppLocalizations {
   /// **'WR'**
   String get deckTileWinRateAbbr;
 
-  /// No description provided for @deckTileWinsAbbr.
-  ///
-  /// In en, this message translates to:
-  /// **'W'**
-  String get deckTileWinsAbbr;
-
-  /// No description provided for @deckTileLossesAbbr.
-  ///
-  /// In en, this message translates to:
-  /// **'L'**
-  String get deckTileLossesAbbr;
-
-  /// No description provided for @deckTileGamesAbbr.
-  ///
-  /// In en, this message translates to:
-  /// **'GP'**
-  String get deckTileGamesAbbr;
-
   /// No description provided for @brandLifeSpark.
   ///
   /// In en, this message translates to:
@@ -5373,6 +5331,654 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}, out'**
   String glanceChipOut(String name);
+
+  /// No description provided for @deckAlbumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck'**
+  String get deckAlbumTitle;
+
+  /// No description provided for @deckAlbumOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck options'**
+  String get deckAlbumOptions;
+
+  /// No description provided for @deckAlbumMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This deck is no longer in your library.'**
+  String get deckAlbumMissing;
+
+  /// No description provided for @deckAlbumEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cards to fill this deck.'**
+  String get deckAlbumEmpty;
+
+  /// No description provided for @deckAlbumPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste list'**
+  String get deckAlbumPaste;
+
+  /// No description provided for @deckAlbumExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy list'**
+  String get deckAlbumExport;
+
+  /// No description provided for @deckAlbumCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Deck list copied.'**
+  String get deckAlbumCopied;
+
+  /// No description provided for @deckAlbumPasteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste deck list'**
+  String get deckAlbumPasteTitle;
+
+  /// No description provided for @deckAlbumPasteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One card per line, like 1 Sol Ring. On a constructed deck, a Sideboard line starts the sideboard.'**
+  String get deckAlbumPasteHint;
+
+  /// No description provided for @deckAlbumPasteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save list'**
+  String get deckAlbumPasteAction;
+
+  /// No description provided for @deckAlbumPasteEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards found in that list.'**
+  String get deckAlbumPasteEmpty;
+
+  /// No description provided for @deckAlbumPasteSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {count} cards.'**
+  String deckAlbumPasteSaved(int count);
+
+  /// No description provided for @deckAlbumPasteSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved the list. Skipped {count} lines.'**
+  String deckAlbumPasteSkipped(int count);
+
+  /// No description provided for @deckAlbumReplaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace this list?'**
+  String get deckAlbumReplaceTitle;
+
+  /// No description provided for @deckAlbumReplaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The cards in this deck will be replaced by the pasted list.'**
+  String get deckAlbumReplaceBody;
+
+  /// No description provided for @deckAlbumReplaceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get deckAlbumReplaceConfirm;
+
+  /// No description provided for @deckAlbumSideboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Sideboard'**
+  String get deckAlbumSideboard;
+
+  /// No description provided for @deckAlbumOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get deckAlbumOther;
+
+  /// No description provided for @deckAlbumCreatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Creatures'**
+  String get deckAlbumCreatures;
+
+  /// No description provided for @deckAlbumInstants.
+  ///
+  /// In en, this message translates to:
+  /// **'Instants'**
+  String get deckAlbumInstants;
+
+  /// No description provided for @deckAlbumSorceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorceries'**
+  String get deckAlbumSorceries;
+
+  /// No description provided for @deckAlbumArtifacts.
+  ///
+  /// In en, this message translates to:
+  /// **'Artifacts'**
+  String get deckAlbumArtifacts;
+
+  /// No description provided for @deckAlbumEnchantments.
+  ///
+  /// In en, this message translates to:
+  /// **'Enchantments'**
+  String get deckAlbumEnchantments;
+
+  /// No description provided for @deckAlbumPlaneswalkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Planeswalkers'**
+  String get deckAlbumPlaneswalkers;
+
+  /// No description provided for @deckAlbumLands.
+  ///
+  /// In en, this message translates to:
+  /// **'Lands'**
+  String get deckAlbumLands;
+
+  /// No description provided for @deckAlbumTabCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get deckAlbumTabCards;
+
+  /// No description provided for @deckAlbumTabStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get deckAlbumTabStats;
+
+  /// No description provided for @deckStatsManaValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Mana value'**
+  String get deckStatsManaValue;
+
+  /// No description provided for @deckStatsManaCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Mana cost'**
+  String get deckStatsManaCost;
+
+  /// No description provided for @deckStatsManaProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Mana production'**
+  String get deckStatsManaProduction;
+
+  /// No description provided for @deckStatsCardType.
+  ///
+  /// In en, this message translates to:
+  /// **'Card type'**
+  String get deckStatsCardType;
+
+  /// No description provided for @deckStatsSubtype.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtype'**
+  String get deckStatsSubtype;
+
+  /// No description provided for @deckStatsToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokens'**
+  String get deckStatsToken;
+
+  /// No description provided for @deckStatsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cards to see this deck\'s stats.'**
+  String get deckStatsEmpty;
+
+  /// No description provided for @deckStatsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get deckStatsNone;
+
+  /// No description provided for @deckStatsAverageManaValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Average mana value'**
+  String get deckStatsAverageManaValue;
+
+  /// No description provided for @deckStatsLands.
+  ///
+  /// In en, this message translates to:
+  /// **'Lands'**
+  String get deckStatsLands;
+
+  /// No description provided for @deckAlbumOffColor.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is outside this commander\'s colors.'**
+  String deckAlbumOffColor(String name);
+
+  /// No description provided for @deckAlbumPlayedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Played in {percent}% of decks with this commander.'**
+  String deckAlbumPlayedIn(int percent);
+
+  /// No description provided for @deckStatsShowRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the rest'**
+  String get deckStatsShowRest;
+
+  /// No description provided for @deckStatsShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get deckStatsShowLess;
+
+  /// No description provided for @deckStatsManaValuePlus.
+  ///
+  /// In en, this message translates to:
+  /// **'7+'**
+  String get deckStatsManaValuePlus;
+
+  /// No description provided for @deckAlbumFits.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get deckAlbumFits;
+
+  /// No description provided for @deckAlbumCuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Consider cutting'**
+  String get deckAlbumCuts;
+
+  /// No description provided for @deckAlbumRemoveCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get deckAlbumRemoveCard;
+
+  /// No description provided for @deckAlbumMoveToSideboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to sideboard'**
+  String get deckAlbumMoveToSideboard;
+
+  /// No description provided for @deckAlbumMoveToMain.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to deck'**
+  String get deckAlbumMoveToMain;
+
+  /// No description provided for @deckAlbumSideboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No sideboard cards.'**
+  String get deckAlbumSideboardEmpty;
+
+  /// No description provided for @deckAlbumCannotAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'This deck can\'t take any more of that card.'**
+  String get deckAlbumCannotAdd;
+
+  /// No description provided for @deckAlbumPasteTooBig.
+  ///
+  /// In en, this message translates to:
+  /// **'A {format} deck can only have {count} cards.'**
+  String deckAlbumPasteTooBig(String format, int count);
+
+  /// No description provided for @deckAlbumSideboardLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'The sideboard can only have {count} cards.'**
+  String deckAlbumSideboardLimit(int count);
+
+  /// No description provided for @deckAlbumCopyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'A card in this list is over the copy limit for this format.'**
+  String get deckAlbumCopyLimit;
+
+  /// No description provided for @deckAlbumCardBracket.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket'**
+  String get deckAlbumCardBracket;
+
+  /// No description provided for @albumCountAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a copy'**
+  String get albumCountAdd;
+
+  /// No description provided for @albumCountRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove a copy'**
+  String get albumCountRemove;
+
+  /// No description provided for @albumSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cards…'**
+  String get albumSearchHint;
+
+  /// No description provided for @albumFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get albumFilter;
+
+  /// No description provided for @albumFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get albumFilterAll;
+
+  /// No description provided for @albumSortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get albumSortBy;
+
+  /// No description provided for @albumSortName.
+  ///
+  /// In en, this message translates to:
+  /// **'A–Z'**
+  String get albumSortName;
+
+  /// No description provided for @albumSortNameDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Z–A'**
+  String get albumSortNameDesc;
+
+  /// No description provided for @albumSortCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Copies'**
+  String get albumSortCount;
+
+  /// No description provided for @albumSortType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get albumSortType;
+
+  /// No description provided for @albumNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards match.'**
+  String get albumNoMatches;
+
+  /// No description provided for @deckAlbumViewTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Types'**
+  String get deckAlbumViewTypes;
+
+  /// No description provided for @deckAlbumViewGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get deckAlbumViewGrid;
+
+  /// No description provided for @deckAlbumViewAlpha.
+  ///
+  /// In en, this message translates to:
+  /// **'A–Z'**
+  String get deckAlbumViewAlpha;
+
+  /// No description provided for @deckLibraryViewFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'Formats'**
+  String get deckLibraryViewFormats;
+
+  /// No description provided for @deckLibraryViewCovers.
+  ///
+  /// In en, this message translates to:
+  /// **'Covers'**
+  String get deckLibraryViewCovers;
+
+  /// No description provided for @deckBracketGameChangers.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Changers'**
+  String get deckBracketGameChangers;
+
+  /// No description provided for @deckBracketMassLandDenial.
+  ///
+  /// In en, this message translates to:
+  /// **'Mass land denial'**
+  String get deckBracketMassLandDenial;
+
+  /// No description provided for @deckBracketExtraTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra turns'**
+  String get deckBracketExtraTurns;
+
+  /// No description provided for @deckBracketCombos.
+  ///
+  /// In en, this message translates to:
+  /// **'Combos'**
+  String get deckBracketCombos;
+
+  /// No description provided for @deckBracketEarlyCombos.
+  ///
+  /// In en, this message translates to:
+  /// **'Early combos'**
+  String get deckBracketEarlyCombos;
+
+  /// No description provided for @deckBracketCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo: {cards}'**
+  String deckBracketCombo(String cards);
+
+  /// No description provided for @deckBracketEarlyCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Early combo: {cards}'**
+  String deckBracketEarlyCombo(String cards);
+
+  /// No description provided for @deckBracketCombosUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-card combos could not be checked.'**
+  String get deckBracketCombosUnavailable;
+
+  /// No description provided for @deckBracketChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a bracket. It can\'t sit below this deck\'s floor.'**
+  String get deckBracketChoose;
+
+  /// No description provided for @collectionAlbumSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search albums…'**
+  String get collectionAlbumSearchHint;
+
+  /// No description provided for @collectionAlbumNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No albums match.'**
+  String get collectionAlbumNoMatches;
+
+  /// No description provided for @collectionAlbumSortCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get collectionAlbumSortCards;
+
+  /// No description provided for @collectionAlbumFilterWithCards.
+  ///
+  /// In en, this message translates to:
+  /// **'With cards'**
+  String get collectionAlbumFilterWithCards;
+
+  /// No description provided for @collectionAlbumFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty'**
+  String get collectionAlbumFilterEmpty;
+
+  /// No description provided for @collectionAlbumsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an album, then add the cards you own.'**
+  String get collectionAlbumsEmpty;
+
+  /// No description provided for @collectionNewAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'New album'**
+  String get collectionNewAlbum;
+
+  /// No description provided for @collectionAlbumNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Album name'**
+  String get collectionAlbumNameTitle;
+
+  /// No description provided for @collectionAlbumNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get collectionAlbumNameHint;
+
+  /// No description provided for @collectionAlbumCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card} other{{count} cards}}'**
+  String collectionAlbumCount(int count);
+
+  /// No description provided for @collectionAlbumEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the cards you own in this album.'**
+  String get collectionAlbumEmpty;
+
+  /// No description provided for @collectionAlbumReplaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The cards in this album will be replaced by the pasted list.'**
+  String get collectionAlbumReplaceBody;
+
+  /// No description provided for @collectionRenameAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename album'**
+  String get collectionRenameAlbum;
+
+  /// No description provided for @collectionDeleteAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete album'**
+  String get collectionDeleteAlbum;
+
+  /// No description provided for @collectionDeleteAlbumBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} and the cards in it will be removed.'**
+  String collectionDeleteAlbumBody(String name);
+
+  /// No description provided for @collectionAddCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cards'**
+  String get collectionAddCards;
+
+  /// No description provided for @collectionAddSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get collectionAddSearch;
+
+  /// No description provided for @collectionAddSearchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a card and add how many you own.'**
+  String get collectionAddSearchBody;
+
+  /// No description provided for @deckAddSearchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a card and add how many copies.'**
+  String get deckAddSearchBody;
+
+  /// No description provided for @deckAddPasteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a deck list.'**
+  String get deckAddPasteBody;
+
+  /// No description provided for @collectionAddPasteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a list of cards you own.'**
+  String get collectionAddPasteBody;
+
+  /// No description provided for @collectionSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get collectionSearchTitle;
+
+  /// No description provided for @collectionSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Card name'**
+  String get collectionSearchHint;
+
+  /// No description provided for @collectionAddCountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How many?'**
+  String get collectionAddCountTitle;
+
+  /// No description provided for @collectionAddSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {count} {name}'**
+  String collectionAddSaved(int count, String name);
+
+  /// No description provided for @collectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get collectionTitle;
+
+  /// No description provided for @collectionPasteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste collection'**
+  String get collectionPasteTitle;
+
+  /// No description provided for @collectionPasteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One card per line, like 1 Sol Ring.'**
+  String get collectionPasteHint;
+
+  /// No description provided for @collectionSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Commanders you own'**
+  String get collectionSuggestions;
+
+  /// No description provided for @collectionSuggestionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {owned} of {total}'**
+  String collectionSuggestionCount(String name, int owned, int total);
 }
 
 class _AppLocalizationsDelegate

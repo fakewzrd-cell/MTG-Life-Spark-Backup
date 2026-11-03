@@ -8,12 +8,16 @@ class UiAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleWidget,
     this.leading,
     this.actions = const [],
+    this.backgroundColor,
+    this.automaticallyImplyLeading = true,
   }) : assert(title == null || titleWidget == null);
 
   final String? title;
   final Widget? titleWidget;
   final Widget? leading;
   final List<Widget> actions;
+  final Color? backgroundColor;
+  final bool automaticallyImplyLeading;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -36,6 +40,15 @@ class UiAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
             : null);
 
-    return AppBar(leading: leading, title: resolvedTitle, actions: actions);
+    return AppBar(
+      leading: leading,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      title: resolvedTitle,
+      actions: actions,
+      backgroundColor: backgroundColor,
+      surfaceTintColor: backgroundColor,
+      elevation: backgroundColor == null ? null : 0,
+      scrolledUnderElevation: backgroundColor == null ? null : 0,
+    );
   }
 }

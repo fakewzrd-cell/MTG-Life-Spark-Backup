@@ -3,6 +3,10 @@ import '../models/player_profile.dart';
 import 'profile_repository.dart';
 import 'match_repository.dart';
 import 'feedback_repository.dart';
+import '../deck/edhrec_client.dart';
+import '../deck/spellbook_client.dart';
+import 'collection_repository.dart';
+import 'deck_list_repository.dart';
 import 'deck_repository.dart';
 import 'settings_repository.dart';
 import 'backup_service.dart';
@@ -48,6 +52,22 @@ final deckRepositoryProvider = Provider<DeckRepository>((ref) {
   return DeckRepository();
 });
 
+final deckListRepositoryProvider = Provider<DeckListRepository>((ref) {
+  return DeckListRepository();
+});
+
+final collectionRepositoryProvider = Provider<CollectionRepository>((ref) {
+  return CollectionRepository();
+});
+
+final spellbookClientProvider = Provider<SpellbookClient>((ref) {
+  return SpellbookClient();
+});
+
+final edhrecClientProvider = Provider<EdhrecClient>((ref) {
+  return EdhrecClient();
+});
+
 /// Bumped when deck list or deck Hive rows change so profile deck performance refreshes.
 final deckListRevisionProvider = StateProvider<int>((ref) => 0);
 
@@ -66,6 +86,8 @@ final backupServiceProvider = Provider<BackupService>((ref) {
     deckRepo: ref.read(deckRepositoryProvider),
     matchRepo: ref.read(matchRepositoryProvider),
     feedbackRepo: ref.read(feedbackRepositoryProvider),
+    deckListRepo: ref.read(deckListRepositoryProvider),
+    collectionRepo: ref.read(collectionRepositoryProvider),
   );
 });
 

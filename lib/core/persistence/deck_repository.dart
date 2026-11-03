@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../shared/utils/commander_image_resolver.dart';
 import '../models/player_deck.dart';
+import 'deck_list_repository.dart';
 
 class DeckRepository {
   static const _boxName = 'playerDecks';
@@ -33,6 +34,7 @@ class DeckRepository {
 
   Future<void> delete(String id) async {
     await _box.delete(id);
+    await DeckListRepository().deleteForDeck(id);
   }
 
   /// Replace every saved deck (used by backup restore).
@@ -60,6 +62,7 @@ class DeckRepository {
       isPinned: false,
     );
     await save(copy);
+    await DeckListRepository().copyDeck(source.id, copy.id);
     return copy;
   }
 

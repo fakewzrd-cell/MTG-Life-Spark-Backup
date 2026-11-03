@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mgt_life_spark/core/models/app_settings.dart';
+import 'package:mgt_life_spark/core/models/deck_card_entry.dart';
 import 'package:mgt_life_spark/core/models/commander_stats.dart';
 import 'package:mgt_life_spark/core/models/match_record.dart';
 import 'package:mgt_life_spark/core/models/player_deck.dart';
@@ -81,6 +82,15 @@ void main() {
             'starPlayerId': 'pid-123',
           }),
         },
+        deckEntries: const [
+          DeckCardEntry(
+            id: 'entry-1',
+            deckId: 'deck-1',
+            name: 'Sol Ring',
+            count: 1,
+            board: 'main',
+          ),
+        ],
         profileAvatarImageBase64: 'aGVsbG8=', // "hello"
         profileAvatarImageMime: 'image/jpeg',
       );
@@ -106,6 +116,8 @@ void main() {
       expect(restored.matches.single.matchId, 'm-1');
       expect(restored.matches.single.result, 'win');
       expect(restored.matches.single.localDeckIdSnapshot, 'deck-1');
+      expect(restored.deckEntries.single.name, 'Sol Ring');
+      expect(restored.deckEntries.single.deckId, 'deck-1');
       expect(restored.feedbackByKey, hasLength(1));
       expect(restored.feedbackByKey.containsKey('m-1::pid-456'), isTrue);
       expect(restored.profileAvatarImageBase64, 'aGVsbG8=');
@@ -124,9 +136,7 @@ void main() {
           'honorsStarReceived': 5,
           'likesReceived': 2,
         },
-        'settings': {
-          'onboardingCompleted': true,
-        },
+        'settings': {'onboardingCompleted': true},
         'decks': <Map<String, dynamic>>[],
         'pods': [
           {
@@ -144,6 +154,7 @@ void main() {
       expect(restored.decks, isEmpty);
       expect(restored.matches, isEmpty);
       expect(restored.feedbackByKey, isEmpty);
+      expect(restored.deckEntries, isEmpty);
     });
 
     test('rejects unknown format marker', () {

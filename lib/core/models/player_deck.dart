@@ -59,6 +59,10 @@ class PlayerDeck extends HiveObject {
   @HiveField(14, defaultValue: false)
   bool isPinned;
 
+  /// Bracket the player chose, 1–5. Null until they pick one.
+  @HiveField(15)
+  int? chosenBracket;
+
   PlayerDeck({
     required this.id,
     required this.displayName,
@@ -75,6 +79,7 @@ class PlayerDeck extends HiveObject {
     this.format = 'commander',
     this.deckStyleId = '',
     this.isPinned = false,
+    this.chosenBracket,
   });
 
   bool get hasDeckStyle => DeckStyle.isValidId(deckStyleId);

@@ -1,5 +1,8 @@
+import '../models/collection_entry.dart';
+import '../models/owned_album.dart';
 import '../models/app_settings.dart';
 import '../models/commander_stats.dart';
+import '../models/deck_card_entry.dart';
 import '../models/match_record.dart';
 import '../models/player_deck.dart';
 import '../models/player_profile.dart';
@@ -9,6 +12,8 @@ const kLifeSparkBackupFormat = 'life-spark-backup';
 
 /// v1: profile, settings, decks, commanderStats.
 /// v2: + match history + feedback ballots (sparks / behaviour source).
+/// Deck card lists travel on the same versions as an optional `deckEntries` key
+/// so an older app can still open the file.
 const kLifeSparkBackupVersion = 2;
 
 class LifeSparkBackup {
@@ -21,6 +26,9 @@ class LifeSparkBackup {
     required this.commanderStats,
     this.matches = const [],
     this.feedbackByKey = const {},
+    this.deckEntries = const [],
+    this.collectionEntries = const [],
+    this.ownedAlbums = const [],
     this.profileAvatarImageBase64,
     this.profileAvatarImageMime,
   });
@@ -32,6 +40,15 @@ class LifeSparkBackup {
   final List<PlayerDeck> decks;
   final List<CommanderStats> commanderStats;
   final List<MatchRecord> matches;
+
+  /// Cards inside each deck. Empty on backups made before lists existed.
+  final List<DeckCardEntry> deckEntries;
+
+  /// Cards the player owns, separate from any deck.
+  final List<CollectionEntry> collectionEntries;
+
+  /// Albums that group [collectionEntries]. Empty on older backups.
+  final List<OwnedAlbum> ownedAlbums;
 
   /// Hive key → encoded [GameFeedback] JSON (preserves legacy keys).
   final Map<String, String> feedbackByKey;
@@ -52,6 +69,9 @@ class LifeSparkBackup {
     'commanderStats': commanderStats.map(commanderStatsToJson).toList(),
     'matches': matches.map(matchToJson).toList(),
     'feedbackByKey': feedbackByKey,
+    'deckEntries': deckEntries.map(deckEntryToJson).toList(),
+    'collectionEntries': collectionEntries.map(collectionEntryToJson).toList(),
+    'ownedAlbums': ownedAlbums.map(ownedAlbumToJson).toList(),
     if (profileAvatarImageBase64 != null &&
         profileAvatarImageBase64!.isNotEmpty)
       'profileAvatarImageBase64': profileAvatarImageBase64,
@@ -92,6 +112,14 @@ class LifeSparkBackup {
           ).map(commanderStatsFromJson).toList(),
       matches: _listOfMaps(json['matches']).map(matchFromJson).toList(),
       feedbackByKey: _stringMap(json['feedbackByKey']),
+      deckEntries:
+          _listOfMaps(json['deckEntries']).map(deckEntryFromJson).toList(),
+      collectionEntries:
+          _listOfMaps(
+            json['collectionEntries'],
+          ).map(collectionEntryFromJson).toList(),
+      ownedAlbums:
+          _listOfMaps(json['ownedAlbums']).map(ownedAlbumFromJson).toList(),
       profileAvatarImageBase64: _stringOrNull(json['profileAvatarImageBase64']),
       profileAvatarImageMime: _stringOrNull(json['profileAvatarImageMime']),
     );
@@ -244,6 +272,7 @@ Map<String, dynamic> deckToJson(PlayerDeck d) => {
   'format': d.format,
   'deckStyleId': d.deckStyleId,
   'isPinned': d.isPinned,
+  'chosenBracket': d.chosenBracket,
 };
 
 PlayerDeck deckFromJson(Map<String, dynamic> json) {
@@ -274,6 +303,80 @@ PlayerDeck deckFromJson(Map<String, dynamic> json) {
     format: (json['format'] as String?) ?? 'commander',
     deckStyleId: (json['deckStyleId'] as String?) ?? '',
     isPinned: json['isPinned'] as bool? ?? false,
+    chosenBracket: (json['chosenBracket'] as num?)?.toInt(),
+  );
+}
+
+Map<String, dynamic> deckEntryToJson(DeckCardEntry entry) => {
+  'id': entry.id,
+  'deckId': entry.deckId,
+  'name': entry.name,
+  'count': entry.count,
+  'board': entry.board,
+};
+
+DeckCardEntry deckEntryFromJson(Map<String, dynamic> json) {
+  final id = (json['id'] as String?)?.trim();
+  final deckId = (json['deckId'] as String?)?.trim();
+  final name = (json['name'] as String?)?.trim();
+  if (id == null ||
+      id.isEmpty ||
+      deckId == null ||
+      deckId.isEmpty ||
+      name == null ||
+      name.isEmpty) {
+    throw const FormatException('Deck card entry is missing required fields.');
+  }
+  final count = (json['count'] as num?)?.toInt() ?? 1;
+  return DeckCardEntry(
+    id: id,
+    deckId: deckId,
+    name: name,
+    count: count < 1 ? 1 : count,
+    board: (json['board'] as String?) ?? DeckBoard.main.name,
+  );
+}
+
+Map<String, dynamic> collectionEntryToJson(CollectionEntry entry) => {
+  'id': entry.id,
+  'name': entry.name,
+  'count': entry.count,
+  if (entry.albumId != null && entry.albumId!.isNotEmpty)
+    'albumId': entry.albumId,
+};
+
+Map<String, dynamic> ownedAlbumToJson(OwnedAlbum album) => {
+  'id': album.id,
+  'name': album.name,
+  'createdAtMillis': album.createdAtMillis,
+};
+
+OwnedAlbum ownedAlbumFromJson(Map<String, dynamic> json) {
+  final id = (json['id'] as String?)?.trim();
+  final name = (json['name'] as String?)?.trim();
+  if (id == null || id.isEmpty || name == null || name.isEmpty) {
+    throw const FormatException('Collection album is missing required fields.');
+  }
+  return OwnedAlbum(
+    id: id,
+    name: name,
+    createdAtMillis: (json['createdAtMillis'] as num?)?.toInt() ?? 0,
+  );
+}
+
+CollectionEntry collectionEntryFromJson(Map<String, dynamic> json) {
+  final id = (json['id'] as String?)?.trim();
+  final name = (json['name'] as String?)?.trim();
+  if (id == null || id.isEmpty || name == null || name.isEmpty) {
+    throw const FormatException('Collection entry is missing required fields.');
+  }
+  final count = (json['count'] as num?)?.toInt() ?? 1;
+  final albumId = (json['albumId'] as String?)?.trim();
+  return CollectionEntry(
+    id: id,
+    name: name,
+    count: count < 1 ? 1 : count,
+    albumId: albumId == null || albumId.isEmpty ? null : albumId,
   );
 }
 

@@ -32,13 +32,14 @@ class PlayerDeckAdapter extends TypeAdapter<PlayerDeck> {
       format: fields[12] == null ? 'commander' : fields[12] as String,
       deckStyleId: fields[13] == null ? '' : fields[13] as String,
       isPinned: fields[14] == null ? false : fields[14] as bool,
+      chosenBracket: fields[15] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlayerDeck obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -68,7 +69,9 @@ class PlayerDeckAdapter extends TypeAdapter<PlayerDeck> {
       ..writeByte(13)
       ..write(obj.deckStyleId)
       ..writeByte(14)
-      ..write(obj.isPinned);
+      ..write(obj.isPinned)
+      ..writeByte(15)
+      ..write(obj.chosenBracket);
   }
 
   @override

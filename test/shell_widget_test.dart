@@ -77,7 +77,7 @@ void main() {
     expect(find.text('Rename'), findsOneWidget);
     expect(find.text('Duplicate'), findsOneWidget);
     expect(find.text('Delete deck'), findsOneWidget);
-    expect(find.text('Pin to top'), findsOneWidget);
+    expect(find.text('Pin to top'), findsNothing);
     expect(find.text('Change format'), findsOneWidget);
   });
 

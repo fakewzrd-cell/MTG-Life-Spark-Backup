@@ -2,11 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 
+import '../../core/deck/deck_limits.dart';
 import '../../core/game/game_format.dart';
 import '../../core/models/player_deck.dart';
-import '../../core/persistence/deck_repository.dart';
+import '../../core/persistence/deck_list_repository.dart';
 import '../../core/persistence/providers.dart';
+import '../../shared/widgets/mana_cost_pips.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/utils/deck_style_l10n.dart';
@@ -17,11 +20,16 @@ import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
-import 'deck_options_sheet.dart';
-import 'deck_style_picker_sheet.dart';
-import 'game_format_picker_sheet.dart';
 import 'new_deck_sheet.dart';
+import 'collection_album_screen.dart';
+import 'library_destination_switch.dart';
 import 'profile_carousel_sections.dart';
+
+enum DeckLibraryListing { formats, covers, alpha }
+
+final deckLibraryListingProvider = StateProvider<DeckLibraryListing>(
+  (ref) => DeckLibraryListing.formats,
+);
 
 class DecksManageScreen extends ConsumerStatefulWidget {
   const DecksManageScreen({super.key});
@@ -62,6 +70,7 @@ bool _deckMatchesQuery(PlayerDeck deck, String query, AppLocalizations l10n) {
 
 class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
   List<PlayerDeck> _decks = [];
+  Map<String, DeckCountLabel> _counts = {};
   final _searchCtrl = TextEditingController();
   String _query = '';
 
@@ -79,9 +88,22 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     super.dispose();
   }
 
-  void _reload() {
+  Future<void> _reload() async {
+    final decks = ref.read(deckRepositoryProvider).getAll();
+    final counts = <String, DeckCountLabel>{};
+    if (Hive.isBoxOpen(DeckListRepository.boxName)) {
+      final lists = ref.read(deckListRepositoryProvider);
+      for (final deck in decks) {
+        if (deck.isCommanderDeck) {
+          await lists.foldSideboardIntoMain(deck.id);
+        }
+        counts[deck.id] = deckCountLabel(deck, lists.entriesFor(deck.id));
+      }
+    }
+    if (!mounted) return;
     setState(() {
-      _decks = ref.read(deckRepositoryProvider).getAll();
+      _decks = decks;
+      _counts = counts;
     });
   }
 
@@ -103,118 +125,10 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     _reload();
   }
 
-  Future<bool> _ensureDeckStyle(PlayerDeck deck, DeckRepository repo) async {
-    if (deck.hasDeckStyle) return true;
-    final picked = await showDeckStylePickerSheet(context);
-    if (picked == null || !mounted) return false;
-    deck.deckStyleId = picked.id;
-    await repo.save(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-    return true;
-  }
-
-  Future<void> _changeDeckStyle(DeckRepository repo, PlayerDeck deck) async {
-    final picked = await showDeckStylePickerSheet(
-      context,
-      selected: deck.deckStyle,
-    );
-    if (picked == null || picked.id == deck.deckStyleId) return;
-    deck.deckStyleId = picked.id;
-    await repo.save(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _changeFormat(DeckRepository repo, PlayerDeck deck) async {
-    final picked = await showGameFormatPickerSheet(
-      context,
-      selected: deck.gameFormat,
-    );
-    if (picked == null || picked == deck.gameFormat || !mounted) return;
-    final wasCommander = deck.isCommanderDeck;
-    deck.format = picked.name;
-    if (wasCommander && !picked.isCommanderStyle) {
-      deck.partnerCommanderName = null;
-      deck.partnerCommanderImageUrl = null;
-      deck.partnerManaCost = null;
-    }
-    await repo.save(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _editCommanders(PlayerDeck deck, DeckRepository repo) async {
-    if (!await _ensureDeckStyle(deck, repo)) return;
+  Future<void> _onDeckTap(PlayerDeck deck) async {
+    await context.push('/decks/${Uri.encodeComponent(deck.id)}');
     if (!mounted) return;
-    final profile = ref.read(profileRepositoryProvider).getProfile();
-    if (profile == null) return;
-    await context.push(
-      AppRoutes.commanderSelect,
-      extra: {
-        'playerId': profile.playerId,
-        'editDeckId': deck.id,
-        'deckFormat': deck.format,
-      },
-    );
-    if (!mounted) return;
-    bumpDeckListRevision(ref);
     _reload();
-  }
-
-  Future<void> _renameDeck(DeckRepository repo, PlayerDeck deck) async {
-    final name = await showRenameDeckDialog(
-      context,
-      initialName: deck.displayName,
-    );
-    if (name == null || name == deck.displayName || !mounted) return;
-    deck.displayName = name;
-    await repo.save(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _togglePin(DeckRepository repo, PlayerDeck deck) async {
-    deck.isPinned = !deck.isPinned;
-    await repo.save(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _duplicateDeck(DeckRepository repo, PlayerDeck deck) async {
-    await repo.duplicate(deck);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _confirmDelete(DeckRepository repo, PlayerDeck deck) async {
-    final ok = await showDeleteDeckConfirm(context, deck);
-    if (!ok || !mounted) return;
-    await repo.delete(deck.id);
-    bumpDeckListRevision(ref);
-    _reload();
-  }
-
-  Future<void> _onDeckTap(PlayerDeck deck, DeckRepository repo) async {
-    final action = await showDeckDetailSheet(context, deck);
-    if (action == null || !mounted) return;
-
-    switch (action) {
-      case DeckSheetAction.togglePin:
-        await _togglePin(repo, deck);
-      case DeckSheetAction.changeFormat:
-        await _changeFormat(repo, deck);
-      case DeckSheetAction.changeStyle:
-        await _changeDeckStyle(repo, deck);
-      case DeckSheetAction.editCover:
-        await _editCommanders(deck, repo);
-      case DeckSheetAction.rename:
-        await _renameDeck(repo, deck);
-      case DeckSheetAction.duplicate:
-        await _duplicateDeck(repo, deck);
-      case DeckSheetAction.delete:
-        await _confirmDelete(repo, deck);
-    }
   }
 
   @override
@@ -222,12 +136,12 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     ref.listen(deckListRevisionProvider, (_, __) => _reload());
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final repo = ref.read(deckRepositoryProvider);
-    final bottomBarPad = LayoutTokens.shellBottomInset(context);
-
     final filtered =
         _decks.where((d) => _deckMatchesQuery(d, _query, l10n)).toList();
     final grouped = _groupDecksByFormat(filtered);
+    final listing = ref.watch(deckLibraryListingProvider);
+    final destination = ref.watch(libraryDestinationProvider);
+    final showingDecks = destination == LibraryDestination.decks;
 
     final isEmpty = _decks.isEmpty;
     final noMatches = !isEmpty && filtered.isEmpty;
@@ -243,8 +157,9 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
         _DecksFormatSection(
           format: format,
           decks: decks,
+          counts: _counts,
           colors: colors,
-          onDeckTap: (deck) => _onDeckTap(deck, repo),
+          onDeckTap: _onDeckTap,
         ),
       );
     }
@@ -253,12 +168,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     if (isEmpty) {
       scrollBody = Center(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            LayoutTokens.shellPageInset,
-            LayoutTokens.shellPageInset,
-            LayoutTokens.shellPageInset,
-            bottomBarPad,
-          ),
+          padding: const EdgeInsets.all(LayoutTokens.shellPageInset),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -285,19 +195,16 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
                   height: 1.5,
                 ),
               ),
-              SizedBox(height: LayoutTokens.gr5),
-              UiButton(
-                label: l10n.decksAddDeck,
-                icon: const Icon(Icons.add_rounded, size: 22),
-                onPressed: _promptNewDeckName,
-              ),
             ],
           ),
         ),
       );
     } else {
       scrollBody = ListView(
-        padding: LayoutTokens.shellListPadding(context, top: LayoutTokens.gr2),
+        padding: LayoutTokens.shellScrollPadding(
+          context,
+          top: LayoutTokens.gr2,
+        ),
         children: [
           Padding(
             padding: EdgeInsets.only(bottom: LayoutTokens.gr3),
@@ -323,6 +230,13 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
               style: TextStyle(color: colors.textPrimary),
             ),
           ),
+          _DeckListingSwitch(
+            listing: listing,
+            onChanged: (value) {
+              ref.read(deckLibraryListingProvider.notifier).state = value;
+            },
+          ),
+          SizedBox(height: LayoutTokens.gr3),
           if (noMatches)
             Padding(
               padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr5),
@@ -334,6 +248,18 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
                 ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
               ),
             )
+          else if (listing == DeckLibraryListing.covers)
+            _DeckCoverGrid(
+              decks: filtered,
+              colors: colors,
+              onDeckTap: _onDeckTap,
+            )
+          else if (listing == DeckLibraryListing.alpha)
+            _DeckAlphaList(
+              decks: filtered,
+              colors: colors,
+              onDeckTap: _onDeckTap,
+            )
           else
             ...sectionChildren,
         ],
@@ -342,23 +268,34 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
 
     return Scaffold(
       appBar: UiAppBar(
-        title: AppLocalizations.of(context).decksTitle,
-        actions: [
-          if (!isEmpty)
+        title:
+            showingDecks
+                ? AppLocalizations.of(context).decksTitle
+                : AppLocalizations.of(context).collectionTitle,
+      ),
+      backgroundColor: colors.backgroundPrimary,
+      body: Column(
+        children: [
+          const LibraryDestinationSwitch(),
+          Expanded(
+            child: showingDecks ? scrollBody : const CollectionAlbumView(),
+          ),
+          if (showingDecks)
             Padding(
-              padding: EdgeInsets.only(right: LayoutTokens.gr2),
-              child: Center(
-                child: ProfileHeaderPillButton(
-                  label: AppLocalizations.of(context).commonAdd,
-                  colors: colors,
-                  onPressed: _promptNewDeckName,
-                ),
+              padding: EdgeInsets.fromLTRB(
+                LayoutTokens.gr4,
+                LayoutTokens.gr2,
+                LayoutTokens.gr4,
+                MediaQuery.paddingOf(context).bottom + LayoutTokens.gr2,
+              ),
+              child: UiButton(
+                label: l10n.decksAddDeck,
+                icon: const Icon(Icons.add_rounded, size: 22),
+                onPressed: _promptNewDeckName,
               ),
             ),
         ],
       ),
-      backgroundColor: colors.backgroundPrimary,
-      body: scrollBody,
     );
   }
 }
@@ -368,12 +305,14 @@ class _DecksFormatSection extends StatelessWidget {
   const _DecksFormatSection({
     required this.format,
     required this.decks,
+    required this.counts,
     required this.colors,
     required this.onDeckTap,
   });
 
   final GameFormat format;
   final List<PlayerDeck> decks;
+  final Map<String, DeckCountLabel> counts;
   final AppColorTokens colors;
   final ValueChanged<PlayerDeck> onDeckTap;
 
@@ -397,6 +336,7 @@ class _DecksFormatSection extends StatelessWidget {
             if (i > 0) SizedBox(height: LayoutTokens.gr2),
             _DeckLibraryTile(
               deck: decks[i],
+              count: counts[decks[i].id],
               colors: colors,
               onTap: () => onDeckTap(decks[i]),
             ),
@@ -413,11 +353,13 @@ class _DeckLibraryTile extends StatelessWidget {
     required this.deck,
     required this.colors,
     required this.onTap,
+    this.count,
   });
 
   final PlayerDeck deck;
   final AppColorTokens colors;
   final VoidCallback onTap;
+  final DeckCountLabel? count;
 
   @override
   Widget build(BuildContext context) {
@@ -432,8 +374,6 @@ class _DeckLibraryTile extends StatelessWidget {
               deck.deckStyle!,
             )
             : AppLocalizations.of(context).decksStyleNotSet;
-    final wr = deck.gamesPlayed == 0 ? null : (deck.winRate * 100).round();
-
     return Semantics(
       button: true,
       label: '${deck.displayName}, ${deck.gameFormat.displayName}',
@@ -444,92 +384,125 @@ class _DeckLibraryTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: RadiusTokens.radiusXl,
-          child: Padding(
-            padding: EdgeInsets.all(LayoutTokens.gr2),
-            child: Row(
-              children: [
-                _DeckCoverThumb(deck: deck, colors: colors),
-                SizedBox(width: LayoutTokens.gr3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (deck.isPinned) ...[
-                            Icon(
-                              Icons.push_pin_rounded,
-                              size: 14,
-                              color: colors.primaryAccent,
-                            ),
-                            SizedBox(width: LayoutTokens.gr0),
-                          ],
-                          Expanded(
-                            child: Text(
-                              deck.displayName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: colors.textPrimary,
-                                fontWeight: FontWeight.w700,
-                                fontSize: FontTokens.body,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final artUrl = deck.commanderImageUrl;
+              final hasArt = artUrl != null && artUrl.isNotEmpty;
+              final tileWidth =
+                  constraints.maxWidth.isFinite ? constraints.maxWidth : 360.0;
+              final artWidth =
+                  hasArt ? (tileWidth * 0.34).clamp(112.0, 200.0) : 0.0;
+              final textInset =
+                  hasArt ? artWidth + LayoutTokens.gr2 : LayoutTokens.gr4;
+              return Stack(
+                children: [
+                  if (hasArt)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: artWidth,
+                      child: ShaderMask(
+                        blendMode: BlendMode.dstIn,
+                        shaderCallback: (bounds) {
+                          return const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Color(0xFFFFFFFF),
+                              Color(0xFFFFFFFF),
+                              Color(0xD9FFFFFF),
+                              Color(0x8CFFFFFF),
+                              Color(0x47FFFFFF),
+                              Color(0x14FFFFFF),
+                              Color(0x00FFFFFF),
+                            ],
+                            stops: [0.0, 0.42, 0.58, 0.7, 0.82, 0.92, 1.0],
+                          ).createShader(bounds);
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: artUrl,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      textInset,
+                      LayoutTokens.gr2,
+                      LayoutTokens.gr2,
+                      LayoutTokens.gr2,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (deck.isPinned) ...[
+                                    Icon(
+                                      Icons.push_pin_rounded,
+                                      size: 14,
+                                      color: colors.primaryAccent,
+                                    ),
+                                    SizedBox(width: LayoutTokens.gr0),
+                                  ],
+                                  Expanded(
+                                    child: Text(
+                                      deck.displayName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: colors.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: FontTokens.body,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                              SizedBox(height: LayoutTokens.gr0),
+                              Text(
+                                commanderLine.isEmpty
+                                    ? AppLocalizations.of(
+                                      context,
+                                    ).decksNoCoverCard
+                                    : commanderLine,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: colors.textSecondary,
+                                  fontSize: FontTokens.sm,
+                                ),
+                              ),
+                              SizedBox(height: LayoutTokens.gr0),
+                              Text(
+                                styleLine,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color:
+                                      deck.hasDeckStyle
+                                          ? colors.textSecondary
+                                          : colors.warning,
+                                  fontSize: FontTokens.sm,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      SizedBox(height: LayoutTokens.gr0),
-                      Text(
-                        commanderLine.isEmpty
-                            ? AppLocalizations.of(context).decksNoCoverCard
-                            : commanderLine,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.textSecondary,
-                          fontSize: FontTokens.sm,
                         ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr0),
-                      Text(
-                        styleLine,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color:
-                              deck.hasDeckStyle
-                                  ? colors.textSecondary
-                                  : colors.warning,
-                          fontSize: FontTokens.sm,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                        _DeckRowTrail(deck: deck, count: count, colors: colors),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: LayoutTokens.gr2),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      wr == null ? '—' : '$wr%',
-                      style: TextStyle(
-                        color: colors.primaryAccent,
-                        fontWeight: FontWeight.w700,
-                        fontSize: FontTokens.body,
-                      ),
-                    ),
-                    Text(
-                      '${deck.wins}W–${deck.losses}L',
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: FontTokens.sm,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -537,41 +510,334 @@ class _DeckLibraryTile extends StatelessWidget {
   }
 }
 
-class _DeckCoverThumb extends StatelessWidget {
-  const _DeckCoverThumb({required this.deck, required this.colors});
+class _DeckRowTrail extends StatelessWidget {
+  const _DeckRowTrail({required this.deck, required this.colors, this.count});
 
   final PlayerDeck deck;
   final AppColorTokens colors;
+  final DeckCountLabel? count;
 
   @override
   Widget build(BuildContext context) {
-    final url = deck.commanderImageUrl;
-    return ClipRRect(
-      borderRadius: RadiusTokens.radiusXl,
-      child: SizedBox(
-        width: 48,
-        height: 68,
-        child:
-            url != null && url.isNotEmpty
-                ? CachedNetworkImage(
-                  imageUrl: url,
+    final pips = _deckPips(deck);
+    final label = count;
+    if (pips == null && label == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(left: LayoutTokens.gr2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (pips != null) ManaCostPips(manaCost: pips, symbolHeight: 14),
+          if (label != null) ...[
+            if (pips != null) SizedBox(height: LayoutTokens.gr1),
+            Text(
+              label.main,
+              style: TextStyle(
+                color: label.illegal ? colors.error : colors.textSecondary,
+                fontSize: FontTokens.sm,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+String? _deckPips(PlayerDeck deck) {
+  const order = ['W', 'U', 'B', 'R', 'G'];
+  final colors = [
+    for (final letter in order)
+      if (deck.commanderColorIdentity.contains(letter)) letter,
+  ];
+  if (colors.isEmpty) return deck.isCommanderDeck ? '{C}' : null;
+  return colors.map((letter) => '{$letter}').join();
+}
+
+class _DeckListingSwitch extends StatelessWidget {
+  const _DeckListingSwitch({required this.listing, required this.onChanged});
+
+  final DeckLibraryListing listing;
+  final ValueChanged<DeckLibraryListing> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Wrap(
+      spacing: LayoutTokens.gr1,
+      children: [
+        for (final mode in DeckLibraryListing.values)
+          ChoiceChip(
+            label: Text(_deckListingLabel(l10n, mode)),
+            selected: listing == mode,
+            onSelected: (_) => onChanged(mode),
+          ),
+      ],
+    );
+  }
+}
+
+String _deckListingLabel(AppLocalizations l10n, DeckLibraryListing listing) {
+  return switch (listing) {
+    DeckLibraryListing.formats => l10n.deckLibraryViewFormats,
+    DeckLibraryListing.covers => l10n.deckLibraryViewCovers,
+    DeckLibraryListing.alpha => l10n.deckAlbumViewAlpha,
+  };
+}
+
+String _deckCommanderLine(PlayerDeck deck) {
+  if (deck.isCommanderDeck && deck.hasPartner) {
+    return '${deck.commanderName} // ${deck.partnerCommanderName}';
+  }
+  return deck.commanderName;
+}
+
+class _DeckCoverGrid extends StatelessWidget {
+  const _DeckCoverGrid({
+    required this.decks,
+    required this.colors,
+    required this.onDeckTap,
+  });
+
+  final List<PlayerDeck> decks;
+  final AppColorTokens colors;
+  final ValueChanged<PlayerDeck> onDeckTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: decks.length,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisExtent: 248,
+        mainAxisSpacing: LayoutTokens.gr2,
+        crossAxisSpacing: LayoutTokens.gr2,
+      ),
+      itemBuilder: (context, index) {
+        final deck = decks[index];
+        return _DeckCoverTile(
+          deck: deck,
+          colors: colors,
+          onTap: () => onDeckTap(deck),
+        );
+      },
+    );
+  }
+}
+
+class _DeckCoverTile extends StatelessWidget {
+  const _DeckCoverTile({
+    required this.deck,
+    required this.colors,
+    required this.onTap,
+  });
+
+  final PlayerDeck deck;
+  final AppColorTokens colors;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final artUrl = deck.commanderImageUrl;
+    final hasArt = artUrl != null && artUrl.isNotEmpty;
+    final commander = _deckCommanderLine(deck);
+    return Semantics(
+      button: true,
+      label: '${deck.displayName}, ${deck.gameFormat.displayName}',
+      child: Material(
+        color: colors.surface,
+        borderRadius: RadiusTokens.radiusXl,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (hasArt)
+                CachedNetworkImage(
+                  imageUrl: artUrl,
                   fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
                   errorWidget:
-                      (_, __, ___) => ColoredBox(
-                        color: colors.backgroundPrimary,
-                        child: Icon(
-                          Icons.style_outlined,
-                          color: colors.textSecondary,
-                        ),
-                      ),
+                      (_, __, ___) => ColoredBox(color: colors.surfaceElevated),
                 )
-                : ColoredBox(
-                  color: colors.backgroundPrimary,
-                  child: Icon(
-                    Icons.style_outlined,
-                    color: colors.textSecondary,
+              else
+                ColoredBox(color: colors.surfaceElevated),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.surface.withValues(alpha: 0),
+                      colors.surface.withValues(alpha: 0),
+                      colors.surface.withValues(alpha: 0.55),
+                      colors.surface,
+                      colors.surface,
+                    ],
+                    stops: const [0, 0.46, 0.56, 0.68, 1],
                   ),
                 ),
+              ),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    LayoutTokens.gr2,
+                    LayoutTokens.gr2,
+                    LayoutTokens.gr2,
+                    LayoutTokens.gr2,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        deck.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: FontTokens.body,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr0),
+                      Text(
+                        commander.isEmpty
+                            ? AppLocalizations.of(context).decksNoCoverCard
+                            : commander,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: FontTokens.sm,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeckAlphaList extends StatelessWidget {
+  const _DeckAlphaList({
+    required this.decks,
+    required this.colors,
+    required this.onDeckTap,
+  });
+
+  final List<PlayerDeck> decks;
+  final AppColorTokens colors;
+  final ValueChanged<PlayerDeck> onDeckTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = [...decks]..sort(
+      (a, b) =>
+          a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+    );
+    return Column(
+      children: [
+        for (var i = 0; i < sorted.length; i++) ...[
+          if (i > 0) SizedBox(height: LayoutTokens.gr2),
+          _DeckAlphaTile(
+            deck: sorted[i],
+            colors: colors,
+            onTap: () => onDeckTap(sorted[i]),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _DeckAlphaTile extends StatelessWidget {
+  const _DeckAlphaTile({
+    required this.deck,
+    required this.colors,
+    required this.onTap,
+  });
+
+  final PlayerDeck deck;
+  final AppColorTokens colors;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final commander = _deckCommanderLine(deck);
+    final subtitle =
+        commander.isEmpty
+            ? deck.gameFormat.displayName
+            : '$commander · ${deck.gameFormat.displayName}';
+    return Semantics(
+      button: true,
+      label: '${deck.displayName}, ${deck.gameFormat.displayName}',
+      child: Material(
+        color: colors.surface,
+        borderRadius: RadiusTokens.radiusLg,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: LayoutTokens.gr3,
+              vertical: LayoutTokens.gr2,
+            ),
+            child: Row(
+              children: [
+                if (deck.isPinned) ...[
+                  Icon(
+                    Icons.push_pin_rounded,
+                    size: 14,
+                    color: colors.primaryAccent,
+                  ),
+                  SizedBox(width: LayoutTokens.gr1),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        deck.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: FontTokens.body,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr0),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: FontTokens.sm,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_deckPips(deck) != null) ...[
+                  SizedBox(width: LayoutTokens.gr2),
+                  ManaCostPips(manaCost: _deckPips(deck), symbolHeight: 14),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

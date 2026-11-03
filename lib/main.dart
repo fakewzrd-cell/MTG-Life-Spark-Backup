@@ -10,7 +10,13 @@ import 'core/models/player_profile.dart';
 import 'core/models/match_record.dart';
 import 'core/models/app_settings.dart';
 import 'core/game/game_format.dart';
+import 'core/deck/edhrec_client.dart';
+import 'core/models/collection_entry.dart';
+import 'core/models/owned_album.dart';
+import 'core/models/deck_card_entry.dart';
+import 'core/persistence/collection_repository.dart';
 import 'core/models/player_deck.dart';
+import 'core/persistence/deck_list_repository.dart';
 import 'core/persistence/deck_repository.dart';
 import 'core/persistence/feedback_repository.dart';
 import 'core/persistence/match_repository.dart';
@@ -198,9 +204,13 @@ Future<void> _initHive() async {
   Hive.registerAdapter(CommanderStatsAdapter());
   Hive.registerAdapter(AppSettingsAdapter());
   Hive.registerAdapter(PlayerDeckAdapter());
+  Hive.registerAdapter(DeckCardEntryAdapter());
+  Hive.registerAdapter(CollectionEntryAdapter());
+  Hive.registerAdapter(OwnedAlbumAdapter());
 
   // Web IndexedDB can hang when opening many Hive boxes in parallel.
   await _withStartupTimeout('Loading profile data', _openHiveBoxes());
+  await _foldCommanderSideboards();
 
   // Ensure default settings exist
   final settingsBox = Hive.box<AppSettings>('appSettings');
@@ -215,6 +225,17 @@ Future<void> _initHive() async {
   unawaited(_deferredStartupMaintenance());
 }
 
+Future<void> _foldCommanderSideboards() async {
+  final decks = DeckRepository();
+  await decks.init();
+  final lists = DeckListRepository();
+  await lists.init();
+  for (final deck in decks.getAll()) {
+    if (!deck.isCommanderDeck) continue;
+    await lists.foldSideboardIntoMain(deck.id);
+  }
+}
+
 Future<void> _openHiveBoxes() async {
   final opens = <Future<void>>[
     Hive.openBox<PlayerProfile>('playerProfile'),
@@ -223,6 +244,10 @@ Future<void> _openHiveBoxes() async {
     Hive.openBox<AppSettings>('appSettings'),
     Hive.openBox<String>('matchFeedback'),
     Hive.openBox<PlayerDeck>('playerDecks'),
+    Hive.openBox<DeckCardEntry>(DeckListRepository.boxName),
+    Hive.openBox<CollectionEntry>(CollectionRepository.boxName),
+    Hive.openBox<OwnedAlbum>(CollectionRepository.albumBoxName),
+    Hive.openBox<String>(EdhrecClient.boxName),
   ];
   if (kIsWeb) {
     for (final open in opens) {
