@@ -52,7 +52,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsKeepDisplayAwake => 'Manter tela ligada';
 
   @override
-  String get settingsKeepDisplayAwakeSubtitle => 'Impede que a tela desligue durante uma partida';
+  String get settingsKeepDisplayAwakeSubtitle =>
+      'Impede que a tela desligue durante uma partida';
 
   @override
   String get settingsHideSystemBars => 'Ocultar barras de navegação e status';
@@ -67,7 +68,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsDarkAppearance => 'Aparência escura';
 
   @override
-  String get settingsDarkAppearanceSubtitle => 'Fundos escuros. Desligue para uma página clara.';
+  String get settingsDarkAppearanceSubtitle =>
+      'Fundos escuros. Desligue para uma página clara.';
 
   @override
   String get settingsLanguage => 'Idioma';
@@ -105,13 +107,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsHapticFeedback => 'Feedback tátil';
 
   @override
-  String get settingsHapticFeedbackSubtitle => 'Vibrar em mudanças de vida e subidas de rank';
+  String get settingsHapticFeedbackSubtitle =>
+      'Vibrar em mudanças de vida e subidas de rank';
 
   @override
   String get settingsShakeToUndo => 'Agitar para desfazer';
 
   @override
-  String get settingsShakeToUndoSubtitle => 'Agite o telefone para desfazer a última mudança de vida';
+  String get settingsShakeToUndoSubtitle =>
+      'Agite o telefone para desfazer a última mudança de vida';
 
   @override
   String get settingsSectionData => 'Dados';
@@ -120,25 +124,29 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsCacheCommanderImages => 'Cachear imagens de comandante';
 
   @override
-  String get settingsCacheCommanderImagesSubtitle => 'Armazena imagens do Scryfall para uso offline';
+  String get settingsCacheCommanderImagesSubtitle =>
+      'Armazena imagens do Scryfall para uso offline';
 
   @override
   String get settingsClearImageCache => 'Limpar cache de imagens';
 
   @override
-  String get settingsClearImageCacheSubtitle => 'Libera espaço das imagens de cartas em cache';
+  String get settingsClearImageCacheSubtitle =>
+      'Libera espaço das imagens de cartas em cache';
 
   @override
   String get settingsSaveBackup => 'Salvar backup';
 
   @override
-  String get settingsSaveBackupSubtitle => 'Salva perfil, decks, configurações, partidas recentes e feedback em um arquivo';
+  String get settingsSaveBackupSubtitle =>
+      'Salva perfil, decks, configurações, partidas recentes e feedback em um arquivo';
 
   @override
   String get settingsRestoreBackup => 'Restaurar backup';
 
   @override
-  String get settingsRestoreBackupSubtitle => 'Substitui todos os dados locais por um arquivo .lifespark';
+  String get settingsRestoreBackupSubtitle =>
+      'Substitui todos os dados locais por um arquivo .lifespark';
 
   @override
   String get settingsSectionHelp => 'Ajuda';
@@ -153,13 +161,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsViewHubGuide => 'Ver guia do hub';
 
   @override
-  String get settingsViewHubGuideSubtitle => 'Como Jogar, Pilha, Busca e Mesa funcionam em uma partida';
+  String get settingsViewHubGuideSubtitle =>
+      'Como Jogar, Pilha, Busca e Mesa funcionam em uma partida';
 
   @override
   String get settingsViewTutorialAgain => 'Ver o tutorial novamente';
 
   @override
-  String get settingsViewTutorialAgainSubtitle => 'Relança o passo a passo inicial';
+  String get settingsViewTutorialAgainSubtitle =>
+      'Relança o passo a passo inicial';
 
   @override
   String get settingsBeta => 'Beta';
@@ -194,7 +204,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get backupRestoreMessage => 'Isso substitui seu perfil, decks, configurações, partidas recentes, sparks e comportamento neste dispositivo pelo backup selecionado.';
+  String get backupRestoreMessage =>
+      'Isso substitui seu perfil, decks, configurações, partidas recentes, sparks e comportamento neste dispositivo pelo backup selecionado.';
 
   @override
   String get backupRestoreConfirm => 'Restaurar';
@@ -205,7 +216,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get backupRestoreFailed => 'Não foi possível restaurar o backup. Verifique o arquivo e tente novamente.';
+  String get backupRestoreFailed =>
+      'Não foi possível restaurar o backup. Verifique o arquivo e tente novamente.';
 
   @override
   String get cacheCleared => 'Cache de imagens limpo.';
@@ -235,13 +247,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lobbyHostGame => 'Hospedar partida';
 
   @override
-  String get lobbyHostGameSubtitle => 'Crie uma sessão — os outros entram com você';
+  String get lobbyHostGameSubtitle =>
+      'Crie uma sessão — os outros entram com você';
 
   @override
   String get lobbyJoinGame => 'Entrar na partida';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Escaneie o QR do anfitrião na mesma Wi‑Fi';
+  String get lobbyJoinGameSubtitle =>
+      'Escaneie o QR do anfitrião na mesma Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Lobby do host';
@@ -255,22 +269,28 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get hostNeedWifiRetry => 'Conecte este dispositivo ao Wi‑Fi (mesma rede dos convidados) e toque em Tentar de novo.';
+  String get hostNeedWifiRetry =>
+      'Conecte este dispositivo ao Wi‑Fi (mesma rede dos convidados) e toque em Tentar de novo.';
 
   @override
-  String get hostNeedsMobileApp => 'Para hospedar é preciso o app móvel (iOS ou Android) no mesmo Wi‑Fi. O navegador pode entrar escaneando um QR, mas não pode hospedar.';
+  String get hostNeedsMobileApp =>
+      'Para hospedar é preciso o app móvel (iOS ou Android) no mesmo Wi‑Fi. O navegador pode entrar escaneando um QR, mas não pode hospedar.';
 
   @override
-  String get hostNeedsMobileOrDev => 'Para hospedar é preciso o app móvel ou um build local de desenvolvimento.';
+  String get hostNeedsMobileOrDev =>
+      'Para hospedar é preciso o app móvel ou um build local de desenvolvimento.';
 
   @override
-  String get hostCreateProfileFirst => 'Crie seu perfil primeiro (Início → defina o nome de usuário) e toque em Tentar de novo.';
+  String get hostCreateProfileFirst =>
+      'Crie seu perfil primeiro (Início → defina o nome de usuário) e toque em Tentar de novo.';
 
   @override
-  String get hostCouldNotStartServer => 'Não foi possível iniciar o servidor neste dispositivo. Toque em Tentar de novo.';
+  String get hostCouldNotStartServer =>
+      'Não foi possível iniciar o servidor neste dispositivo. Toque em Tentar de novo.';
 
   @override
-  String get hostSessionDidNotStart => 'A sessão de host não iniciou. Toque em Tentar de novo.';
+  String get hostSessionDidNotStart =>
+      'A sessão de host não iniciou. Toque em Tentar de novo.';
 
   @override
   String get hostCouldNotShowQr => 'Não foi possível mostrar o QR de entrada.';
@@ -296,7 +316,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get hostMatchLabel => 'Rótulo';
 
   @override
-  String get hostMatchLabelHelp => 'Opcional. Ajuda a achar esta partida em Partidas recentes.';
+  String get hostMatchLabelHelp =>
+      'Opcional. Ajuda a achar esta partida em Partidas recentes.';
 
   @override
   String get hostMatchLabelHint => 'ex.: EDH de sexta';
@@ -329,37 +350,44 @@ class AppLocalizationsPt extends AppLocalizations {
   String get hostToggleTeamsSubtitle => 'Defina cores de time na mesa';
 
   @override
-  String get hostTogglePlanechaseSubtitle => 'Internet necessária para o deck planar';
+  String get hostTogglePlanechaseSubtitle =>
+      'Internet necessária para o deck planar';
 
   @override
-  String get hostToggleArchenemySubtitle => 'Internet necessária para o deck de schemes';
+  String get hostToggleArchenemySubtitle =>
+      'Internet necessária para o deck de schemes';
 
   @override
-  String get hostToggleBountySubtitle => 'Internet necessária para o deck de Bounty';
+  String get hostToggleBountySubtitle =>
+      'Internet necessária para o deck de Bounty';
 
   @override
   String get hostToggleAutoKo => 'Auto-KO';
 
   @override
-  String get hostToggleAutoKoSubtitle => 'Por vida, poison ou dano de commander';
+  String get hostToggleAutoKoSubtitle =>
+      'Por vida, poison ou dano de commander';
 
   @override
   String get hostToggleCommanderDmgLife => 'Dano de commander reduz vida';
 
   @override
-  String get hostToggleCommanderDmgLifeSubtitle => 'O dano de commander também reduz a vida';
+  String get hostToggleCommanderDmgLifeSubtitle =>
+      'O dano de commander também reduz a vida';
 
   @override
   String get hostTogglePhaseTracker => 'Rastreador de fases';
 
   @override
-  String get hostTogglePhaseTrackerSubtitle => 'Mostra as fases com Voltar e Próximo';
+  String get hostTogglePhaseTrackerSubtitle =>
+      'Mostra as fases com Voltar e Próximo';
 
   @override
   String get hostToggleTurnTimer => 'Timer de turno';
 
   @override
-  String get hostToggleTurnTimerSubtitle => 'Mostra o tempo decorrido a cada turno';
+  String get hostToggleTurnTimerSubtitle =>
+      'Mostra o tempo decorrido a cada turno';
 
   @override
   String get hostTurnLimit => 'Limite de turno';
@@ -411,7 +439,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckPickerManualOnly => 'Só commander manual';
 
   @override
-  String get deckPickerManualOnlySubtitle => 'Mantenha os commanders como estão; não associe a um deck salvo';
+  String get deckPickerManualOnlySubtitle =>
+      'Mantenha os commanders como estão; não associe a um deck salvo';
 
   @override
   String deckPickerEmptyForFormat(String format) {
@@ -431,10 +460,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get joinPointCamera => 'Aponte a câmera para o QR do host';
 
   @override
-  String get joinCameraRequiredSnack => 'É preciso permissão da câmera para escanear o QR do host.';
+  String get joinCameraRequiredSnack =>
+      'É preciso permissão da câmera para escanear o QR do host.';
 
   @override
-  String get joinCameraDeniedBody => 'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
+  String get joinCameraDeniedBody =>
+      'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
 
   @override
   String get joinOpenSettings => 'Abrir Ajustes';
@@ -443,16 +474,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get joinInvalidQr => 'Não é um QR válido do Life Spark.';
 
   @override
-  String get joinMissingToken => 'Este QR está sem o token de entrada. Peça ao host para atualizar o QR.';
+  String get joinMissingToken =>
+      'Este QR está sem o token de entrada. Peça ao host para atualizar o QR.';
 
   @override
-  String get joinCouldNotStartSession => 'Não foi possível iniciar a sessão. Conclua o perfil e tente de novo.';
+  String get joinCouldNotStartSession =>
+      'Não foi possível iniciar a sessão. Conclua o perfil e tente de novo.';
 
   @override
-  String get joinConnectTimeout => 'Tempo esgotado ao conectar. Confirme que está no mesmo Wi‑Fi e que o lobby do host ainda está aberto, e tente de novo.';
+  String get joinConnectTimeout =>
+      'Tempo esgotado ao conectar. Confirme que está no mesmo Wi‑Fi e que o lobby do host ainda está aberto, e tente de novo.';
 
   @override
-  String get joinHostRejected => 'O host rejeitou a conexão (versão incompatível).';
+  String get joinHostRejected =>
+      'O host rejeitou a conexão (versão incompatível).';
 
   @override
   String get joinDisconnected => 'Desconectado do host.';
@@ -494,37 +529,43 @@ class AppLocalizationsPt extends AppLocalizations {
   String get onboardingSlide1Title => 'Bem-vindo ao Life Spark';
 
   @override
-  String get onboardingSlide1Body => 'Seu companheiro de mesa Commander — vida, contadores, política e a pilha, sincronizados na mesa.';
+  String get onboardingSlide1Body =>
+      'Seu companheiro de mesa Commander — vida, contadores, política e a pilha, sincronizados na mesa.';
 
   @override
   String get onboardingSlide2Title => 'Hospedar ou entrar';
 
   @override
-  String get onboardingSlide2Body => 'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
+  String get onboardingSlide2Body =>
+      'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
 
   @override
   String get onboardingSlide3Title => 'Acompanhe sua vida';
 
   @override
-  String get onboardingSlide3Body => 'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
+  String get onboardingSlide3Body =>
+      'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
 
   @override
   String get onboardingSlide4Title => 'Fases e turnos';
 
   @override
-  String get onboardingSlide4Body => 'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
+  String get onboardingSlide4Body =>
+      'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
 
   @override
   String get onboardingSlide5Title => 'Commander e contadores';
 
   @override
-  String get onboardingSlide5Body => 'O dano de commander abre como lista de ameaças — quanto cada oponente já causou rumo a 21. Acompanhe poison (10), energy, experience e rad. Use Proliferate para somar 1 a todos de uma vez.';
+  String get onboardingSlide5Body =>
+      'O dano de commander abre como lista de ameaças — quanto cada oponente já causou rumo a 21. Acompanhe poison (10), energy, experience e rad. Use Proliferate para somar 1 a todos de uma vez.';
 
   @override
   String get onboardingSlide6Title => 'Alianças e política';
 
   @override
-  String get onboardingSlide6Body => 'Proponha alianças secretas com outros jogadores. Elas expiram sozinhas ou quebram quando vocês se atacam. Acompanhe Monarch e Initiative com um toque.';
+  String get onboardingSlide6Body =>
+      'Proponha alianças secretas com outros jogadores. Elas expiram sozinhas ou quebram quando vocês se atacam. Acompanhe Monarch e Initiative com um toque.';
 
   @override
   String get onboardingNext => 'Próximo';
@@ -539,7 +580,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileSetupTitle => 'Crie seu perfil';
 
   @override
-  String get profileSetupSubtitle => 'Escolha um nome e uma foto que a mesa reconheça.';
+  String get profileSetupSubtitle =>
+      'Escolha um nome e uma foto que a mesa reconheça.';
 
   @override
   String get profileSetupUsername => 'Nome de usuário';
@@ -563,7 +605,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionLeaveTitle => 'Sair da partida ativa?';
 
   @override
-  String get sessionLeaveMessage => 'Você tem um lobby ou partida em andamento. Sair desconectará os outros jogadores na mesa.';
+  String get sessionLeaveMessage =>
+      'Você tem um lobby ou partida em andamento. Sair desconectará os outros jogadores na mesa.';
 
   @override
   String get sessionLeaveConfirm => 'Sair';
@@ -575,10 +618,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gameLeaveTitle => 'Sair da partida?';
 
   @override
-  String get gameLeaveMessageActive => 'Você sairá da partida e voltará ao início. As estatísticas só salvam quando a mesa termina a partida.';
+  String get gameLeaveMessageActive =>
+      'Você sairá da partida e voltará ao início. As estatísticas só salvam quando a mesa termina a partida.';
 
   @override
-  String get gameLeaveMessageAfterConcede => 'Você sairá da partida ao vivo e voltará ao início. Seu resultado de desistência será salvo antes de desconectar.';
+  String get gameLeaveMessageAfterConcede =>
+      'Você sairá da partida ao vivo e voltará ao início. Seu resultado de desistência será salvo antes de desconectar.';
 
   @override
   String get gameTabPlay => 'Jogar';
@@ -633,7 +678,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gameYourTurnTapContinue => 'Toque para continuar';
 
   @override
-  String get gameYourTurnSemantics => 'Seu turno. Toque duas vezes para fechar.';
+  String get gameYourTurnSemantics =>
+      'Seu turno. Toque duas vezes para fechar.';
 
   @override
   String get gameNowPlaying => 'JOGANDO AGORA';
@@ -698,10 +744,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get forfeitTitle => 'Desistir?';
 
   @override
-  String get forfeitBodyMulti => 'Você sairá da partida. Opcionalmente avalie os oponentes antes de ir.';
+  String get forfeitBodyMulti =>
+      'Você sairá da partida. Opcionalmente avalie os oponentes antes de ir.';
 
   @override
-  String get forfeitBodySolo => 'Sua partida de prática terminará. Opcionalmente anote como foi.';
+  String get forfeitBodySolo =>
+      'Sua partida de prática terminará. Opcionalmente anote como foi.';
 
   @override
   String get forfeitRateOpponents => 'Avaliar oponentes';
@@ -713,7 +761,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get forfeitYouForfeited => 'Você desistiu';
 
   @override
-  String get forfeitStaySpectateBody => 'Os outros podem continuar jogando. Fique neste dispositivo para assistir até a mesa terminar. Voltar ao perfil agora salva sua desistência e desconecta da partida ao vivo.';
+  String get forfeitStaySpectateBody =>
+      'Os outros podem continuar jogando. Fique neste dispositivo para assistir até a mesa terminar. Voltar ao perfil agora salva sua desistência e desconecta da partida ao vivo.';
 
   @override
   String get forfeitStaySpectate => 'Ficar e assistir';
@@ -741,7 +790,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get gamePeerOfflineBody => 'Continuar esperando a reconexão ou remover da mesa?';
+  String get gamePeerOfflineBody =>
+      'Continuar esperando a reconexão ou remover da mesa?';
 
   @override
   String get gameKeepWaiting => 'Continuar esperando';
@@ -753,7 +803,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gameSlotLoadFailedTitle => 'Não foi possível carregar sua vaga';
 
   @override
-  String get gameSlotLoadFailedBody => 'A partida pode estar dessincronizada. Volte ao lobby e entre de novo.';
+  String get gameSlotLoadFailedBody =>
+      'A partida pode estar dessincronizada. Volte ao lobby e entre de novo.';
 
   @override
   String get gameReturnToLobby => 'Voltar ao lobby';
@@ -800,10 +851,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileStatGames => 'Partidas';
 
   @override
-  String get profileEmptyRecentGames => 'Jogue sua primeira partida para liberar estatísticas e histórico.';
+  String get profileEmptyRecentGames =>
+      'Jogue sua primeira partida para liberar estatísticas e histórico.';
 
   @override
-  String get profileEmptyDeckPerf => 'Adicione um deck para acompanhar o desempenho do commander aqui.';
+  String get profileEmptyDeckPerf =>
+      'Adicione um deck para acompanhar o desempenho do commander aqui.';
 
   @override
   String get profileFilterAllGames => 'Todas';
@@ -821,7 +874,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileNoMatchesFilter => 'Nenhuma partida neste filtro.';
 
   @override
-  String get profileOpenLobbySemantics => 'Abrir lobby para hospedar ou entrar em uma partida';
+  String get profileOpenLobbySemantics =>
+      'Abrir lobby para hospedar ou entrar em uma partida';
 
   @override
   String get profileShowMore => 'Mostrar mais';
@@ -830,7 +884,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileStandings => 'Classificação';
 
   @override
-  String get profileNoPlayerDetails => 'Nenhum detalhe de jogador salvo para esta partida.';
+  String get profileNoPlayerDetails =>
+      'Nenhum detalhe de jogador salvo para esta partida.';
 
   @override
   String get profileResultConcede => 'Desistência';
@@ -842,7 +897,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get decksEmptyTitle => 'Monte sua biblioteca de decks';
 
   @override
-  String get decksEmptyBody => 'Salve um deck com nome, formato e carta de capa. Ao hospedar ou entrar, escolha a lista no lobby.';
+  String get decksEmptyBody =>
+      'Salve um deck com nome, formato e carta de capa. Ao hospedar ou entrar, escolha a lista no lobby.';
 
   @override
   String get decksSearchHint => 'Buscar decks…';
@@ -883,7 +939,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lookupHelp => 'Texto Oracle e rulings oficiais do Scryfall.';
 
   @override
-  String get lookupEmptyPrompt => 'Digite o nome de uma carta para ver as regras.';
+  String get lookupEmptyPrompt =>
+      'Digite o nome de uma carta para ver as regras.';
 
   @override
   String get lookupRecentEmpty => 'Nenhuma carta consultada ainda.';
@@ -897,7 +954,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get lookupNetworkError => 'Não foi possível alcançar o Scryfall. Verifique a conexão.';
+  String get lookupNetworkError =>
+      'Não foi possível alcançar o Scryfall. Verifique a conexão.';
 
   @override
   String get lookupSearch => 'Buscar';
@@ -921,7 +979,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get endGameSaveFailedTitle => 'Não foi possível salvar os resultados.';
 
   @override
-  String get endGameSaveFailedBody => 'Suas estatísticas podem não ter atualizado. Tente de novo.';
+  String get endGameSaveFailedBody =>
+      'Suas estatísticas podem não ter atualizado. Tente de novo.';
 
   @override
   String get endGameRetry => 'Tentar de novo';
@@ -1008,7 +1067,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get feedbackHeadline => 'Ajude-nos a melhorar';
 
   @override
-  String get feedbackBody => 'Achou um bug? Tem uma ideia? Lemos cada mensagem.';
+  String get feedbackBody =>
+      'Achou um bug? Tem uma ideia? Lemos cada mensagem.';
 
   @override
   String get feedbackMessageLabel => 'Sua mensagem';
@@ -1066,7 +1126,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackClearConfirmTitle => 'Limpar a pilha?';
 
   @override
-  String get stackClearConfirmBody => 'Remove todas as magias e habilidades da pilha. Não dá para desfazer.';
+  String get stackClearConfirmBody =>
+      'Remove todas as magias e habilidades da pilha. Não dá para desfazer.';
 
   @override
   String stackActivePlayerLabel(String username) {
@@ -1088,7 +1149,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackEmptyTitle => 'Nada na pilha';
 
   @override
-  String get stackEmptyBullet1 => 'Coloque magias e habilidades aqui antes de resolverem.';
+  String get stackEmptyBullet1 =>
+      'Coloque magias e habilidades aqui antes de resolverem.';
 
   @override
   String get stackEmptyBullet2 => 'A última adicionada resolve primeiro.';
@@ -1115,10 +1177,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackFizzle => 'Falhar';
 
   @override
-  String get stackUndoFizzleSubtitle => 'Coloca esta magia de volta na pilha como ativa';
+  String get stackUndoFizzleSubtitle =>
+      'Coloca esta magia de volta na pilha como ativa';
 
   @override
-  String get stackFizzleSubtitle => 'Alvo ilegal ou a magia saiu da pilha (counter de regras)';
+  String get stackFizzleSubtitle =>
+      'Alvo ilegal ou a magia saiu da pilha (counter de regras)';
 
   @override
   String get stackMarkCountered => 'Marcar anulado';
@@ -1159,25 +1223,32 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackHelpTitle => 'Como a pilha funciona';
 
   @override
-  String get stackHelpBullet1 => 'Quando alguém joga uma magia ou usa uma habilidade, ela vai para a pilha — uma fila de espera antes de acontecer.';
+  String get stackHelpBullet1 =>
+      'Quando alguém joga uma magia ou usa uma habilidade, ela vai para a pilha — uma fila de espera antes de acontecer.';
 
   @override
-  String get stackHelpBullet2 => 'A última coisa adicionada resolve primeiro (como uma pilha de pratos). Por isso a entrada do topo diz Resolve a seguir.';
+  String get stackHelpBullet2 =>
+      'A última coisa adicionada resolve primeiro (como uma pilha de pratos). Por isso a entrada do topo diz Resolve a seguir.';
 
   @override
-  String get stackHelpBullet3 => 'Ao adicionar uma magia, busque no Scryfall e escolha a carta da lista para guardar o nome e o texto de regras corretos.';
+  String get stackHelpBullet3 =>
+      'Ao adicionar uma magia, busque no Scryfall e escolha a carta da lista para guardar o nome e o texto de regras corretos.';
 
   @override
-  String get stackHelpBullet4 => 'Para responder, toque em Responder ou use Em resposta a… — sua magia fica no topo e resolve antes da de baixo.';
+  String get stackHelpBullet4 =>
+      'Para responder, toque em Responder ou use Em resposta a… — sua magia fica no topo e resolve antes da de baixo.';
 
   @override
-  String get stackHelpBullet5 => 'Quando um efeito termina, toque em Resolver — a carta fica na pilha e fica verde. Para responder, toque em Responder. Se um counter funcionou, Marcar anulado (use o filtro Anulado para ver). Se uma magia perdeu o alvo, toque em Falhar — fica acinzentada; toque em Falhou de novo para desfazer.';
+  String get stackHelpBullet5 =>
+      'Quando um efeito termina, toque em Resolver — a carta fica na pilha e fica verde. Para responder, toque em Responder. Se um counter funcionou, Marcar anulado (use o filtro Anulado para ver). Se uma magia perdeu o alvo, toque em Falhar — fica acinzentada; toque em Falhou de novo para desfazer.';
 
   @override
-  String get stackHelpBullet6 => 'Na mesa você ainda diz “passo” em voz alta para a prioridade; esta tela ajuda todos a lembrar o que está esperando e em que ordem.';
+  String get stackHelpBullet6 =>
+      'Na mesa você ainda diz “passo” em voz alta para a prioridade; esta tela ajuda todos a lembrar o que está esperando e em que ordem.';
 
   @override
-  String get stackHelpExample => 'Exemplo: Você joga uma magia de pump na sua criatura. Seu oponente joga Lightning Bolt em resposta. Bolt resolve primeiro, depois seu pump (se o alvo ainda for legal).';
+  String get stackHelpExample =>
+      'Exemplo: Você joga uma magia de pump na sua criatura. Seu oponente joga Lightning Bolt em resposta. Bolt resolve primeiro, depois seu pump (se o alvo ainda for legal).';
 
   @override
   String get stackHelpReadMore => 'Leia mais em Magic.com';
@@ -1186,7 +1257,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackHelpCouldNotOpenLink => 'Não foi possível abrir o link';
 
   @override
-  String get stackPickerIntro => 'Busque no Scryfall para guardar o nome e o texto de regras corretos.';
+  String get stackPickerIntro =>
+      'Busque no Scryfall para guardar o nome e o texto de regras corretos.';
 
   @override
   String get stackPickerCardNameLabel => 'Nome da carta';
@@ -1201,13 +1273,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stackPickerAdd => 'Adicionar';
 
   @override
-  String get stackPickerNoCards => 'Nenhuma carta encontrada. Tente outra grafia.';
+  String get stackPickerNoCards =>
+      'Nenhuma carta encontrada. Tente outra grafia.';
 
   @override
-  String get stackPickerNetworkError => 'Não foi possível alcançar o Scryfall. Verifique sua internet.';
+  String get stackPickerNetworkError =>
+      'Não foi possível alcançar o Scryfall. Verifique sua internet.';
 
   @override
-  String get stackPickerNeedSelection => 'Escolha uma carta da lista, ou digite um nome que o Scryfall reconheça.';
+  String get stackPickerNeedSelection =>
+      'Escolha uma carta da lista, ou digite um nome que o Scryfall reconheça.';
 
   @override
   String get stackPickerTypeToSearch => 'Digite para buscar cartas';
@@ -1348,7 +1423,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get cmdDmgSheetTitle => 'Dano de Commander';
 
   @override
-  String get cmdDmgSheetSubtitle => 'Ameaças a você primeiro. Abra Causado para registrar o dano que você causou.';
+  String get cmdDmgSheetSubtitle =>
+      'Ameaças a você primeiro. Abra Causado para registrar o dano que você causou.';
 
   @override
   String cmdDmgBarA11y(String taken, String ko) {
@@ -1434,7 +1510,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get firstPlayerRollTitle => 'Rolar pelo primeiro jogador';
 
   @override
-  String get firstPlayerRollSubtitle => 'O maior resultado começa. Toque no dado para rolar!';
+  String get firstPlayerRollSubtitle =>
+      'O maior resultado começa. Toque no dado para rolar!';
 
   @override
   String get firstPlayerRollDieA11y => 'Rolar dado';
@@ -1472,7 +1549,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get firstPlayerWaitingOthersA11y => 'Aguardando outros jogadores rolarem';
+  String get firstPlayerWaitingOthersA11y =>
+      'Aguardando outros jogadores rolarem';
 
   @override
   String get firstPlayerRollToContinueA11y => 'Role o dado para continuar';
@@ -1497,7 +1575,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get firstPlayerTurnOrderTitle => 'Ordem de turnos';
 
   @override
-  String get firstPlayerTurnOrderSubtitle => 'O maior resultado lidera — o jogo segue nesta ordem.';
+  String get firstPlayerTurnOrderSubtitle =>
+      'O maior resultado lidera — o jogo segue nesta ordem.';
 
   @override
   String get firstPlayerStartGame => 'Começar jogo';
@@ -1551,7 +1630,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get historyEmptyTitle => 'Nenhuma ação ainda';
 
   @override
-  String get historyEmptyBody => 'Mudanças de vida, contadores e outras ações aparecerão aqui conforme o jogo avança.';
+  String get historyEmptyBody =>
+      'Mudanças de vida, contadores e outras ações aparecerão aqui conforme o jogo avança.';
 
   @override
   String historyTurn(String turn) {
@@ -1591,7 +1671,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get overviewPlayers => 'Jogadores';
 
   @override
-  String get overviewHoldDragReorder => 'Segure e arraste para reordenar turnos';
+  String get overviewHoldDragReorder =>
+      'Segure e arraste para reordenar turnos';
 
   @override
   String get overviewDecreaseLife => 'Diminuir vida';
@@ -1706,7 +1787,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dialsSectionTokensZones => 'Tokens e zonas';
 
   @override
-  String get dialsAllBuiltInsOnStrip => 'Todos os contadores embutidos já estão na sua faixa. Remova um para liberar um espaço.';
+  String get dialsAllBuiltInsOnStrip =>
+      'Todos os contadores embutidos já estão na sua faixa. Remova um para liberar um espaço.';
 
   @override
   String get dialsAddCounterTooltip => 'Adicionar contador';
@@ -1733,31 +1815,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get hubGuideSlidePlayTitle => 'Jogar';
 
   @override
-  String get hubGuideSlidePlayBody => 'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
+  String get hubGuideSlidePlayBody =>
+      'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
 
   @override
   String get hubGuideSlideStackTitle => 'Pilha';
 
   @override
-  String get hubGuideSlideStackBody => 'A pilha é para Hold Priority e resolver efeitos.';
+  String get hubGuideSlideStackBody =>
+      'A pilha é para Hold Priority e resolver efeitos.';
 
   @override
   String get hubGuideSlideLookupTitle => 'Busca';
 
   @override
-  String get hubGuideSlideLookupBody => 'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
+  String get hubGuideSlideLookupBody =>
+      'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Visão da mesa';
 
   @override
-  String get hubGuideSlideTableBody => 'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
+  String get hubGuideSlideTableBody =>
+      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Seu turno e Commander';
 
   @override
-  String get hubGuideSlideCommanderBody => 'Quando o assento for seu, toque no aviso Seu turno para dispensá-lo. O coração rastreia dano de Commander até 21.';
+  String get hubGuideSlideCommanderBody =>
+      'Quando o assento for seu, toque no aviso Seu turno para dispensá-lo. O coração rastreia dano de Commander até 21.';
 
   @override
   String lifeA11yEliminatedAt(String life) {
@@ -1788,7 +1875,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get phasePickerTitle => 'Selecionar fase';
 
   @override
-  String get phasePickerSubtitle => 'Role e toque em uma fase, ou use Definir fase para o passo destacado.';
+  String get phasePickerSubtitle =>
+      'Role e toque em uma fase, ou use Definir fase para o passo destacado.';
 
   @override
   String phasePickerSetPhase(String phase) {
@@ -1813,7 +1901,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get whisperSendFailed => 'Não foi possível enviar — aguarde um momento ou verifique a conexão.';
+  String get whisperSendFailed =>
+      'Não foi possível enviar — aguarde um momento ou verifique a conexão.';
 
   @override
   String whisperSheetTitle(String username) {
@@ -1821,7 +1910,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get whisperSheetSubtitle => 'Só eles veem — some depois. Não é salvo no histórico.';
+  String get whisperSheetSubtitle =>
+      'Só eles veem — some depois. Não é salvo no histórico.';
 
   @override
   String get whisperCustomLabel => 'Mensagem personalizada';
@@ -1843,7 +1933,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get politicsTapToAssignA11y => 'Política da mesa. Toque para atribuir.';
+  String get politicsTapToAssignA11y =>
+      'Política da mesa. Toque para atribuir.';
 
   @override
   String get politicsStatusEmpty => 'Sem Monarch · Sem Initiative · —';
@@ -1947,7 +2038,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get variantLoading => 'Carregando decks de variante…';
 
   @override
-  String get variantLoadFailed => 'Não foi possível carregar os decks (internet necessária)';
+  String get variantLoadFailed =>
+      'Não foi possível carregar os decks (internet necessária)';
 
   @override
   String get variantPlanechase => 'Planechase';
@@ -1972,7 +2064,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get commanderSelectSearchFailed => 'Não foi possível buscar. Verifique a internet e tente de novo.';
+  String get commanderSelectSearchFailed =>
+      'Não foi possível buscar. Verifique a internet e tente de novo.';
 
   @override
   String get commanderSelectEditCommanders => 'Editar commanders';
@@ -1993,7 +2086,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get commanderSelectCommanderTitle => 'Selecionar Commander';
 
   @override
-  String get commanderSelectCoverHint => 'Escolha qualquer carta para a arte do deck — não é sua lista completa.';
+  String get commanderSelectCoverHint =>
+      'Escolha qualquer carta para a arte do deck — não é sua lista completa.';
 
   @override
   String get commanderSelectSearchPartnerHint => 'Buscar commander Partner…';
@@ -2011,10 +2105,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get commanderSelectInDeck => 'Neste deck';
 
   @override
-  String get commanderSelectScryfallCommanderHelp => 'Digite um nome de commander para buscar no Scryfall.';
+  String get commanderSelectScryfallCommanderHelp =>
+      'Digite um nome de commander para buscar no Scryfall.';
 
   @override
-  String get commanderSelectScryfallCardHelp => 'Digite um nome de carta para buscar no Scryfall.';
+  String get commanderSelectScryfallCardHelp =>
+      'Digite um nome de carta para buscar no Scryfall.';
 
   @override
   String get commanderSelectLabelCommander => 'Commander';
@@ -2070,7 +2166,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckOptionsNameHint => 'ex.: Raffine Tempo';
 
   @override
-  String get newDeckChooseStyleError => 'Escolha um estilo de deck para continuar';
+  String get newDeckChooseStyleError =>
+      'Escolha um estilo de deck para continuar';
 
   @override
   String get newDeckTitle => 'Novo deck';
@@ -2079,7 +2176,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get newDeckSubtitle => 'Passo 1 de 2 — detalhes';
 
   @override
-  String get newDeckIntro => 'Nomeie seu deck, escolha formato e estilo. Em seguida você escolhe o commander ou a carta de capa.';
+  String get newDeckIntro =>
+      'Nomeie seu deck, escolha formato e estilo. Em seguida você escolhe o commander ou a carta de capa.';
 
   @override
   String get newDeckNameLabel => 'Nome do deck';
@@ -2125,139 +2223,162 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckStyleBattlecruiser => 'Battlecruiser';
 
   @override
-  String get deckStyleBattlecruiserDesc => 'Criaturas grandes e dano na cara; pouca interação, mesas de jogadores novos.';
+  String get deckStyleBattlecruiserDesc =>
+      'Criaturas grandes e dano na cara; pouca interação, mesas de jogadores novos.';
 
   @override
   String get deckStyleStax => 'Stax';
 
   @override
-  String get deckStyleStaxDesc => 'Atrasa ou para os oponentes e vence enquanto eles não conseguem responder.';
+  String get deckStyleStaxDesc =>
+      'Atrasa ou para os oponentes e vence enquanto eles não conseguem responder.';
 
   @override
   String get deckStyleSpellslinger => 'Spellslinger';
 
   @override
-  String get deckStyleSpellslingerDesc => 'Principalmente instantâneos e feitiços; cópias estilo storm para vitórias rápidas.';
+  String get deckStyleSpellslingerDesc =>
+      'Principalmente instantâneos e feitiços; cópias estilo storm para vitórias rápidas.';
 
   @override
   String get deckStyleControl => 'Controle';
 
   @override
-  String get deckStyleControlDesc => 'Respostas e gestão do tabuleiro até dominar o jogo por completo.';
+  String get deckStyleControlDesc =>
+      'Respostas e gestão do tabuleiro até dominar o jogo por completo.';
 
   @override
   String get deckStylePillowfort => 'Pillowfort';
 
   @override
-  String get deckStylePillowfortDesc => 'Impostos e dissuasão que encarecem atacá-lo; condições alternativas de vitória.';
+  String get deckStylePillowfortDesc =>
+      'Impostos e dissuasão que encarecem atacá-lo; condições alternativas de vitória.';
 
   @override
   String get deckStyleVoltron => 'Voltron';
 
   @override
-  String get deckStyleVoltronDesc => 'Empilha equipamentos e auras em um comandante protegido.';
+  String get deckStyleVoltronDesc =>
+      'Empilha equipamentos e auras em um comandante protegido.';
 
   @override
   String get deckStyleGroupHug => 'Group Hug';
 
   @override
-  String get deckStyleGroupHugDesc => 'Bônus pequenos para toda a mesa que montam uma linha de vitória oculta.';
+  String get deckStyleGroupHugDesc =>
+      'Bônus pequenos para toda a mesa que montam uma linha de vitória oculta.';
 
   @override
   String get deckStyleGroupSlug => 'Group Slug';
 
   @override
-  String get deckStyleGroupSlugDesc => 'Perda de vidas ou descarte igual para todos até esgotar a mesa.';
+  String get deckStyleGroupSlugDesc =>
+      'Perda de vidas ou descarte igual para todos até esgotar a mesa.';
 
   @override
   String get deckStyleReanimator => 'Reanimator';
 
   @override
-  String get deckStyleReanimatorDesc => 'Enche o cemitério e depois traz criaturas enormes a baixo custo.';
+  String get deckStyleReanimatorDesc =>
+      'Enche o cemitério e depois traz criaturas enormes a baixo custo.';
 
   @override
   String get deckStyleMill => 'Mill';
 
   @override
-  String get deckStyleMillDesc => 'Esvazia bibliotecas no exílio ou cemitério para vencer por não comprar.';
+  String get deckStyleMillDesc =>
+      'Esvazia bibliotecas no exílio ou cemitério para vencer por não comprar.';
 
   @override
   String get deckStyleStealTheft => 'Roubo';
 
   @override
-  String get deckStyleStealTheftDesc => 'Pega permanentes dos oponentes e aproveita o mais forte da mesa.';
+  String get deckStyleStealTheftDesc =>
+      'Pega permanentes dos oponentes e aproveita o mais forte da mesa.';
 
   @override
   String get deckStyleTribal => 'Tribal';
 
   @override
-  String get deckStyleTribalDesc => 'Sinergia de tipo de criatura com lordes e recompensas tribais.';
+  String get deckStyleTribalDesc =>
+      'Sinergia de tipo de criatura com lordes e recompensas tribais.';
 
   @override
   String get deckStyleSliver => 'Sliver';
 
   @override
-  String get deckStyleSliverDesc => 'Colmeia de Slivers que fortalece cada outro Sliver no tabuleiro.';
+  String get deckStyleSliverDesc =>
+      'Colmeia de Slivers que fortalece cada outro Sliver no tabuleiro.';
 
   @override
   String get deckStyleTokens => 'Fichas';
 
   @override
-  String get deckStyleTokensDesc => 'Geração em massa de fichas mais hinos para mortes súbitas em combate.';
+  String get deckStyleTokensDesc =>
+      'Geração em massa de fichas mais hinos para mortes súbitas em combate.';
 
   @override
   String get deckStyleAristocrats => 'Aristocratas';
 
   @override
-  String get deckStyleAristocratsDesc => 'Loops de sacrifício com gatilhos de morte e ETB, mais recorrência.';
+  String get deckStyleAristocratsDesc =>
+      'Loops de sacrifício com gatilhos de morte e ETB, mais recorrência.';
 
   @override
   String get deckStyleWeenie => 'Weenie';
 
   @override
-  String get deckStyleWeenieDesc => 'Muitas criaturas pequenas que se reforçam para ataques amplos.';
+  String get deckStyleWeenieDesc =>
+      'Muitas criaturas pequenas que se reforçam para ataques amplos.';
 
   @override
   String get deckStyleLands => 'Terrenos';
 
   @override
-  String get deckStyleLandsDesc => 'Motores de landfall e centrados em terrenos; difíceis de interagir.';
+  String get deckStyleLandsDesc =>
+      'Motores de landfall e centrados em terrenos; difíceis de interagir.';
 
   @override
   String get deckStyleSuperfriends => 'Superfriends';
 
   @override
-  String get deckStyleSuperfriendsDesc => 'Cadeias de planeswalkers com lealdade extra e mais ativações.';
+  String get deckStyleSuperfriendsDesc =>
+      'Cadeias de planeswalkers com lealdade extra e mais ativações.';
 
   @override
   String get deckStyleArtifact => 'Artefato';
 
   @override
-  String get deckStyleArtifactDesc => 'Sinergias de artefatos e máquinas, muitas vezes com suporte azul.';
+  String get deckStyleArtifactDesc =>
+      'Sinergias de artefatos e máquinas, muitas vezes com suporte azul.';
 
   @override
   String get deckStyleInfect => 'Infect';
 
   @override
-  String get deckStyleInfectDesc => 'Marcadores de veneno em vez de vidas; forte em mesas pequenas.';
+  String get deckStyleInfectDesc =>
+      'Marcadores de veneno em vez de vidas; forte em mesas pequenas.';
 
   @override
   String get deckStyleCounters => 'Marcadores';
 
   @override
-  String get deckStyleCountersDesc => 'Recompensas de marcadores +1/+1 e habilidades de marcadores.';
+  String get deckStyleCountersDesc =>
+      'Recompensas de marcadores +1/+1 e habilidades de marcadores.';
 
   @override
   String get deckStyleChaos => 'Caos';
 
   @override
-  String get deckStyleChaosDesc => 'Efeitos aleatórios ou disruptivos que distorcem planos normais.';
+  String get deckStyleChaosDesc =>
+      'Efeitos aleatórios ou disruptivos que distorcem planos normais.';
 
   @override
   String get deckStylePolitical => 'Político';
 
   @override
-  String get deckStylePoliticalDesc => 'Votos, acordos e política de mesa para direcionar o resultado.';
+  String get deckStylePoliticalDesc =>
+      'Votos, acordos e política de mesa para direcionar o resultado.';
 
   @override
   String get profileOptionsTitle => 'Perfil';
@@ -2272,13 +2393,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profileOptionsBackup => 'Fazer backup do perfil';
 
   @override
-  String get profileOptionsBackupSubtitle => 'Salve perfil, decks, jogos e feedback neste celular';
+  String get profileOptionsBackupSubtitle =>
+      'Salve perfil, decks, jogos e feedback neste celular';
 
   @override
   String get profileOptionsRestore => 'Carregar backup';
 
   @override
-  String get profileOptionsRestoreSubtitle => 'Substitui todos os dados locais por um arquivo .lifespark';
+  String get profileOptionsRestoreSubtitle =>
+      'Substitui todos os dados locais por um arquivo .lifespark';
 
   @override
   String get profilePicTitle => 'Foto de perfil';
@@ -2289,10 +2412,12 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get profilePicSearchFailed => 'Não foi possível buscar. Verifique a internet e tente de novo.';
+  String get profilePicSearchFailed =>
+      'Não foi possível buscar. Verifique a internet e tente de novo.';
 
   @override
-  String get profilePicPhotoFailed => 'Não foi possível usar essa foto. Tente outra imagem.';
+  String get profilePicPhotoFailed =>
+      'Não foi possível usar essa foto. Tente outra imagem.';
 
   @override
   String get profilePicCommander => 'Commander';
@@ -2313,16 +2438,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get profilePicOrSearch => 'Ou busque arte de carta de MTG';
 
   @override
-  String get profilePicSearchHint => 'Buscar cartas de MTG para foto de perfil…';
+  String get profilePicSearchHint =>
+      'Buscar cartas de MTG para foto de perfil…';
 
   @override
-  String get profilePicHelp => 'Envie uma foto, tire uma ou busque uma carta—a arte vira sua foto de perfil.';
+  String get profilePicHelp =>
+      'Envie uma foto, tire uma ou busque uma carta—a arte vira sua foto de perfil.';
 
   @override
   String get ranksInfoTitle => 'Ranks e níveis';
 
   @override
-  String get ranksInfoBody => 'O nível é seu progresso exato. O rank é o título da sua faixa de nível. Os tiers metálicos agrupam esses ranks.';
+  String get ranksInfoBody =>
+      'O nível é seu progresso exato. O rank é o título da sua faixa de nível. Os tiers metálicos agrupam esses ranks.';
 
   @override
   String ranksInfoLevelRange(int min, int max) {
@@ -2407,7 +2535,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get statsLevelProgress => 'Progresso de nível';
 
   @override
-  String get statsLevelProgressA11y => 'Progresso de nível. Ver todos os ranks.';
+  String get statsLevelProgressA11y =>
+      'Progresso de nível. Ver todos os ranks.';
 
   @override
   String get statsGood => 'Bom';
@@ -2450,7 +2579,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get carouselCloseReturnsSummary => 'O botão Fechar volta ao resumo';
 
   @override
-  String get carouselShowMoreDetails => 'Mostrar mais para detalhes completos, ou toque no card';
+  String get carouselShowMoreDetails =>
+      'Mostrar mais para detalhes completos, ou toque no card';
 
   @override
   String get decksClearSearchTooltip => 'Limpar';
@@ -2476,7 +2606,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsAboutScryfall => 'Scryfall';
 
   @override
-  String get settingsAboutDisclaimer => 'Life Spark é Fan Content não oficial permitido pela Fan Content Policy. Não aprovado/endossado pela Wizards. Parte do material é propriedade da Wizards of the Coast. ©Wizards of the Coast LLC.';
+  String get settingsAboutDisclaimer =>
+      'Life Spark é Fan Content não oficial permitido pela Fan Content Policy. Não aprovado/endossado pela Wizards. Parte do material é propriedade da Wizards of the Coast. ©Wizards of the Coast LLC.';
 
   @override
   String get feedbackLike => 'Curtir';
@@ -2613,7 +2744,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get cmdDmgEmptyPod => 'Os oponentes aparecerão aqui quando outros entrarem na mesa.';
+  String get cmdDmgEmptyPod =>
+      'Os oponentes aparecerão aqui quando outros entrarem na mesa.';
 
   @override
   String get statusOut => 'FORA';
@@ -2659,7 +2791,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get backupNotValidJson => 'O arquivo de backup não é um JSON válido.';
 
   @override
-  String get backupCouldNotRead => 'Não foi possível ler o arquivo de backup selecionado.';
+  String get backupCouldNotRead =>
+      'Não foi possível ler o arquivo de backup selecionado.';
 
   @override
   String logLifeChange(String name, String delta) {
@@ -2667,7 +2800,12 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String logCounterChange(String name, String counter, String delta, String value) {
+  String logCounterChange(
+    String name,
+    String counter,
+    String delta,
+    String value,
+  ) {
     return '$name: $counter $delta (→ $value)';
   }
 
@@ -2852,7 +2990,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gameTabLookup => 'Regras';
 
   @override
-  String get lookupRulingsError => 'Não foi possível carregar as rulings. Verifique a conexão.';
+  String get lookupRulingsError =>
+      'Não foi possível carregar as rulings. Verifique a conexão.';
 
   @override
   String lookupFirstMatches(int count) {
@@ -2894,7 +3033,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckAlbumPasteTitle => 'Colar lista do deck';
 
   @override
-  String get deckAlbumPasteHint => 'Uma carta por linha, como 1 Sol Ring. Em construído, uma linha Sideboard começa o sideboard.';
+  String get deckAlbumPasteHint =>
+      'Uma carta por linha, como 1 Sol Ring. Em construído, uma linha Sideboard começa o sideboard.';
 
   @override
   String get deckAlbumPasteAction => 'Guardar lista';
@@ -2916,7 +3056,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckAlbumReplaceTitle => 'Substituir esta lista?';
 
   @override
-  String get deckAlbumReplaceBody => 'As cartas deste deck serão substituídas pela lista colada.';
+  String get deckAlbumReplaceBody =>
+      'As cartas deste deck serão substituídas pela lista colada.';
 
   @override
   String get deckAlbumReplaceConfirm => 'Substituir';
@@ -2973,7 +3114,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get deckStatsToken => 'Fichas';
 
   @override
-  String get deckStatsEmpty => 'Adiciona cartas para ver as estatísticas deste deck.';
+  String get deckStatsEmpty =>
+      'Adiciona cartas para ver as estatísticas deste deck.';
 
   @override
   String get deckStatsNone => 'Nenhum';
@@ -3035,7 +3177,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get deckAlbumCopyLimit => 'Uma carta desta lista ultrapassa o limite de cópias deste formato.';
+  String get deckAlbumCopyLimit =>
+      'Uma carta desta lista ultrapassa o limite de cópias deste formato.';
 
   @override
   String get deckAlbumCardBracket => 'Bracket';
@@ -3123,10 +3266,12 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get deckBracketCombosUnavailable => 'Não foi possível verificar combos de duas cartas.';
+  String get deckBracketCombosUnavailable =>
+      'Não foi possível verificar combos de duas cartas.';
 
   @override
-  String get deckBracketChoose => 'Escolhe um bracket. Não pode ficar abaixo do piso deste deck.';
+  String get deckBracketChoose =>
+      'Escolhe um bracket. Não pode ficar abaixo do piso deste deck.';
 
   @override
   String get deckBracketAnalyze => 'Analisar';
@@ -3155,7 +3300,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get collectionAlbumFilterEmpty => 'Vazio';
 
   @override
-  String get collectionAlbumsEmpty => 'Cria um álbum e adiciona as cartas que tens.';
+  String get collectionAlbumsEmpty =>
+      'Cria um álbum e adiciona as cartas que tens.';
 
   @override
   String get collectionNewAlbum => 'Novo álbum';
@@ -3181,7 +3327,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get collectionAlbumEmpty => 'Adiciona as cartas que tens neste álbum.';
 
   @override
-  String get collectionAlbumReplaceBody => 'As cartas deste álbum serão substituídas pela lista colada.';
+  String get collectionAlbumReplaceBody =>
+      'As cartas deste álbum serão substituídas pela lista colada.';
 
   @override
   String get collectionRenameAlbum => 'Renomear álbum';
@@ -3201,7 +3348,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get collectionAddSearch => 'Pesquisar';
 
   @override
-  String get collectionAddSearchBody => 'Pesquisa cartas e adiciona-as à lista.';
+  String get collectionAddSearchBody =>
+      'Pesquisa cartas e adiciona-as à lista.';
 
   @override
   String get deckAddSearchBody => 'Pesquisa cartas e adiciona-as à lista.';
@@ -3285,7 +3433,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
 class AppLocalizationsPtBr extends AppLocalizationsPt {
-  AppLocalizationsPtBr(): super('pt_BR');
+  AppLocalizationsPtBr() : super('pt_BR');
 
   @override
   String get appTitle => 'Life Spark';
@@ -3331,7 +3479,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsKeepDisplayAwake => 'Manter tela ligada';
 
   @override
-  String get settingsKeepDisplayAwakeSubtitle => 'Impede que a tela desligue durante uma partida';
+  String get settingsKeepDisplayAwakeSubtitle =>
+      'Impede que a tela desligue durante uma partida';
 
   @override
   String get settingsHideSystemBars => 'Ocultar barras de navegação e status';
@@ -3346,7 +3495,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsDarkAppearance => 'Aparência escura';
 
   @override
-  String get settingsDarkAppearanceSubtitle => 'Fundos escuros. Desligue para uma página clara.';
+  String get settingsDarkAppearanceSubtitle =>
+      'Fundos escuros. Desligue para uma página clara.';
 
   @override
   String get settingsLanguage => 'Idioma';
@@ -3384,13 +3534,15 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsHapticFeedback => 'Feedback tátil';
 
   @override
-  String get settingsHapticFeedbackSubtitle => 'Vibrar em mudanças de vida e subidas de rank';
+  String get settingsHapticFeedbackSubtitle =>
+      'Vibrar em mudanças de vida e subidas de rank';
 
   @override
   String get settingsShakeToUndo => 'Agitar para desfazer';
 
   @override
-  String get settingsShakeToUndoSubtitle => 'Agite o telefone para desfazer a última mudança de vida';
+  String get settingsShakeToUndoSubtitle =>
+      'Agite o telefone para desfazer a última mudança de vida';
 
   @override
   String get settingsSectionData => 'Dados';
@@ -3399,25 +3551,29 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsCacheCommanderImages => 'Cachear imagens de comandante';
 
   @override
-  String get settingsCacheCommanderImagesSubtitle => 'Armazena imagens do Scryfall para uso offline';
+  String get settingsCacheCommanderImagesSubtitle =>
+      'Armazena imagens do Scryfall para uso offline';
 
   @override
   String get settingsClearImageCache => 'Limpar cache de imagens';
 
   @override
-  String get settingsClearImageCacheSubtitle => 'Libera espaço das imagens de cartas em cache';
+  String get settingsClearImageCacheSubtitle =>
+      'Libera espaço das imagens de cartas em cache';
 
   @override
   String get settingsSaveBackup => 'Salvar backup';
 
   @override
-  String get settingsSaveBackupSubtitle => 'Salva perfil, decks, configurações, partidas recentes e feedback em um arquivo';
+  String get settingsSaveBackupSubtitle =>
+      'Salva perfil, decks, configurações, partidas recentes e feedback em um arquivo';
 
   @override
   String get settingsRestoreBackup => 'Restaurar backup';
 
   @override
-  String get settingsRestoreBackupSubtitle => 'Substitui todos os dados locais por um arquivo .lifespark';
+  String get settingsRestoreBackupSubtitle =>
+      'Substitui todos os dados locais por um arquivo .lifespark';
 
   @override
   String get settingsSectionHelp => 'Ajuda';
@@ -3432,13 +3588,15 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsViewHubGuide => 'Ver guia do hub';
 
   @override
-  String get settingsViewHubGuideSubtitle => 'Como Jogar, Pilha, Busca e Mesa funcionam em uma partida';
+  String get settingsViewHubGuideSubtitle =>
+      'Como Jogar, Pilha, Busca e Mesa funcionam em uma partida';
 
   @override
   String get settingsViewTutorialAgain => 'Ver o tutorial novamente';
 
   @override
-  String get settingsViewTutorialAgainSubtitle => 'Relança o passo a passo inicial';
+  String get settingsViewTutorialAgainSubtitle =>
+      'Relança o passo a passo inicial';
 
   @override
   String get settingsBeta => 'Beta';
@@ -3473,7 +3631,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get backupRestoreMessage => 'Isso substitui seu perfil, decks, configurações, partidas recentes, sparks e comportamento neste dispositivo pelo backup selecionado.';
+  String get backupRestoreMessage =>
+      'Isso substitui seu perfil, decks, configurações, partidas recentes, sparks e comportamento neste dispositivo pelo backup selecionado.';
 
   @override
   String get backupRestoreConfirm => 'Restaurar';
@@ -3484,7 +3643,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get backupRestoreFailed => 'Não foi possível restaurar o backup. Verifique o arquivo e tente novamente.';
+  String get backupRestoreFailed =>
+      'Não foi possível restaurar o backup. Verifique o arquivo e tente novamente.';
 
   @override
   String get cacheCleared => 'Cache de imagens limpo.';
@@ -3514,13 +3674,15 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get lobbyHostGame => 'Hospedar partida';
 
   @override
-  String get lobbyHostGameSubtitle => 'Crie uma sessão — os outros entram com você';
+  String get lobbyHostGameSubtitle =>
+      'Crie uma sessão — os outros entram com você';
 
   @override
   String get lobbyJoinGame => 'Entrar na partida';
 
   @override
-  String get lobbyJoinGameSubtitle => 'Escaneie o QR do anfitrião na mesma Wi‑Fi';
+  String get lobbyJoinGameSubtitle =>
+      'Escaneie o QR do anfitrião na mesma Wi‑Fi';
 
   @override
   String get hostLobbyTitle => 'Lobby do host';
@@ -3534,22 +3696,28 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get hostNeedWifiRetry => 'Conecte este dispositivo ao Wi‑Fi (mesma rede dos convidados) e toque em Tentar de novo.';
+  String get hostNeedWifiRetry =>
+      'Conecte este dispositivo ao Wi‑Fi (mesma rede dos convidados) e toque em Tentar de novo.';
 
   @override
-  String get hostNeedsMobileApp => 'Para hospedar é preciso o app móvel (iOS ou Android) no mesmo Wi‑Fi. O navegador pode entrar escaneando um QR, mas não pode hospedar.';
+  String get hostNeedsMobileApp =>
+      'Para hospedar é preciso o app móvel (iOS ou Android) no mesmo Wi‑Fi. O navegador pode entrar escaneando um QR, mas não pode hospedar.';
 
   @override
-  String get hostNeedsMobileOrDev => 'Para hospedar é preciso o app móvel ou um build local de desenvolvimento.';
+  String get hostNeedsMobileOrDev =>
+      'Para hospedar é preciso o app móvel ou um build local de desenvolvimento.';
 
   @override
-  String get hostCreateProfileFirst => 'Crie seu perfil primeiro (Início → defina o nome de usuário) e toque em Tentar de novo.';
+  String get hostCreateProfileFirst =>
+      'Crie seu perfil primeiro (Início → defina o nome de usuário) e toque em Tentar de novo.';
 
   @override
-  String get hostCouldNotStartServer => 'Não foi possível iniciar o servidor neste dispositivo. Toque em Tentar de novo.';
+  String get hostCouldNotStartServer =>
+      'Não foi possível iniciar o servidor neste dispositivo. Toque em Tentar de novo.';
 
   @override
-  String get hostSessionDidNotStart => 'A sessão de host não iniciou. Toque em Tentar de novo.';
+  String get hostSessionDidNotStart =>
+      'A sessão de host não iniciou. Toque em Tentar de novo.';
 
   @override
   String get hostCouldNotShowQr => 'Não foi possível mostrar o QR de entrada.';
@@ -3575,7 +3743,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get hostMatchLabel => 'Rótulo';
 
   @override
-  String get hostMatchLabelHelp => 'Opcional. Ajuda a achar esta partida em Partidas recentes.';
+  String get hostMatchLabelHelp =>
+      'Opcional. Ajuda a achar esta partida em Partidas recentes.';
 
   @override
   String get hostMatchLabelHint => 'ex.: EDH de sexta';
@@ -3608,37 +3777,44 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get hostToggleTeamsSubtitle => 'Defina cores de time na mesa';
 
   @override
-  String get hostTogglePlanechaseSubtitle => 'Internet necessária para o deck planar';
+  String get hostTogglePlanechaseSubtitle =>
+      'Internet necessária para o deck planar';
 
   @override
-  String get hostToggleArchenemySubtitle => 'Internet necessária para o deck de schemes';
+  String get hostToggleArchenemySubtitle =>
+      'Internet necessária para o deck de schemes';
 
   @override
-  String get hostToggleBountySubtitle => 'Internet necessária para o deck de Bounty';
+  String get hostToggleBountySubtitle =>
+      'Internet necessária para o deck de Bounty';
 
   @override
   String get hostToggleAutoKo => 'Auto-KO';
 
   @override
-  String get hostToggleAutoKoSubtitle => 'Por vida, poison ou dano de commander';
+  String get hostToggleAutoKoSubtitle =>
+      'Por vida, poison ou dano de commander';
 
   @override
   String get hostToggleCommanderDmgLife => 'Dano de commander reduz vida';
 
   @override
-  String get hostToggleCommanderDmgLifeSubtitle => 'O dano de commander também reduz a vida';
+  String get hostToggleCommanderDmgLifeSubtitle =>
+      'O dano de commander também reduz a vida';
 
   @override
   String get hostTogglePhaseTracker => 'Rastreador de fases';
 
   @override
-  String get hostTogglePhaseTrackerSubtitle => 'Mostra as fases com Voltar e Próximo';
+  String get hostTogglePhaseTrackerSubtitle =>
+      'Mostra as fases com Voltar e Próximo';
 
   @override
   String get hostToggleTurnTimer => 'Timer de turno';
 
   @override
-  String get hostToggleTurnTimerSubtitle => 'Mostra o tempo decorrido a cada turno';
+  String get hostToggleTurnTimerSubtitle =>
+      'Mostra o tempo decorrido a cada turno';
 
   @override
   String get hostTurnLimit => 'Limite de turno';
@@ -3690,7 +3866,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckPickerManualOnly => 'Só commander manual';
 
   @override
-  String get deckPickerManualOnlySubtitle => 'Mantenha os commanders como estão; não associe a um deck salvo';
+  String get deckPickerManualOnlySubtitle =>
+      'Mantenha os commanders como estão; não associe a um deck salvo';
 
   @override
   String deckPickerEmptyForFormat(String format) {
@@ -3710,10 +3887,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get joinPointCamera => 'Aponte a câmera para o QR do host';
 
   @override
-  String get joinCameraRequiredSnack => 'É preciso permissão da câmera para escanear o QR do host.';
+  String get joinCameraRequiredSnack =>
+      'É preciso permissão da câmera para escanear o QR do host.';
 
   @override
-  String get joinCameraDeniedBody => 'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
+  String get joinCameraDeniedBody =>
+      'É preciso acesso à câmera para escanear o QR do anfitrião.\nSe você já permitiu em Ajustes, toque em Tentar de novo.';
 
   @override
   String get joinOpenSettings => 'Abrir Ajustes';
@@ -3722,16 +3901,20 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get joinInvalidQr => 'Não é um QR válido do Life Spark.';
 
   @override
-  String get joinMissingToken => 'Este QR está sem o token de entrada. Peça ao host para atualizar o QR.';
+  String get joinMissingToken =>
+      'Este QR está sem o token de entrada. Peça ao host para atualizar o QR.';
 
   @override
-  String get joinCouldNotStartSession => 'Não foi possível iniciar a sessão. Conclua o perfil e tente de novo.';
+  String get joinCouldNotStartSession =>
+      'Não foi possível iniciar a sessão. Conclua o perfil e tente de novo.';
 
   @override
-  String get joinConnectTimeout => 'Tempo esgotado ao conectar. Confirme que está no mesmo Wi‑Fi e que o lobby do host ainda está aberto, e tente de novo.';
+  String get joinConnectTimeout =>
+      'Tempo esgotado ao conectar. Confirme que está no mesmo Wi‑Fi e que o lobby do host ainda está aberto, e tente de novo.';
 
   @override
-  String get joinHostRejected => 'O host rejeitou a conexão (versão incompatível).';
+  String get joinHostRejected =>
+      'O host rejeitou a conexão (versão incompatível).';
 
   @override
   String get joinDisconnected => 'Desconectado do host.';
@@ -3773,37 +3956,43 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get onboardingSlide1Title => 'Bem-vindo ao Life Spark';
 
   @override
-  String get onboardingSlide1Body => 'Seu companheiro de mesa Commander — vida, contadores, política e a pilha, sincronizados na mesa.';
+  String get onboardingSlide1Body =>
+      'Seu companheiro de mesa Commander — vida, contadores, política e a pilha, sincronizados na mesa.';
 
   @override
   String get onboardingSlide2Title => 'Hospedar ou entrar';
 
   @override
-  String get onboardingSlide2Body => 'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
+  String get onboardingSlide2Body =>
+      'Um jogador hospeda a partida. Os outros escaneiam o QR dele na mesma Wi‑Fi. Sem conta. Funciona para 1 a 6 jogadores.';
 
   @override
   String get onboardingSlide3Title => 'Acompanhe sua vida';
 
   @override
-  String get onboardingSlide3Body => 'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
+  String get onboardingSlide3Body =>
+      'Toque em + ou − para mudar a vida em 1. Segure para mudar 5, e depois continua devagar. Arraste para os lados para ajustar rápido. Toque duas vezes na vida para um número exato. Desfazer fica na barra de baixo.';
 
   @override
   String get onboardingSlide4Title => 'Fases e turnos';
 
   @override
-  String get onboardingSlide4Body => 'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
+  String get onboardingSlide4Body =>
+      'Encerrar turno é o botão grande. Voltar e Avançar percorrem as fases, ou desligue o rastreador na sala. O anfitrião pode tocar em Pular se alguém travar. O tempo esgotado pausa o jogo todo.';
 
   @override
   String get onboardingSlide5Title => 'Commander e contadores';
 
   @override
-  String get onboardingSlide5Body => 'O dano de commander abre como lista de ameaças — quanto cada oponente já causou rumo a 21. Acompanhe poison (10), energy, experience e rad. Use Proliferate para somar 1 a todos de uma vez.';
+  String get onboardingSlide5Body =>
+      'O dano de commander abre como lista de ameaças — quanto cada oponente já causou rumo a 21. Acompanhe poison (10), energy, experience e rad. Use Proliferate para somar 1 a todos de uma vez.';
 
   @override
   String get onboardingSlide6Title => 'Alianças e política';
 
   @override
-  String get onboardingSlide6Body => 'Proponha alianças secretas com outros jogadores. Elas expiram sozinhas ou quebram quando vocês se atacam. Acompanhe Monarch e Initiative com um toque.';
+  String get onboardingSlide6Body =>
+      'Proponha alianças secretas com outros jogadores. Elas expiram sozinhas ou quebram quando vocês se atacam. Acompanhe Monarch e Initiative com um toque.';
 
   @override
   String get onboardingNext => 'Próximo';
@@ -3818,7 +4007,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profileSetupTitle => 'Crie seu perfil';
 
   @override
-  String get profileSetupSubtitle => 'Escolha um nome e uma foto que a mesa reconheça.';
+  String get profileSetupSubtitle =>
+      'Escolha um nome e uma foto que a mesa reconheça.';
 
   @override
   String get profileSetupUsername => 'Nome de usuário';
@@ -3842,7 +4032,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get sessionLeaveTitle => 'Sair da partida ativa?';
 
   @override
-  String get sessionLeaveMessage => 'Você tem um lobby ou partida em andamento. Sair desconectará os outros jogadores na mesa.';
+  String get sessionLeaveMessage =>
+      'Você tem um lobby ou partida em andamento. Sair desconectará os outros jogadores na mesa.';
 
   @override
   String get sessionLeaveConfirm => 'Sair';
@@ -3854,10 +4045,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get gameLeaveTitle => 'Sair da partida?';
 
   @override
-  String get gameLeaveMessageActive => 'Você sairá da partida e voltará ao início. As estatísticas só salvam quando a mesa termina a partida.';
+  String get gameLeaveMessageActive =>
+      'Você sairá da partida e voltará ao início. As estatísticas só salvam quando a mesa termina a partida.';
 
   @override
-  String get gameLeaveMessageAfterConcede => 'Você sairá da partida ao vivo e voltará ao início. Seu resultado de desistência será salvo antes de desconectar.';
+  String get gameLeaveMessageAfterConcede =>
+      'Você sairá da partida ao vivo e voltará ao início. Seu resultado de desistência será salvo antes de desconectar.';
 
   @override
   String get gameTabPlay => 'Jogar';
@@ -3912,7 +4105,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get gameYourTurnTapContinue => 'Toque para continuar';
 
   @override
-  String get gameYourTurnSemantics => 'Seu turno. Toque duas vezes para fechar.';
+  String get gameYourTurnSemantics =>
+      'Seu turno. Toque duas vezes para fechar.';
 
   @override
   String get gameNowPlaying => 'JOGANDO AGORA';
@@ -3977,10 +4171,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get forfeitTitle => 'Desistir?';
 
   @override
-  String get forfeitBodyMulti => 'Você sairá da partida. Opcionalmente avalie os oponentes antes de ir.';
+  String get forfeitBodyMulti =>
+      'Você sairá da partida. Opcionalmente avalie os oponentes antes de ir.';
 
   @override
-  String get forfeitBodySolo => 'Sua partida de prática terminará. Opcionalmente anote como foi.';
+  String get forfeitBodySolo =>
+      'Sua partida de prática terminará. Opcionalmente anote como foi.';
 
   @override
   String get forfeitRateOpponents => 'Avaliar oponentes';
@@ -3992,7 +4188,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get forfeitYouForfeited => 'Você desistiu';
 
   @override
-  String get forfeitStaySpectateBody => 'Os outros podem continuar jogando. Fique neste dispositivo para assistir até a mesa terminar. Voltar ao perfil agora salva sua desistência e desconecta da partida ao vivo.';
+  String get forfeitStaySpectateBody =>
+      'Os outros podem continuar jogando. Fique neste dispositivo para assistir até a mesa terminar. Voltar ao perfil agora salva sua desistência e desconecta da partida ao vivo.';
 
   @override
   String get forfeitStaySpectate => 'Ficar e assistir';
@@ -4020,7 +4217,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get gamePeerOfflineBody => 'Continuar esperando a reconexão ou remover da mesa?';
+  String get gamePeerOfflineBody =>
+      'Continuar esperando a reconexão ou remover da mesa?';
 
   @override
   String get gameKeepWaiting => 'Continuar esperando';
@@ -4032,7 +4230,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get gameSlotLoadFailedTitle => 'Não foi possível carregar sua vaga';
 
   @override
-  String get gameSlotLoadFailedBody => 'A partida pode estar dessincronizada. Volte ao lobby e entre de novo.';
+  String get gameSlotLoadFailedBody =>
+      'A partida pode estar dessincronizada. Volte ao lobby e entre de novo.';
 
   @override
   String get gameReturnToLobby => 'Voltar ao lobby';
@@ -4079,10 +4278,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profileStatGames => 'Partidas';
 
   @override
-  String get profileEmptyRecentGames => 'Jogue sua primeira partida para liberar estatísticas e histórico.';
+  String get profileEmptyRecentGames =>
+      'Jogue sua primeira partida para liberar estatísticas e histórico.';
 
   @override
-  String get profileEmptyDeckPerf => 'Adicione um deck para acompanhar o desempenho do commander aqui.';
+  String get profileEmptyDeckPerf =>
+      'Adicione um deck para acompanhar o desempenho do commander aqui.';
 
   @override
   String get profileFilterAllGames => 'Todas';
@@ -4100,7 +4301,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profileNoMatchesFilter => 'Nenhuma partida neste filtro.';
 
   @override
-  String get profileOpenLobbySemantics => 'Abrir lobby para hospedar ou entrar em uma partida';
+  String get profileOpenLobbySemantics =>
+      'Abrir lobby para hospedar ou entrar em uma partida';
 
   @override
   String get profileShowMore => 'Mostrar mais';
@@ -4109,7 +4311,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profileStandings => 'Classificação';
 
   @override
-  String get profileNoPlayerDetails => 'Nenhum detalhe de jogador salvo para esta partida.';
+  String get profileNoPlayerDetails =>
+      'Nenhum detalhe de jogador salvo para esta partida.';
 
   @override
   String get profileResultConcede => 'Desistência';
@@ -4121,7 +4324,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get decksEmptyTitle => 'Monte sua biblioteca de decks';
 
   @override
-  String get decksEmptyBody => 'Salve um deck com nome, formato e carta de capa. Ao hospedar ou entrar, escolha a lista no lobby.';
+  String get decksEmptyBody =>
+      'Salve um deck com nome, formato e carta de capa. Ao hospedar ou entrar, escolha a lista no lobby.';
 
   @override
   String get decksSearchHint => 'Buscar decks…';
@@ -4162,7 +4366,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get lookupHelp => 'Texto Oracle e rulings oficiais do Scryfall.';
 
   @override
-  String get lookupEmptyPrompt => 'Digite o nome de uma carta para ver as regras.';
+  String get lookupEmptyPrompt =>
+      'Digite o nome de uma carta para ver as regras.';
 
   @override
   String get lookupRecentEmpty => 'Nenhuma carta consultada ainda.';
@@ -4176,7 +4381,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get lookupNetworkError => 'Não foi possível alcançar o Scryfall. Verifique a conexão.';
+  String get lookupNetworkError =>
+      'Não foi possível alcançar o Scryfall. Verifique a conexão.';
 
   @override
   String get lookupSearch => 'Buscar';
@@ -4200,7 +4406,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get endGameSaveFailedTitle => 'Não foi possível salvar os resultados.';
 
   @override
-  String get endGameSaveFailedBody => 'Suas estatísticas podem não ter atualizado. Tente de novo.';
+  String get endGameSaveFailedBody =>
+      'Suas estatísticas podem não ter atualizado. Tente de novo.';
 
   @override
   String get endGameRetry => 'Tentar de novo';
@@ -4287,7 +4494,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get feedbackHeadline => 'Ajude-nos a melhorar';
 
   @override
-  String get feedbackBody => 'Achou um bug? Tem uma ideia? Lemos cada mensagem.';
+  String get feedbackBody =>
+      'Achou um bug? Tem uma ideia? Lemos cada mensagem.';
 
   @override
   String get feedbackMessageLabel => 'Sua mensagem';
@@ -4345,7 +4553,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackClearConfirmTitle => 'Limpar a pilha?';
 
   @override
-  String get stackClearConfirmBody => 'Remove todas as magias e habilidades da pilha. Não dá para desfazer.';
+  String get stackClearConfirmBody =>
+      'Remove todas as magias e habilidades da pilha. Não dá para desfazer.';
 
   @override
   String stackActivePlayerLabel(String username) {
@@ -4367,7 +4576,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackEmptyTitle => 'Nada na pilha';
 
   @override
-  String get stackEmptyBullet1 => 'Coloque magias e habilidades aqui antes de resolverem.';
+  String get stackEmptyBullet1 =>
+      'Coloque magias e habilidades aqui antes de resolverem.';
 
   @override
   String get stackEmptyBullet2 => 'A última adicionada resolve primeiro.';
@@ -4394,10 +4604,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackFizzle => 'Falhar';
 
   @override
-  String get stackUndoFizzleSubtitle => 'Coloca esta magia de volta na pilha como ativa';
+  String get stackUndoFizzleSubtitle =>
+      'Coloca esta magia de volta na pilha como ativa';
 
   @override
-  String get stackFizzleSubtitle => 'Alvo ilegal ou a magia saiu da pilha (counter de regras)';
+  String get stackFizzleSubtitle =>
+      'Alvo ilegal ou a magia saiu da pilha (counter de regras)';
 
   @override
   String get stackMarkCountered => 'Marcar anulado';
@@ -4438,25 +4650,32 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackHelpTitle => 'Como a pilha funciona';
 
   @override
-  String get stackHelpBullet1 => 'Quando alguém joga uma magia ou usa uma habilidade, ela vai para a pilha — uma fila de espera antes de acontecer.';
+  String get stackHelpBullet1 =>
+      'Quando alguém joga uma magia ou usa uma habilidade, ela vai para a pilha — uma fila de espera antes de acontecer.';
 
   @override
-  String get stackHelpBullet2 => 'A última coisa adicionada resolve primeiro (como uma pilha de pratos). Por isso a entrada do topo diz Resolve a seguir.';
+  String get stackHelpBullet2 =>
+      'A última coisa adicionada resolve primeiro (como uma pilha de pratos). Por isso a entrada do topo diz Resolve a seguir.';
 
   @override
-  String get stackHelpBullet3 => 'Ao adicionar uma magia, busque no Scryfall e escolha a carta da lista para guardar o nome e o texto de regras corretos.';
+  String get stackHelpBullet3 =>
+      'Ao adicionar uma magia, busque no Scryfall e escolha a carta da lista para guardar o nome e o texto de regras corretos.';
 
   @override
-  String get stackHelpBullet4 => 'Para responder, toque em Responder ou use Em resposta a… — sua magia fica no topo e resolve antes da de baixo.';
+  String get stackHelpBullet4 =>
+      'Para responder, toque em Responder ou use Em resposta a… — sua magia fica no topo e resolve antes da de baixo.';
 
   @override
-  String get stackHelpBullet5 => 'Quando um efeito termina, toque em Resolver — a carta fica na pilha e fica verde. Para responder, toque em Responder. Se um counter funcionou, Marcar anulado (use o filtro Anulado para ver). Se uma magia perdeu o alvo, toque em Falhar — fica acinzentada; toque em Falhou de novo para desfazer.';
+  String get stackHelpBullet5 =>
+      'Quando um efeito termina, toque em Resolver — a carta fica na pilha e fica verde. Para responder, toque em Responder. Se um counter funcionou, Marcar anulado (use o filtro Anulado para ver). Se uma magia perdeu o alvo, toque em Falhar — fica acinzentada; toque em Falhou de novo para desfazer.';
 
   @override
-  String get stackHelpBullet6 => 'Na mesa você ainda diz “passo” em voz alta para a prioridade; esta tela ajuda todos a lembrar o que está esperando e em que ordem.';
+  String get stackHelpBullet6 =>
+      'Na mesa você ainda diz “passo” em voz alta para a prioridade; esta tela ajuda todos a lembrar o que está esperando e em que ordem.';
 
   @override
-  String get stackHelpExample => 'Exemplo: Você joga uma magia de pump na sua criatura. Seu oponente joga Lightning Bolt em resposta. Bolt resolve primeiro, depois seu pump (se o alvo ainda for legal).';
+  String get stackHelpExample =>
+      'Exemplo: Você joga uma magia de pump na sua criatura. Seu oponente joga Lightning Bolt em resposta. Bolt resolve primeiro, depois seu pump (se o alvo ainda for legal).';
 
   @override
   String get stackHelpReadMore => 'Leia mais em Magic.com';
@@ -4465,7 +4684,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackHelpCouldNotOpenLink => 'Não foi possível abrir o link';
 
   @override
-  String get stackPickerIntro => 'Busque no Scryfall para guardar o nome e o texto de regras corretos.';
+  String get stackPickerIntro =>
+      'Busque no Scryfall para guardar o nome e o texto de regras corretos.';
 
   @override
   String get stackPickerCardNameLabel => 'Nome da carta';
@@ -4480,13 +4700,16 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get stackPickerAdd => 'Adicionar';
 
   @override
-  String get stackPickerNoCards => 'Nenhuma carta encontrada. Tente outra grafia.';
+  String get stackPickerNoCards =>
+      'Nenhuma carta encontrada. Tente outra grafia.';
 
   @override
-  String get stackPickerNetworkError => 'Não foi possível alcançar o Scryfall. Verifique sua internet.';
+  String get stackPickerNetworkError =>
+      'Não foi possível alcançar o Scryfall. Verifique sua internet.';
 
   @override
-  String get stackPickerNeedSelection => 'Escolha uma carta da lista, ou digite um nome que o Scryfall reconheça.';
+  String get stackPickerNeedSelection =>
+      'Escolha uma carta da lista, ou digite um nome que o Scryfall reconheça.';
 
   @override
   String get stackPickerTypeToSearch => 'Digite para buscar cartas';
@@ -4627,7 +4850,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get cmdDmgSheetTitle => 'Dano de Commander';
 
   @override
-  String get cmdDmgSheetSubtitle => 'Ameaças a você primeiro. Abra Causado para registrar o dano que você causou.';
+  String get cmdDmgSheetSubtitle =>
+      'Ameaças a você primeiro. Abra Causado para registrar o dano que você causou.';
 
   @override
   String cmdDmgBarA11y(String taken, String ko) {
@@ -4713,7 +4937,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get firstPlayerRollTitle => 'Rolar pelo primeiro jogador';
 
   @override
-  String get firstPlayerRollSubtitle => 'O maior resultado começa. Toque no dado para rolar!';
+  String get firstPlayerRollSubtitle =>
+      'O maior resultado começa. Toque no dado para rolar!';
 
   @override
   String get firstPlayerRollDieA11y => 'Rolar dado';
@@ -4751,7 +4976,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get firstPlayerWaitingOthersA11y => 'Aguardando outros jogadores rolarem';
+  String get firstPlayerWaitingOthersA11y =>
+      'Aguardando outros jogadores rolarem';
 
   @override
   String get firstPlayerRollToContinueA11y => 'Role o dado para continuar';
@@ -4776,7 +5002,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get firstPlayerTurnOrderTitle => 'Ordem de turnos';
 
   @override
-  String get firstPlayerTurnOrderSubtitle => 'O maior resultado lidera — o jogo segue nesta ordem.';
+  String get firstPlayerTurnOrderSubtitle =>
+      'O maior resultado lidera — o jogo segue nesta ordem.';
 
   @override
   String get firstPlayerStartGame => 'Começar jogo';
@@ -4830,7 +5057,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get historyEmptyTitle => 'Nenhuma ação ainda';
 
   @override
-  String get historyEmptyBody => 'Mudanças de vida, contadores e outras ações aparecerão aqui conforme o jogo avança.';
+  String get historyEmptyBody =>
+      'Mudanças de vida, contadores e outras ações aparecerão aqui conforme o jogo avança.';
 
   @override
   String historyTurn(String turn) {
@@ -4870,7 +5098,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get overviewPlayers => 'Jogadores';
 
   @override
-  String get overviewHoldDragReorder => 'Segure e arraste para reordenar turnos';
+  String get overviewHoldDragReorder =>
+      'Segure e arraste para reordenar turnos';
 
   @override
   String get overviewDecreaseLife => 'Diminuir vida';
@@ -4985,7 +5214,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get dialsSectionTokensZones => 'Tokens e zonas';
 
   @override
-  String get dialsAllBuiltInsOnStrip => 'Todos os contadores embutidos já estão na sua faixa. Remova um para liberar um espaço.';
+  String get dialsAllBuiltInsOnStrip =>
+      'Todos os contadores embutidos já estão na sua faixa. Remova um para liberar um espaço.';
 
   @override
   String get dialsAddCounterTooltip => 'Adicionar contador';
@@ -5012,31 +5242,36 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get hubGuideSlidePlayTitle => 'Jogar';
 
   @override
-  String get hubGuideSlidePlayBody => 'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
+  String get hubGuideSlidePlayBody =>
+      'Acompanhe vida e contadores aqui. Fim do turno fica sob a barra de fases — ou desative o rastreador de fases no lobby para um controle grande de Fim do turno.';
 
   @override
   String get hubGuideSlideStackTitle => 'Pilha';
 
   @override
-  String get hubGuideSlideStackBody => 'A pilha é para Hold Priority e resolver efeitos.';
+  String get hubGuideSlideStackBody =>
+      'A pilha é para Hold Priority e resolver efeitos.';
 
   @override
   String get hubGuideSlideLookupTitle => 'Busca';
 
   @override
-  String get hubGuideSlideLookupBody => 'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
+  String get hubGuideSlideLookupBody =>
+      'A busca abre o Scryfall sem sair do seu lugar — texto do oráculo e rulings.';
 
   @override
   String get hubGuideSlideTableTitle => 'Visão da mesa';
 
   @override
-  String get hubGuideSlideTableBody => 'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
+  String get hubGuideSlideTableBody =>
+      'Abra Mesa para todo o pod. Ferramentas tem dados e moedas que todos veem; Histórico fica no cabeçalho. Fim do turno e Desistir ficam lado a lado.';
 
   @override
   String get hubGuideSlideCommanderTitle => 'Seu turno e Commander';
 
   @override
-  String get hubGuideSlideCommanderBody => 'Quando o assento for seu, toque no aviso Seu turno para dispensá-lo. O coração rastreia dano de Commander até 21.';
+  String get hubGuideSlideCommanderBody =>
+      'Quando o assento for seu, toque no aviso Seu turno para dispensá-lo. O coração rastreia dano de Commander até 21.';
 
   @override
   String lifeA11yEliminatedAt(String life) {
@@ -5067,7 +5302,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get phasePickerTitle => 'Selecionar fase';
 
   @override
-  String get phasePickerSubtitle => 'Role e toque em uma fase, ou use Definir fase para o passo destacado.';
+  String get phasePickerSubtitle =>
+      'Role e toque em uma fase, ou use Definir fase para o passo destacado.';
 
   @override
   String phasePickerSetPhase(String phase) {
@@ -5092,7 +5328,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get whisperSendFailed => 'Não foi possível enviar — aguarde um momento ou verifique a conexão.';
+  String get whisperSendFailed =>
+      'Não foi possível enviar — aguarde um momento ou verifique a conexão.';
 
   @override
   String whisperSheetTitle(String username) {
@@ -5100,7 +5337,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get whisperSheetSubtitle => 'Só eles veem — some depois. Não é salvo no histórico.';
+  String get whisperSheetSubtitle =>
+      'Só eles veem — some depois. Não é salvo no histórico.';
 
   @override
   String get whisperCustomLabel => 'Mensagem personalizada';
@@ -5122,7 +5360,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get politicsTapToAssignA11y => 'Política da mesa. Toque para atribuir.';
+  String get politicsTapToAssignA11y =>
+      'Política da mesa. Toque para atribuir.';
 
   @override
   String get politicsStatusEmpty => 'Sem Monarch · Sem Initiative · —';
@@ -5226,7 +5465,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get variantLoading => 'Carregando decks de variante…';
 
   @override
-  String get variantLoadFailed => 'Não foi possível carregar os decks (internet necessária)';
+  String get variantLoadFailed =>
+      'Não foi possível carregar os decks (internet necessária)';
 
   @override
   String get variantPlanechase => 'Planechase';
@@ -5251,7 +5491,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get commanderSelectSearchFailed => 'Não foi possível buscar. Verifique a internet e tente de novo.';
+  String get commanderSelectSearchFailed =>
+      'Não foi possível buscar. Verifique a internet e tente de novo.';
 
   @override
   String get commanderSelectEditCommanders => 'Editar commanders';
@@ -5272,7 +5513,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get commanderSelectCommanderTitle => 'Selecionar Commander';
 
   @override
-  String get commanderSelectCoverHint => 'Escolha qualquer carta para a arte do deck — não é sua lista completa.';
+  String get commanderSelectCoverHint =>
+      'Escolha qualquer carta para a arte do deck — não é sua lista completa.';
 
   @override
   String get commanderSelectSearchPartnerHint => 'Buscar commander Partner…';
@@ -5290,10 +5532,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get commanderSelectInDeck => 'Neste deck';
 
   @override
-  String get commanderSelectScryfallCommanderHelp => 'Digite um nome de commander para buscar no Scryfall.';
+  String get commanderSelectScryfallCommanderHelp =>
+      'Digite um nome de commander para buscar no Scryfall.';
 
   @override
-  String get commanderSelectScryfallCardHelp => 'Digite um nome de carta para buscar no Scryfall.';
+  String get commanderSelectScryfallCardHelp =>
+      'Digite um nome de carta para buscar no Scryfall.';
 
   @override
   String get commanderSelectLabelCommander => 'Commander';
@@ -5349,7 +5593,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckOptionsNameHint => 'ex.: Raffine Tempo';
 
   @override
-  String get newDeckChooseStyleError => 'Escolha um estilo de deck para continuar';
+  String get newDeckChooseStyleError =>
+      'Escolha um estilo de deck para continuar';
 
   @override
   String get newDeckTitle => 'Novo deck';
@@ -5358,7 +5603,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get newDeckSubtitle => 'Passo 1 de 2 — detalhes';
 
   @override
-  String get newDeckIntro => 'Nomeie seu deck, escolha formato e estilo. Em seguida você escolhe o commander ou a carta de capa.';
+  String get newDeckIntro =>
+      'Nomeie seu deck, escolha formato e estilo. Em seguida você escolhe o commander ou a carta de capa.';
 
   @override
   String get newDeckNameLabel => 'Nome do deck';
@@ -5404,139 +5650,162 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckStyleBattlecruiser => 'Battlecruiser';
 
   @override
-  String get deckStyleBattlecruiserDesc => 'Criaturas grandes e dano na cara; pouca interação, mesas de jogadores novos.';
+  String get deckStyleBattlecruiserDesc =>
+      'Criaturas grandes e dano na cara; pouca interação, mesas de jogadores novos.';
 
   @override
   String get deckStyleStax => 'Stax';
 
   @override
-  String get deckStyleStaxDesc => 'Atrasa ou para os oponentes e vence enquanto eles não conseguem responder.';
+  String get deckStyleStaxDesc =>
+      'Atrasa ou para os oponentes e vence enquanto eles não conseguem responder.';
 
   @override
   String get deckStyleSpellslinger => 'Spellslinger';
 
   @override
-  String get deckStyleSpellslingerDesc => 'Principalmente instantâneos e feitiços; cópias estilo storm para vitórias rápidas.';
+  String get deckStyleSpellslingerDesc =>
+      'Principalmente instantâneos e feitiços; cópias estilo storm para vitórias rápidas.';
 
   @override
   String get deckStyleControl => 'Controle';
 
   @override
-  String get deckStyleControlDesc => 'Respostas e gestão do tabuleiro até dominar o jogo por completo.';
+  String get deckStyleControlDesc =>
+      'Respostas e gestão do tabuleiro até dominar o jogo por completo.';
 
   @override
   String get deckStylePillowfort => 'Pillowfort';
 
   @override
-  String get deckStylePillowfortDesc => 'Impostos e dissuasão que encarecem atacá-lo; condições alternativas de vitória.';
+  String get deckStylePillowfortDesc =>
+      'Impostos e dissuasão que encarecem atacá-lo; condições alternativas de vitória.';
 
   @override
   String get deckStyleVoltron => 'Voltron';
 
   @override
-  String get deckStyleVoltronDesc => 'Empilha equipamentos e auras em um comandante protegido.';
+  String get deckStyleVoltronDesc =>
+      'Empilha equipamentos e auras em um comandante protegido.';
 
   @override
   String get deckStyleGroupHug => 'Group Hug';
 
   @override
-  String get deckStyleGroupHugDesc => 'Bônus pequenos para toda a mesa que montam uma linha de vitória oculta.';
+  String get deckStyleGroupHugDesc =>
+      'Bônus pequenos para toda a mesa que montam uma linha de vitória oculta.';
 
   @override
   String get deckStyleGroupSlug => 'Group Slug';
 
   @override
-  String get deckStyleGroupSlugDesc => 'Perda de vidas ou descarte igual para todos até esgotar a mesa.';
+  String get deckStyleGroupSlugDesc =>
+      'Perda de vidas ou descarte igual para todos até esgotar a mesa.';
 
   @override
   String get deckStyleReanimator => 'Reanimator';
 
   @override
-  String get deckStyleReanimatorDesc => 'Enche o cemitério e depois traz criaturas enormes a baixo custo.';
+  String get deckStyleReanimatorDesc =>
+      'Enche o cemitério e depois traz criaturas enormes a baixo custo.';
 
   @override
   String get deckStyleMill => 'Mill';
 
   @override
-  String get deckStyleMillDesc => 'Esvazia bibliotecas no exílio ou cemitério para vencer por não comprar.';
+  String get deckStyleMillDesc =>
+      'Esvazia bibliotecas no exílio ou cemitério para vencer por não comprar.';
 
   @override
   String get deckStyleStealTheft => 'Roubo';
 
   @override
-  String get deckStyleStealTheftDesc => 'Pega permanentes dos oponentes e aproveita o mais forte da mesa.';
+  String get deckStyleStealTheftDesc =>
+      'Pega permanentes dos oponentes e aproveita o mais forte da mesa.';
 
   @override
   String get deckStyleTribal => 'Tribal';
 
   @override
-  String get deckStyleTribalDesc => 'Sinergia de tipo de criatura com lordes e recompensas tribais.';
+  String get deckStyleTribalDesc =>
+      'Sinergia de tipo de criatura com lordes e recompensas tribais.';
 
   @override
   String get deckStyleSliver => 'Sliver';
 
   @override
-  String get deckStyleSliverDesc => 'Colmeia de Slivers que fortalece cada outro Sliver no tabuleiro.';
+  String get deckStyleSliverDesc =>
+      'Colmeia de Slivers que fortalece cada outro Sliver no tabuleiro.';
 
   @override
   String get deckStyleTokens => 'Fichas';
 
   @override
-  String get deckStyleTokensDesc => 'Geração em massa de fichas mais hinos para mortes súbitas em combate.';
+  String get deckStyleTokensDesc =>
+      'Geração em massa de fichas mais hinos para mortes súbitas em combate.';
 
   @override
   String get deckStyleAristocrats => 'Aristocratas';
 
   @override
-  String get deckStyleAristocratsDesc => 'Loops de sacrifício com gatilhos de morte e ETB, mais recorrência.';
+  String get deckStyleAristocratsDesc =>
+      'Loops de sacrifício com gatilhos de morte e ETB, mais recorrência.';
 
   @override
   String get deckStyleWeenie => 'Weenie';
 
   @override
-  String get deckStyleWeenieDesc => 'Muitas criaturas pequenas que se reforçam para ataques amplos.';
+  String get deckStyleWeenieDesc =>
+      'Muitas criaturas pequenas que se reforçam para ataques amplos.';
 
   @override
   String get deckStyleLands => 'Terrenos';
 
   @override
-  String get deckStyleLandsDesc => 'Motores de landfall e centrados em terrenos; difíceis de interagir.';
+  String get deckStyleLandsDesc =>
+      'Motores de landfall e centrados em terrenos; difíceis de interagir.';
 
   @override
   String get deckStyleSuperfriends => 'Superfriends';
 
   @override
-  String get deckStyleSuperfriendsDesc => 'Cadeias de planeswalkers com lealdade extra e mais ativações.';
+  String get deckStyleSuperfriendsDesc =>
+      'Cadeias de planeswalkers com lealdade extra e mais ativações.';
 
   @override
   String get deckStyleArtifact => 'Artefato';
 
   @override
-  String get deckStyleArtifactDesc => 'Sinergias de artefatos e máquinas, muitas vezes com suporte azul.';
+  String get deckStyleArtifactDesc =>
+      'Sinergias de artefatos e máquinas, muitas vezes com suporte azul.';
 
   @override
   String get deckStyleInfect => 'Infect';
 
   @override
-  String get deckStyleInfectDesc => 'Marcadores de veneno em vez de vidas; forte em mesas pequenas.';
+  String get deckStyleInfectDesc =>
+      'Marcadores de veneno em vez de vidas; forte em mesas pequenas.';
 
   @override
   String get deckStyleCounters => 'Marcadores';
 
   @override
-  String get deckStyleCountersDesc => 'Recompensas de marcadores +1/+1 e habilidades de marcadores.';
+  String get deckStyleCountersDesc =>
+      'Recompensas de marcadores +1/+1 e habilidades de marcadores.';
 
   @override
   String get deckStyleChaos => 'Caos';
 
   @override
-  String get deckStyleChaosDesc => 'Efeitos aleatórios ou disruptivos que distorcem planos normais.';
+  String get deckStyleChaosDesc =>
+      'Efeitos aleatórios ou disruptivos que distorcem planos normais.';
 
   @override
   String get deckStylePolitical => 'Político';
 
   @override
-  String get deckStylePoliticalDesc => 'Votos, acordos e política de mesa para direcionar o resultado.';
+  String get deckStylePoliticalDesc =>
+      'Votos, acordos e política de mesa para direcionar o resultado.';
 
   @override
   String get profileOptionsTitle => 'Perfil';
@@ -5551,13 +5820,15 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profileOptionsBackup => 'Fazer backup do perfil';
 
   @override
-  String get profileOptionsBackupSubtitle => 'Salve perfil, decks, jogos e feedback neste celular';
+  String get profileOptionsBackupSubtitle =>
+      'Salve perfil, decks, jogos e feedback neste celular';
 
   @override
   String get profileOptionsRestore => 'Carregar backup';
 
   @override
-  String get profileOptionsRestoreSubtitle => 'Substitui todos os dados locais por um arquivo .lifespark';
+  String get profileOptionsRestoreSubtitle =>
+      'Substitui todos os dados locais por um arquivo .lifespark';
 
   @override
   String get profilePicTitle => 'Foto de perfil';
@@ -5568,10 +5839,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get profilePicSearchFailed => 'Não foi possível buscar. Verifique a internet e tente de novo.';
+  String get profilePicSearchFailed =>
+      'Não foi possível buscar. Verifique a internet e tente de novo.';
 
   @override
-  String get profilePicPhotoFailed => 'Não foi possível usar essa foto. Tente outra imagem.';
+  String get profilePicPhotoFailed =>
+      'Não foi possível usar essa foto. Tente outra imagem.';
 
   @override
   String get profilePicCommander => 'Commander';
@@ -5592,16 +5865,19 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get profilePicOrSearch => 'Ou busque arte de carta de MTG';
 
   @override
-  String get profilePicSearchHint => 'Buscar cartas de MTG para foto de perfil…';
+  String get profilePicSearchHint =>
+      'Buscar cartas de MTG para foto de perfil…';
 
   @override
-  String get profilePicHelp => 'Envie uma foto, tire uma ou busque uma carta—a arte vira sua foto de perfil.';
+  String get profilePicHelp =>
+      'Envie uma foto, tire uma ou busque uma carta—a arte vira sua foto de perfil.';
 
   @override
   String get ranksInfoTitle => 'Ranks e níveis';
 
   @override
-  String get ranksInfoBody => 'O nível é seu progresso exato. O rank é o título da sua faixa de nível. Os tiers metálicos agrupam esses ranks.';
+  String get ranksInfoBody =>
+      'O nível é seu progresso exato. O rank é o título da sua faixa de nível. Os tiers metálicos agrupam esses ranks.';
 
   @override
   String ranksInfoLevelRange(int min, int max) {
@@ -5686,7 +5962,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get statsLevelProgress => 'Progresso de nível';
 
   @override
-  String get statsLevelProgressA11y => 'Progresso de nível. Ver todos os ranks.';
+  String get statsLevelProgressA11y =>
+      'Progresso de nível. Ver todos os ranks.';
 
   @override
   String get statsGood => 'Bom';
@@ -5729,7 +6006,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get carouselCloseReturnsSummary => 'O botão Fechar volta ao resumo';
 
   @override
-  String get carouselShowMoreDetails => 'Mostrar mais para detalhes completos, ou toque no card';
+  String get carouselShowMoreDetails =>
+      'Mostrar mais para detalhes completos, ou toque no card';
 
   @override
   String get decksClearSearchTooltip => 'Limpar';
@@ -5755,7 +6033,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get settingsAboutScryfall => 'Scryfall';
 
   @override
-  String get settingsAboutDisclaimer => 'Life Spark é Fan Content não oficial permitido pela Fan Content Policy. Não aprovado/endossado pela Wizards. Parte do material é propriedade da Wizards of the Coast. ©Wizards of the Coast LLC.';
+  String get settingsAboutDisclaimer =>
+      'Life Spark é Fan Content não oficial permitido pela Fan Content Policy. Não aprovado/endossado pela Wizards. Parte do material é propriedade da Wizards of the Coast. ©Wizards of the Coast LLC.';
 
   @override
   String get feedbackLike => 'Curtir';
@@ -5892,7 +6171,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get cmdDmgEmptyPod => 'Os oponentes aparecerão aqui quando outros entrarem na mesa.';
+  String get cmdDmgEmptyPod =>
+      'Os oponentes aparecerão aqui quando outros entrarem na mesa.';
 
   @override
   String get statusOut => 'FORA';
@@ -5938,7 +6218,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get backupNotValidJson => 'O arquivo de backup não é um JSON válido.';
 
   @override
-  String get backupCouldNotRead => 'Não foi possível ler o arquivo de backup selecionado.';
+  String get backupCouldNotRead =>
+      'Não foi possível ler o arquivo de backup selecionado.';
 
   @override
   String logLifeChange(String name, String delta) {
@@ -5946,7 +6227,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String logCounterChange(String name, String counter, String delta, String value) {
+  String logCounterChange(
+    String name,
+    String counter,
+    String delta,
+    String value,
+  ) {
     return '$name: $counter $delta (→ $value)';
   }
 
@@ -6131,7 +6417,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get gameTabLookup => 'Regras';
 
   @override
-  String get lookupRulingsError => 'Não foi possível carregar as rulings. Verifique a conexão.';
+  String get lookupRulingsError =>
+      'Não foi possível carregar as rulings. Verifique a conexão.';
 
   @override
   String lookupFirstMatches(int count) {
@@ -6173,7 +6460,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckAlbumPasteTitle => 'Colar lista do deck';
 
   @override
-  String get deckAlbumPasteHint => 'Uma carta por linha, como 1 Sol Ring. No construído, uma linha Sideboard começa o sideboard.';
+  String get deckAlbumPasteHint =>
+      'Uma carta por linha, como 1 Sol Ring. No construído, uma linha Sideboard começa o sideboard.';
 
   @override
   String get deckAlbumPasteAction => 'Salvar lista';
@@ -6195,7 +6483,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckAlbumReplaceTitle => 'Substituir esta lista?';
 
   @override
-  String get deckAlbumReplaceBody => 'As cartas deste deck serão substituídas pela lista colada.';
+  String get deckAlbumReplaceBody =>
+      'As cartas deste deck serão substituídas pela lista colada.';
 
   @override
   String get deckAlbumReplaceConfirm => 'Substituir';
@@ -6252,7 +6541,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckStatsToken => 'Fichas';
 
   @override
-  String get deckStatsEmpty => 'Adicione cartas para ver as estatísticas deste deck.';
+  String get deckStatsEmpty =>
+      'Adicione cartas para ver as estatísticas deste deck.';
 
   @override
   String get deckStatsNone => 'Nenhum';
@@ -6314,7 +6604,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get deckAlbumCopyLimit => 'Uma carta desta lista ultrapassa o limite de cópias deste formato.';
+  String get deckAlbumCopyLimit =>
+      'Uma carta desta lista ultrapassa o limite de cópias deste formato.';
 
   @override
   String get deckAlbumCardBracket => 'Bracket';
@@ -6402,10 +6693,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get deckBracketCombosUnavailable => 'Não foi possível verificar combos de duas cartas.';
+  String get deckBracketCombosUnavailable =>
+      'Não foi possível verificar combos de duas cartas.';
 
   @override
-  String get deckBracketChoose => 'Escolha um bracket. Ele não pode ficar abaixo do piso deste deck.';
+  String get deckBracketChoose =>
+      'Escolha um bracket. Ele não pode ficar abaixo do piso deste deck.';
 
   @override
   String get deckBracketAnalyze => 'Analisar';
@@ -6434,7 +6727,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get collectionAlbumFilterEmpty => 'Vazio';
 
   @override
-  String get collectionAlbumsEmpty => 'Crie um álbum e adicione as cartas que você tem.';
+  String get collectionAlbumsEmpty =>
+      'Crie um álbum e adicione as cartas que você tem.';
 
   @override
   String get collectionNewAlbum => 'Novo álbum';
@@ -6457,10 +6751,12 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
-  String get collectionAlbumEmpty => 'Adicione as cartas que você tem neste álbum.';
+  String get collectionAlbumEmpty =>
+      'Adicione as cartas que você tem neste álbum.';
 
   @override
-  String get collectionAlbumReplaceBody => 'As cartas deste álbum serão substituídas pela lista colada.';
+  String get collectionAlbumReplaceBody =>
+      'As cartas deste álbum serão substituídas pela lista colada.';
 
   @override
   String get collectionRenameAlbum => 'Renomear álbum';
@@ -6489,7 +6785,8 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String get deckAddPasteBody => 'Cole uma lista de deck.';
 
   @override
-  String get collectionAddPasteBody => 'Cole uma lista das cartas que você tem.';
+  String get collectionAddPasteBody =>
+      'Cole uma lista das cartas que você tem.';
 
   @override
   String get collectionSearchTitle => 'Buscar';
