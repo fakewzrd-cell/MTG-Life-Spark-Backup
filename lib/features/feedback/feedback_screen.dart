@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/play/play_review.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/components/ui_app_bar.dart';
 import '../../ui/components/ui_button.dart';
@@ -13,7 +14,10 @@ import '../../ui/tokens/layout_tokens.dart';
 const _kFeedbackEmail = 'federickvidot@gmail.com';
 
 class FeedbackScreen extends StatefulWidget {
-  const FeedbackScreen({super.key});
+  const FeedbackScreen({super.key, this.review});
+
+  /// Test seam. Production uses [PlayReview] against Play / App Store.
+  final PlayReview? review;
 
   @override
   State<FeedbackScreen> createState() => _FeedbackScreenState();
@@ -70,12 +74,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Future<void> _openPlayStore() async {
-    final uri = Uri.parse(
-      'https://play.google.com/store/apps/details?id=app.lifespark.mtg',
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await (widget.review ?? PlayReview()).requestOrOpenStore();
   }
 
   @override
@@ -135,6 +134,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ),
           SizedBox(height: LayoutTokens.gr4),
           UiButton(
+            key: const ValueKey('feedback-rate-play'),
             label: l10n.feedbackRatePlayStore,
             variant: UiButtonVariant.secondary,
             icon: Icon(Icons.star_outline, size: 20),
