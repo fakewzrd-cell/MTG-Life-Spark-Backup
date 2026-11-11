@@ -15,15 +15,17 @@ import 'support/test_l10n.dart';
 import 'support/test_settings_repository.dart';
 
 PlayerDeck _testDeck({String name = 'Test Deck'}) => PlayerDeck(
-      id: 'deck-1',
-      displayName: name,
-      commanderName: 'Atraxa, Praetors\' Voice',
-      format: GameFormat.commander.name,
-      deckStyleId: 'control',
-    );
+  id: 'deck-1',
+  displayName: name,
+  commanderName: 'Atraxa, Praetors\' Voice',
+  format: GameFormat.commander.name,
+  deckStyleId: 'control',
+);
 
 void main() {
-  testWidgets('decks manage shows empty-state copy when no decks', (tester) async {
+  testWidgets('decks manage shows empty-state copy when no decks', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -44,6 +46,62 @@ void main() {
     expect(find.text('Add deck'), findsOneWidget);
   });
 
+  testWidgets('decks manage filters which deck to open', (tester) async {
+    final commander = PlayerDeck(
+      id: 'edh-1',
+      displayName: 'Atraxa Counters',
+      commanderName: 'Atraxa, Praetors\' Voice',
+      format: GameFormat.commander.name,
+      deckStyleId: 'control',
+    );
+    final standard = PlayerDeck(
+      id: 'std-1',
+      displayName: 'Azorius Tempo',
+      commanderName: 'Teferi, Hero of Dominaria',
+      format: GameFormat.standard.name,
+      deckStyleId: 'control',
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deckRepositoryProvider.overrideWithValue(
+            TestDeckRepository(decks: [commander, standard]),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: testLocalizationDelegates,
+          supportedLocales: testSupportedLocales,
+          locale: const Locale('en'),
+          home: const DecksManageScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Format'), findsOneWidget);
+    expect(find.text('Style'), findsOneWidget);
+    expect(find.text('Bracket'), findsOneWidget);
+    expect(find.text('Azorius Tempo'), findsOneWidget);
+    expect(
+      find.text('Atraxa Counters', skipOffstage: false),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Format'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(PopupMenuItem<GameFormat?>, 'Standard'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Azorius Tempo'), findsOneWidget);
+    expect(
+      find.text('Atraxa Counters', skipOffstage: false),
+      findsNothing,
+    );
+  });
+
   testWidgets('deck options sheet lists actions', (tester) async {
     final deck = _testDeck();
     await tester.pumpWidget(
@@ -57,14 +115,15 @@ void main() {
           supportedLocales: testSupportedLocales,
           locale: const Locale('en'),
           home: Builder(
-            builder: (context) => Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () => showDeckDetailSheet(context, deck),
-                  child: const Text('Open options'),
+            builder:
+                (context) => Scaffold(
+                  body: Center(
+                    child: ElevatedButton(
+                      onPressed: () => showDeckDetailSheet(context, deck),
+                      child: const Text('Open options'),
+                    ),
+                  ),
                 ),
-              ),
-            ),
           ),
         ),
       ),

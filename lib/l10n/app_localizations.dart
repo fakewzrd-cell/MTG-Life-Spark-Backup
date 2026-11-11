@@ -1715,6 +1715,36 @@ abstract class AppLocalizations {
   /// **'No decks match “{query}”.'**
   String decksNoSearchMatches(String query);
 
+  /// No description provided for @decksNoFilterMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No decks match these filters.'**
+  String get decksNoFilterMatches;
+
+  /// No description provided for @decksFilterFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get decksFilterFormat;
+
+  /// No description provided for @decksFilterStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get decksFilterStyle;
+
+  /// No description provided for @decksFilterBracket.
+  ///
+  /// In en, this message translates to:
+  /// **'Bracket'**
+  String get decksFilterBracket;
+
+  /// No description provided for @decksFilterNoBracket.
+  ///
+  /// In en, this message translates to:
+  /// **'No bracket'**
+  String get decksFilterNoBracket;
+
   /// No description provided for @decksStyleNotSet.
   ///
   /// In en, this message translates to:
@@ -5365,7 +5395,7 @@ abstract class AppLocalizations {
   /// No description provided for @deckAlbumExport.
   ///
   /// In en, this message translates to:
-  /// **'Copy list'**
+  /// **'Export'**
   String get deckAlbumExport;
 
   /// No description provided for @deckAlbumCopied.
@@ -5800,6 +5830,24 @@ abstract class AppLocalizations {
   /// **'Choose a bracket. It can\'t sit below this deck\'s floor.'**
   String get deckBracketChoose;
 
+  /// No description provided for @deckBracketAnalyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze'**
+  String get deckBracketAnalyze;
+
+  /// No description provided for @deckBracketAnalyzed.
+  ///
+  /// In en, this message translates to:
+  /// **'This list is Bracket {n}.'**
+  String deckBracketAnalyzed(int n);
+
+  /// No description provided for @deckBracketAnalyzedRange.
+  ///
+  /// In en, this message translates to:
+  /// **'This list is Bracket 1–2.'**
+  String get deckBracketAnalyzedRange;
+
   /// No description provided for @collectionAlbumSearchHint.
   ///
   /// In en, this message translates to:
@@ -5905,13 +5953,13 @@ abstract class AppLocalizations {
   /// No description provided for @collectionAddSearchBody.
   ///
   /// In en, this message translates to:
-  /// **'Find a card and add how many you own.'**
+  /// **'Search cards and drop them in your cart.'**
   String get collectionAddSearchBody;
 
   /// No description provided for @deckAddSearchBody.
   ///
   /// In en, this message translates to:
-  /// **'Find a card and add how many copies.'**
+  /// **'Search cards and drop them in your cart.'**
   String get deckAddSearchBody;
 
   /// No description provided for @deckAddPasteBody.
@@ -5949,6 +5997,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Added {count} {name}'**
   String collectionAddSaved(int count, String name);
+
+  /// No description provided for @collectionCartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart · {count}'**
+  String collectionCartLabel(int count);
+
+  /// No description provided for @collectionCartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart'**
+  String get collectionCartTitle;
+
+  /// No description provided for @collectionCartCheckoutAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to album'**
+  String get collectionCartCheckoutAlbum;
+
+  /// No description provided for @collectionCartCheckoutDeck.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to deck'**
+  String get collectionCartCheckoutDeck;
+
+  /// No description provided for @collectionCartSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {count} cards'**
+  String collectionCartSaved(int count);
+
+  /// No description provided for @collectionCartPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {count}. Some cards could not be added.'**
+  String collectionCartPartial(int count);
+
+  /// No description provided for @collectionCartDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without adding?'**
+  String get collectionCartDiscardTitle;
+
+  /// No description provided for @collectionCartDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards in your cart will not be saved.'**
+  String get collectionCartDiscardBody;
+
+  /// No description provided for @collectionCartLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get collectionCartLeave;
+
+  /// No description provided for @collectionCartAddOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one'**
+  String get collectionCartAddOne;
+
+  /// No description provided for @collectionCartRemoveOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove one'**
+  String get collectionCartRemoveOne;
 
   /// No description provided for @collectionTitle.
   ///

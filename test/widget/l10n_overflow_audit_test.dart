@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mgt_life_spark/core/game/game_format.dart';
 import 'package:mgt_life_spark/core/models/deck_style.dart';
+import 'package:mgt_life_spark/core/models/player_deck.dart';
 import 'package:mgt_life_spark/core/persistence/providers.dart';
 import 'package:mgt_life_spark/features/game_lobby/game_lobby_screen.dart';
 import 'package:mgt_life_spark/features/profile/deck_style_picker_sheet.dart';
+import 'package:mgt_life_spark/features/profile/profile_carousel_sections.dart';
 import 'package:mgt_life_spark/features/settings/settings_screen.dart';
 import 'package:mgt_life_spark/l10n/app_localizations.dart';
 import 'package:mgt_life_spark/shared/theme/app_theme.dart';
@@ -13,6 +16,7 @@ import 'package:mgt_life_spark/ui/components/app_bottom_nav_bar.dart';
 import 'package:mgt_life_spark/ui/components/ui_app_bar.dart';
 import 'package:mgt_life_spark/ui/theme/app_color_tokens.dart';
 import 'package:mgt_life_spark/ui/tokens/font_tokens.dart';
+import 'package:mgt_life_spark/ui/tokens/layout_tokens.dart';
 
 import '../support/test_l10n.dart';
 import '../support/test_settings_repository.dart';
@@ -91,8 +95,9 @@ void main() {
     return painter.didExceedMaxLines;
   }
 
-  testWidgets('bottom nav labels do not overflow in all locales',
-      (tester) async {
+  testWidgets('bottom nav labels do not overflow in all locales', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -127,8 +132,9 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('settings screen does not overflow in all locales',
-      (tester) async {
+  testWidgets('settings screen does not overflow in all locales', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -148,8 +154,9 @@ void main() {
       await tester.drag(scrollable, const Offset(0, -800));
       await tester.pumpAndSettle();
       failures.addAll(
-        takeOverflowExceptions(tester)
-            .map((e) => '$locale settings-scrolled: $e'),
+        takeOverflowExceptions(
+          tester,
+        ).map((e) => '$locale settings-scrolled: $e'),
       );
     }
 
@@ -184,7 +191,9 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('app bar titles ellipsize instead of overflowing', (tester) async {
+  testWidgets('app bar titles ellipsize instead of overflowing', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -213,8 +222,9 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('deck style picker sheet does not overflow in all locales',
-      (tester) async {
+  testWidgets('deck style picker sheet does not overflow in all locales', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -250,8 +260,9 @@ void main() {
         await tester.drag(list, const Offset(0, -280));
         await tester.pumpAndSettle();
         failures.addAll(
-          takeOverflowExceptions(tester)
-              .map((e) => '$locale style-sheet-scroll-$i: $e'),
+          takeOverflowExceptions(
+            tester,
+          ).map((e) => '$locale style-sheet-scroll-$i: $e'),
         );
       }
 
@@ -263,8 +274,9 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('deck style picker field does not overflow longest names',
-      (tester) async {
+  testWidgets('deck style picker field does not overflow longest names', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -286,10 +298,7 @@ void main() {
             return Scaffold(
               body: Padding(
                 padding: const EdgeInsets.all(16),
-                child: DeckStylePickerField(
-                  selected: longest,
-                  onPick: () {},
-                ),
+                child: DeckStylePickerField(selected: longest, onPick: () {}),
               ),
             );
           },
@@ -310,8 +319,9 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('profile deck format+style line does not overflow',
-      (tester) async {
+  testWidgets('profile deck format+style line does not overflow', (
+    tester,
+  ) async {
     final failures = <String>[];
 
     for (final locale in _allLocales) {
@@ -363,8 +373,75 @@ void main() {
       );
 
       failures.addAll(
-        takeOverflowExceptions(tester)
-            .map((e) => '$locale profile-style-line: $e'),
+        takeOverflowExceptions(
+          tester,
+        ).map((e) => '$locale profile-style-line: $e'),
+      );
+    }
+
+    expect(failures, isEmpty, reason: failures.join('\n'));
+  });
+
+  testWidgets('profile deck card keeps bracket fully visible', (tester) async {
+    final failures = <String>[];
+    final deck = PlayerDeck(
+      id: 'd1',
+      displayName: 'Casually Competitive',
+      commanderName: 'The Ur-Dragon',
+      format: GameFormat.commander.name,
+      deckStyleId: DeckStyle.stealTheft.id,
+      chosenBracket: 5,
+    );
+    // Inner width of a 240 carousel card after carousel card padding.
+    const lineWidth =
+        LayoutTokens.profileCarouselCardWidth -
+        2 * kProfileCarouselCardPaddingPx;
+
+    for (final locale in _allLocales) {
+      late String bracketLabel;
+      await pumpAt(
+        tester,
+        locale: locale,
+        size: const Size(400, 720),
+        textScale: 1.35,
+        home: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            bracketLabel = profileDeckBracketLabel(l10n, deck)!;
+            return Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: lineWidth,
+                  child: ProfileDeckFormatStyleLine(
+                    deck: deck,
+                    colors: AppColorTokens.of(context),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+
+      failures.addAll(
+        takeOverflowExceptions(
+          tester,
+        ).map((e) => '$locale profile-deck-bracket: $e'),
+      );
+
+      final labelFinder = find.text(bracketLabel);
+      expect(
+        labelFinder,
+        findsOneWidget,
+        reason: '$locale missing $bracketLabel',
+      );
+      final row = tester.getRect(find.byType(ProfileDeckFormatStyleLine));
+      final badge = tester.getRect(labelFinder);
+      expect(
+        row.inflate(1).contains(badge.topLeft) &&
+            row.inflate(1).contains(badge.bottomRight),
+        isTrue,
+        reason: '$locale bracket $badge clipped by line $row',
       );
     }
 
@@ -403,10 +480,7 @@ void main() {
     // more aggressively than production fonts. Budget for that + 1.3× scale.
     final warnings = <String>[];
     const maxWidth = 280.0;
-    const descStyle = TextStyle(
-      fontSize: FontTokens.sm,
-      height: 1.35,
-    );
+    const descStyle = TextStyle(fontSize: FontTokens.sm, height: 1.35);
     const softMaxLines = 12;
 
     for (final locale in _allLocales) {

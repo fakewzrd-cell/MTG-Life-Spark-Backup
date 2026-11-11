@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/deck/bracket_names.dart';
 import '../../core/deck/deck_list_text.dart';
 import '../../core/game/scryfall_service.dart';
 import '../../core/models/collection_entry.dart';
@@ -20,18 +19,6 @@ import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import 'album_listing.dart';
 import 'collection_add_sheet.dart';
-
-class _Suggestion {
-  const _Suggestion({
-    required this.commander,
-    required this.owned,
-    required this.total,
-  });
-
-  final String commander;
-  final int owned;
-  final int total;
-}
 
 class CollectionAlbumScreen extends StatelessWidget {
   const CollectionAlbumScreen({super.key});
@@ -581,7 +568,6 @@ class OwnedAlbumPage extends ConsumerStatefulWidget {
 class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
   List<CollectionEntry> _entries = const [];
   Map<String, ScryfallCard> _cards = const {};
-  List<_Suggestion> _suggestions = const [];
   var _loading = true;
 
   @override
@@ -599,45 +585,25 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
       _entries = entries;
       _loading = false;
     });
-    final fetched = await ref.read(scryfallServiceProvider).fetchCardsByNames([
-      for (final entry in entries) entry.name,
-    ]);
+    final names = [for (final entry in entries) entry.name];
+    final service = ref.read(scryfallServiceProvider);
+    const firstWave = 12;
+    final firstNames =
+        names.length <= firstWave ? names : names.sublist(0, firstWave);
+    final first = await service.fetchCardsByNames(firstNames);
     if (!mounted) return;
     setState(() {
-      _cards = {for (final card in fetched) _key(card.name): card};
+      _cards = {for (final card in first) _key(card.name): card};
     });
-    await _loadSuggestions(entries);
-  }
-
-  Future<void> _loadSuggestions(List<CollectionEntry> entries) async {
-    final commanders = <String>[];
-    for (final entry in entries) {
-      final type = _cards[_key(entry.name)]?.typeLine?.toLowerCase() ?? '';
-      final legendary = type.contains('legendary');
-      final leader = type.contains('creature') || type.contains('planeswalker');
-      if (legendary && leader) commanders.add(entry.name);
-      if (commanders.length == 6) break;
+    if (names.length > firstWave) {
+      final rest = await service.fetchCardsByNames(names.sublist(firstWave));
+      if (!mounted) return;
+      setState(() {
+        _cards = {
+          for (final card in [...first, ...rest]) _key(card.name): card,
+        };
+      });
     }
-    final owned = {for (final entry in entries) bracketNameKey(entry.name)};
-    final suggestions = <_Suggestion>[];
-    final client = ref.read(edhrecClientProvider);
-    for (final commander in commanders) {
-      final meta = await client.commanderMeta(commander);
-      if (meta == null || meta.commonCards.isEmpty) continue;
-      var count = owned.contains(bracketNameKey(commander)) ? 1 : 0;
-      for (final card in meta.commonCards) {
-        if (owned.contains(bracketNameKey(card))) count++;
-      }
-      suggestions.add(
-        _Suggestion(
-          commander: commander,
-          owned: count,
-          total: meta.commonCards.length + 1,
-        ),
-      );
-    }
-    if (!mounted) return;
-    setState(() => _suggestions = suggestions);
   }
 
   Future<void> _changeOwned(String name, int delta) async {
@@ -655,10 +621,12 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
       await _paste();
       return;
     }
-    final added = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
+    final l10n = AppLocalizations.of(context);
+    final added = await Navigator.of(context).push<int>(
+      MaterialPageRoute<int>(
         builder:
             (_) => CollectionSearchPage(
+              checkoutLabel: l10n.collectionCartCheckoutAlbum,
               onAdd: (name, count) async {
                 await ref
                     .read(collectionRepositoryProvider)
@@ -668,7 +636,9 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
             ),
       ),
     );
-    if (added == true && mounted) await _reload();
+    if (!mounted || added == null || added < 1) return;
+    showUiSnackBar(context, l10n.collectionCartSaved(added));
+    await _reload();
   }
 
   Future<void> _paste() async {
@@ -717,40 +687,6 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
                 BlurredBottomAction.height(context),
               ),
               children: [
-                if (_suggestions.isNotEmpty) ...[
-                  SizedBox(height: LayoutTokens.gr4),
-                  Text(
-                    l10n.collectionSuggestions,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: FontTokens.title,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: LayoutTokens.gr1),
-                  SizedBox(
-                    height: 40,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _suggestions.length,
-                      separatorBuilder:
-                          (_, __) => SizedBox(width: LayoutTokens.gr1),
-                      itemBuilder: (context, index) {
-                        final suggestion = _suggestions[index];
-                        final short = suggestion.commander.split(',').first;
-                        return Chip(
-                          label: Text(
-                            l10n.collectionSuggestionCount(
-                              short,
-                              suggestion.owned,
-                              suggestion.total,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
                 if (_entries.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: LayoutTokens.gr5),

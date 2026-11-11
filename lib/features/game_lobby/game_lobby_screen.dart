@@ -9,8 +9,10 @@ import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
+import '../../ui/tokens/typography_tokens.dart';
 
-/// Game lobby — Host and Join split the viewport 50/50 with uniform page inset.
+/// Game lobby — mark + title, then large Host / Join with equal gaps
+/// logo→Host, Host→Join, and Join→nav.
 class GameLobbyScreen extends StatelessWidget {
   const GameLobbyScreen({super.key});
 
@@ -18,6 +20,9 @@ class GameLobbyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
+    // Sit on the nav's top edge so the last spacer is the Join↔nav gap.
+    final navClearance =
+        LayoutTokens.bottomNavHeight + MediaQuery.paddingOf(context).bottom;
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
       body: SafeArea(
@@ -28,40 +33,66 @@ class GameLobbyScreen extends StatelessWidget {
             LayoutTokens.shellPageInset,
             LayoutTokens.shellPageInset,
             LayoutTokens.shellPageInset,
-            LayoutTokens.shellBottomInset(context),
+            navClearance,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Center(
-                child: BrandLogo(
-                  layout: BrandLogoLayout.horizontal,
-                  height: 32,
-                ),
-              ),
-              SizedBox(height: LayoutTokens.gr3),
+              _LobbyHeader(title: l10n.lobbyTitle),
               Expanded(
-                child: _BigActionButton(
-                  label: l10n.lobbyHostGame,
-                  subtitle: l10n.lobbyHostGameSubtitle,
-                  icon: Icons.groups_rounded,
-                  filled: true,
-                  onTap: () => context.push(AppRoutes.lobbyHost),
-                ),
-              ),
-              SizedBox(height: LayoutTokens.gr2),
-              Expanded(
-                child: _BigActionButton(
-                  label: l10n.lobbyJoinGame,
-                  subtitle: l10n.lobbyJoinGameSubtitle,
-                  icon: Icons.qr_code_scanner_rounded,
-                  onTap: () => context.push(AppRoutes.lobbyJoin),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Spacer(flex: 1),
+                    Expanded(
+                      flex: 6,
+                      child: _BigActionButton(
+                        label: l10n.lobbyHostGame,
+                        subtitle: l10n.lobbyHostGameSubtitle,
+                        icon: Icons.groups_rounded,
+                        filled: true,
+                        onTap: () => context.push(AppRoutes.lobbyHost),
+                      ),
+                    ),
+                    const Spacer(flex: 1),
+                    Expanded(
+                      flex: 6,
+                      child: _BigActionButton(
+                        label: l10n.lobbyJoinGame,
+                        subtitle: l10n.lobbyJoinGameSubtitle,
+                        icon: Icons.qr_code_scanner_rounded,
+                        onTap: () => context.push(AppRoutes.lobbyJoin),
+                      ),
+                    ),
+                    const Spacer(flex: 1),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LobbyHeader extends StatelessWidget {
+  const _LobbyHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const BrandLogo(layout: BrandLogoLayout.mark, height: 36),
+        SizedBox(height: LayoutTokens.gr2),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TypographyTokens.headline(context),
+        ),
+      ],
     );
   }
 }
@@ -118,42 +149,45 @@ class _BigActionButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(LayoutTokens.gr2),
           child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _LobbyIconBadge(
-                  icon: icon,
-                  isCompact: isCompact,
-                  iconColor: iconColor,
-                  badgeColor: badgeColor,
-                ),
-                SizedBox(height: LayoutTokens.gr3),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontSize: titleSize,
-                    fontWeight: FontWeight.w600,
-                    color: titleColor,
-                    height: 1.1,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _LobbyIconBadge(
+                    icon: icon,
+                    isCompact: isCompact,
+                    iconColor: iconColor,
+                    badgeColor: badgeColor,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: LayoutTokens.gr1),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: subtitleColor,
-                    height: 1.35,
+                  SizedBox(height: LayoutTokens.gr3),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w600,
+                      color: titleColor,
+                      height: 1.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  SizedBox(height: LayoutTokens.gr1),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: subtitleColor,
+                      height: 1.35,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -193,7 +193,7 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
               child: CustomScrollView(
                 // Keep pod-sized rosters built so the active card key exists for
                 // ensureVisible (especially with host reorder / long lists).
-                scrollCacheExtent: const ScrollCacheExtent.pixels(2400),
+                cacheExtent: 2400,
                 slivers: [
                   SliverAppBar(
                     pinned: true,
@@ -388,7 +388,7 @@ class _GameOverviewViewState extends ConsumerState<GameOverviewView> {
                         _canHostReorder(game)
                             ? SliverReorderableList(
                               itemCount: game.playersInTurnOrder.length,
-                              onReorderItem: _onHostReorder,
+                              onReorder: _onHostReorder,
                               itemBuilder: (context, index) {
                                 final p = game.playersInTurnOrder[index];
                                 return ReorderableDelayedDragStartListener(

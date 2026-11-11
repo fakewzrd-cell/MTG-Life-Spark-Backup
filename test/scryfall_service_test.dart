@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:mgt_life_spark/core/game/scryfall_card_cache.dart';
 import 'package:mgt_life_spark/core/game/scryfall_service.dart';
 
 http.Response _json(Object body, [int status = 200]) {
@@ -48,16 +49,11 @@ void main() {
   test('color identity unions partners in WUBRG order', () {
     const primary = ScryfallCard(name: 'A', colorIdentity: ['G', 'W']);
     const partner = ScryfallCard(name: 'B', colorIdentity: ['U', 'W', 'X']);
-    expect(
-      ScryfallCard.unionColorIdentity(primary, partner),
-      ['W', 'U', 'G'],
-    );
+    expect(ScryfallCard.unionColorIdentity(primary, partner), ['W', 'U', 'G']);
   });
 
   test('blank searches and missing card ids do no network work', () async {
-    final service = ScryfallService(
-      client: MockClient((_) async => _json({})),
-    );
+    final service = ScryfallService(client: MockClient((_) async => _json({})));
     expect(await service.searchCards('   '), isEmpty);
     expect(await service.searchCommanders(''), isEmpty);
     expect(await service.fetchCardFuzzy('  '), isNull);
@@ -65,73 +61,83 @@ void main() {
     expect(await service.fetchRulings(''), isEmpty);
   });
 
-  test('search parses a normal card, a double-faced card, and empty results',
-      () async {
-    final service = ScryfallService(
-      client: MockClient((request) async {
-        final q = Uri.decodeQueryComponent(request.url.query);
-        if (q.contains('name:Missing')) return _json({}, 404);
-        if (q.contains('name:Broken')) return _json({}, 500);
-        return _json({
-          'data': [
-            _card(keywords: ['Partner']),
-            _card(name: 'Huntmaster', id: 'wolf', twoFaced: true, colors: ['G', 'R']),
-          ],
-        });
-      }),
-    );
-
-    final cards = await service.searchCards('Bolt');
-    expect(cards, hasLength(2));
-    expect(cards.first.imageUrl, 'https://img/bolt.jpg');
-    expect(cards.first.isPartner, isTrue);
-    expect(cards.first.manaCost, '{R}');
-    expect(cards.last.oracleText, 'Transform.');
-    expect(cards.last.imageUrl, 'https://img/face.jpg');
-    expect(cards.last.colorIdentity, ['G', 'R']);
-
-    expect(await service.searchCommanders('Missing'), isEmpty);
-    await expectLater(service.searchCards('Broken'), throwsException);
-  });
-
-  test('fuzzy, exact, and rulings lookups handle success and failure', () async {
-    final service = ScryfallService(
-      client: MockClient((request) async {
-        final path = request.url.path;
-        if (path.endsWith('/rulings')) {
-          if (path.contains('missing')) return _json({}, 404);
-          if (path.contains('down')) return _json({}, 503);
+  test(
+    'search parses a normal card, a double-faced card, and empty results',
+    () async {
+      final service = ScryfallService(
+        client: MockClient((request) async {
+          final q = Uri.decodeQueryComponent(request.url.query);
+          if (q.contains('name:Missing')) return _json({}, 404);
+          if (q.contains('name:Broken')) return _json({}, 500);
           return _json({
             'data': [
-              {
-                'comment': '  It resolves. ',
-                'published_at': '2020-01-01',
-                'source': 'wotc',
-              },
-              {'comment': '   '},
+              _card(keywords: ['Partner']),
+              _card(
+                name: 'Huntmaster',
+                id: 'wolf',
+                twoFaced: true,
+                colors: ['G', 'R'],
+              ),
             ],
           });
-        }
-        if (request.url.query.contains('fuzzy=Nope')) return _json({}, 404);
-        if (request.url.query.contains('exact=Nope')) {
-          throw Exception('offline');
-        }
-        return _json(_card(name: 'Bolt'));
-      }),
-    );
+        }),
+      );
 
-    final fuzzy = await service.fetchCardFuzzy('Bolt');
-    expect(fuzzy!.name, 'Bolt');
-    expect(await service.fetchCardFuzzy('Nope'), isNull);
-    expect(await service.fetchCardByName('Bolt'), isNotNull);
-    expect(await service.fetchCardByName('Nope'), isNull);
+      final cards = await service.searchCards('Bolt');
+      expect(cards, hasLength(2));
+      expect(cards.first.imageUrl, 'https://img/bolt.jpg');
+      expect(cards.first.isPartner, isTrue);
+      expect(cards.first.manaCost, '{R}');
+      expect(cards.last.oracleText, 'Transform.');
+      expect(cards.last.imageUrl, 'https://img/face.jpg');
+      expect(cards.last.colorIdentity, ['G', 'R']);
 
-    final rulings = await service.fetchRulings('bolt');
-    expect(rulings, hasLength(1));
-    expect(rulings!.single.comment, 'It resolves.');
-    expect(await service.fetchRulings('missing'), isEmpty);
-    expect(await service.fetchRulings('down'), isNull);
-  });
+      expect(await service.searchCommanders('Missing'), isEmpty);
+      await expectLater(service.searchCards('Broken'), throwsException);
+    },
+  );
+
+  test(
+    'fuzzy, exact, and rulings lookups handle success and failure',
+    () async {
+      final service = ScryfallService(
+        client: MockClient((request) async {
+          final path = request.url.path;
+          if (path.endsWith('/rulings')) {
+            if (path.contains('missing')) return _json({}, 404);
+            if (path.contains('down')) return _json({}, 503);
+            return _json({
+              'data': [
+                {
+                  'comment': '  It resolves. ',
+                  'published_at': '2020-01-01',
+                  'source': 'wotc',
+                },
+                {'comment': '   '},
+              ],
+            });
+          }
+          if (request.url.query.contains('fuzzy=Nope')) return _json({}, 404);
+          if (request.url.query.contains('exact=Nope')) {
+            throw Exception('offline');
+          }
+          return _json(_card(name: 'Bolt'));
+        }),
+      );
+
+      final fuzzy = await service.fetchCardFuzzy('Bolt');
+      expect(fuzzy!.name, 'Bolt');
+      expect(await service.fetchCardFuzzy('Nope'), isNull);
+      expect(await service.fetchCardByName('Bolt'), isNotNull);
+      expect(await service.fetchCardByName('Nope'), isNull);
+
+      final rulings = await service.fetchRulings('bolt');
+      expect(rulings, hasLength(1));
+      expect(rulings!.single.comment, 'It resolves.');
+      expect(await service.fetchRulings('missing'), isEmpty);
+      expect(await service.fetchRulings('down'), isNull);
+    },
+  );
 
   test('variant decks follow the next page and stop on an error', () async {
     final service = ScryfallService(
@@ -145,10 +151,14 @@ void main() {
                   'https://api.scryfall.com/cards/search?q=type%3Aplane&page=2',
             });
           }
-          return _json({'data': [_card(name: 'Phenom')]});
+          return _json({
+            'data': [_card(name: 'Phenom')],
+          });
         }
         if (q.contains('type:scheme')) return _json({}, 500);
-        return _json({'data': [_card(name: 'Bounty')]});
+        return _json({
+          'data': [_card(name: 'Bounty')],
+        });
       }),
     );
 
@@ -156,5 +166,75 @@ void main() {
     expect(planes.map((c) => c.name), ['Tazeem', 'Phenom']);
     expect(await service.fetchSchemeDeck(), isEmpty);
     expect((await service.fetchBountyDeck()).single.name, 'Bounty');
+  });
+
+  test('scryfall card json round-trips image urls and type', () {
+    const card = ScryfallCard(
+      id: 'bolt',
+      name: 'Lightning Bolt',
+      imageUrl: 'https://img/crop.jpg',
+      cardFaceUrl: 'https://img/normal.jpg',
+      oracleText: 'Deal 3 damage.',
+      manaCost: '{R}',
+      typeLine: 'Instant',
+      colorIdentity: ['R'],
+    );
+    final copy = ScryfallCard.fromJson(card.toJson());
+    expect(copy.name, card.name);
+    expect(copy.imageUrl, card.imageUrl);
+    expect(copy.cardFaceUrl, card.cardFaceUrl);
+    expect(copy.typeLine, card.typeLine);
+    expect(copy.colorIdentity, ['R']);
+  });
+
+  test('collection lookup skips the network when the card is cached', () async {
+    var posts = 0;
+    final cache = ScryfallCardCache(memory: {});
+    await cache.writeAll(const [
+      ScryfallCard(
+        name: 'Lightning Bolt',
+        cardFaceUrl: 'https://img/normal.jpg',
+        typeLine: 'Instant',
+      ),
+    ]);
+    final service = ScryfallService(
+      cache: cache,
+      client: MockClient((request) async {
+        if (request.method == 'POST') posts += 1;
+        return _json({});
+      }),
+    );
+
+    final cards = await service.fetchCardsByNames(['Lightning Bolt']);
+    expect(posts, 0);
+    expect(cards.single.cardFaceUrl, 'https://img/normal.jpg');
+  });
+
+  test('expired cache rows are deleted and skipped', () async {
+    final memory = <String, String>{};
+    final cache = ScryfallCardCache(memory: memory);
+    final stale = DateTime.now().toUtc().subtract(const Duration(days: 40));
+    memory['lightning bolt'] = jsonEncode({
+      'fetchedAt': stale.toIso8601String(),
+      'card':
+          const ScryfallCard(
+            name: 'Lightning Bolt',
+            cardFaceUrl: 'https://img/old.jpg',
+          ).toJson(),
+    });
+
+    expect(cache.read('Lightning Bolt'), isNull);
+    expect(memory.containsKey('lightning bolt'), isFalse);
+
+    memory['sol ring'] = jsonEncode({
+      'fetchedAt': stale.toIso8601String(),
+      'card':
+          const ScryfallCard(
+            name: 'Sol Ring',
+            cardFaceUrl: 'https://img/old.jpg',
+          ).toJson(),
+    });
+    await cache.purgeExpired();
+    expect(memory.containsKey('sol ring'), isFalse);
   });
 }

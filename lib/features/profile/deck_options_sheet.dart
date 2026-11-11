@@ -97,7 +97,7 @@ class _DeckDetailSheet extends StatelessWidget {
             ),
             _DeckOptionTile(
               colors: colors,
-              icon: Icons.copy_outlined,
+              icon: Icons.ios_share_outlined,
               title: l10n.deckAlbumExport,
               onTap: () => _pick(context, DeckSheetAction.copyList),
             ),

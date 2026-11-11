@@ -221,11 +221,12 @@ class _BrandedSplashState extends State<BrandedSplash> {
     if (_showLoadingCue && mounted) {
       setState(() => _showLoadingCue = false);
     }
-    // Web: jump straight into the app under the HTML layer (no black hold).
-    if (!kIsWeb) {
-      await Future<void>.delayed(BrandedSplash.revealHold);
-      if (!mounted) return;
-    }
+    // Yield so onRevealComplete never runs from didUpdateWidget (during build).
+    // Web skips the extra hold and jumps in under the HTML intro layer.
+    await Future<void>.delayed(
+      kIsWeb ? Duration.zero : BrandedSplash.revealHold,
+    );
+    if (!mounted) return;
     widget.onRevealComplete?.call();
   }
 

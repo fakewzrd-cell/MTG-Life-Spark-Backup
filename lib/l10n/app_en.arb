@@ -414,6 +414,11 @@
       }
     }
   },
+  "decksNoFilterMatches": "No decks match these filters.",
+  "decksFilterFormat": "Format",
+  "decksFilterStyle": "Style",
+  "decksFilterBracket": "Bracket",
+  "decksFilterNoBracket": "No bracket",
   "decksStyleNotSet": "Style not set",
   "decksNoCoverCard": "No cover card",
   "lookupTitle": "Card lookup",
@@ -1794,7 +1799,7 @@
   "deckAlbumMissing": "This deck is no longer in your library.",
   "deckAlbumEmpty": "Add cards to fill this deck.",
   "deckAlbumPaste": "Paste list",
-  "deckAlbumExport": "Copy list",
+  "deckAlbumExport": "Export",
   "deckAlbumCopied": "Deck list copied.",
   "deckAlbumPasteTitle": "Paste deck list",
   "deckAlbumPasteHint": "One card per line, like 1 Sol Ring. On a constructed deck, a Sideboard line starts the sideboard.",
@@ -1884,6 +1889,10 @@
   "@deckBracketEarlyCombo": {"placeholders": {"cards": {"type": "String"}}},
   "deckBracketCombosUnavailable": "Two-card combos could not be checked.",
   "deckBracketChoose": "Choose a bracket. It can't sit below this deck's floor.",
+  "deckBracketAnalyze": "Analyze",
+  "deckBracketAnalyzed": "This list is Bracket {n}.",
+  "@deckBracketAnalyzed": {"placeholders": {"n": {"type": "int"}}},
+  "deckBracketAnalyzedRange": "This list is Bracket 1–2.",
   "collectionAlbumSearchHint": "Search albums…",
   "collectionAlbumNoMatches": "No albums match.",
   "collectionAlbumSortCards": "Cards",
@@ -1911,8 +1920,8 @@
   },
   "collectionAddCards": "Add cards",
   "collectionAddSearch": "Search",
-  "collectionAddSearchBody": "Find a card and add how many you own.",
-  "deckAddSearchBody": "Find a card and add how many copies.",
+  "collectionAddSearchBody": "Search cards and drop them in your cart.",
+  "deckAddSearchBody": "Search cards and drop them in your cart.",
   "deckAddPasteBody": "Paste a deck list.",
   "collectionAddPasteBody": "Paste a list of cards you own.",
   "collectionSearchTitle": "Search",
@@ -1925,6 +1934,32 @@
       "name": {"type": "String"}
     }
   },
+  "collectionCartLabel": "Cart · {count}",
+  "@collectionCartLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionCartTitle": "Cart",
+  "collectionCartCheckoutAlbum": "Add to album",
+  "collectionCartCheckoutDeck": "Add to deck",
+  "collectionCartSaved": "Added {count} cards",
+  "@collectionCartSaved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionCartPartial": "Added {count}. Some cards could not be added.",
+  "@collectionCartPartial": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionCartDiscardTitle": "Leave without adding?",
+  "collectionCartDiscardBody": "Cards in your cart will not be saved.",
+  "collectionCartLeave": "Leave",
+  "collectionCartAddOne": "Add one",
+  "collectionCartRemoveOne": "Remove one",
   "collectionTitle": "Collection",
   "collectionPasteTitle": "Paste collection",
   "collectionPasteHint": "One card per line, like 1 Sol Ring.",

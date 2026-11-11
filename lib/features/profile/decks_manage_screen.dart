@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 
 import '../../core/deck/deck_limits.dart';
 import '../../core/game/game_format.dart';
+import '../../core/models/deck_style.dart';
 import '../../core/models/player_deck.dart';
 import '../../core/persistence/deck_list_repository.dart';
 import '../../core/persistence/providers.dart';
@@ -20,6 +21,7 @@ import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
+import 'album_listing.dart';
 import 'new_deck_sheet.dart';
 import 'collection_album_screen.dart';
 import 'library_destination_switch.dart';
@@ -52,6 +54,35 @@ Map<GameFormat, List<PlayerDeck>> _groupDecksByFormat(List<PlayerDeck> decks) {
   return grouped;
 }
 
+/// `null` = any bracket, `-1` = no bracket set, `1`–`5` = that level.
+const int kLibraryBracketUnset = -1;
+
+String libraryBracketFilterLabel(AppLocalizations l10n, int? bracket) {
+  if (bracket == null) return l10n.decksFilterBracket;
+  if (bracket == kLibraryBracketUnset) return l10n.decksFilterNoBracket;
+  return '${l10n.deckAlbumCardBracket} $bracket';
+}
+
+bool deckMatchesLibraryBrowse({
+  required PlayerDeck deck,
+  required String query,
+  required AppLocalizations l10n,
+  GameFormat? format,
+  DeckStyle? style,
+  int? bracket,
+}) {
+  if (format != null && deck.gameFormat != format) return false;
+  if (style != null && deck.deckStyle != style) return false;
+  if (bracket != null) {
+    if (bracket == kLibraryBracketUnset) {
+      if (deck.chosenBracket != null) return false;
+    } else if (deck.chosenBracket != bracket) {
+      return false;
+    }
+  }
+  return _deckMatchesQuery(deck, query, l10n);
+}
+
 bool _deckMatchesQuery(PlayerDeck deck, String query, AppLocalizations l10n) {
   if (query.isEmpty) return true;
   final q = query.toLowerCase();
@@ -73,6 +104,9 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
   Map<String, DeckCountLabel> _counts = {};
   final _searchCtrl = TextEditingController();
   String _query = '';
+  GameFormat? _formatFilter;
+  DeckStyle? _styleFilter;
+  int? _bracketFilter;
 
   @override
   void initState() {
@@ -126,7 +160,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
   }
 
   Future<void> _onDeckTap(PlayerDeck deck) async {
-    await context.push('/decks/${Uri.encodeComponent(deck.id)}');
+    await context.push(AppRoutes.deckAlbum(deck.id));
     if (!mounted) return;
     _reload();
   }
@@ -136,8 +170,21 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     ref.listen(deckListRevisionProvider, (_, __) => _reload());
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
+    final hasFilters =
+        _formatFilter != null || _styleFilter != null || _bracketFilter != null;
     final filtered =
-        _decks.where((d) => _deckMatchesQuery(d, _query, l10n)).toList();
+        _decks
+            .where(
+              (d) => deckMatchesLibraryBrowse(
+                deck: d,
+                query: _query,
+                l10n: l10n,
+                format: _formatFilter,
+                style: _styleFilter,
+                bracket: _bracketFilter,
+              ),
+            )
+            .toList();
     final grouped = _groupDecksByFormat(filtered);
     final listing = ref.watch(deckLibraryListingProvider);
     final destination = ref.watch(libraryDestinationProvider);
@@ -207,7 +254,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
         ),
         children: [
           Padding(
-            padding: EdgeInsets.only(bottom: LayoutTokens.gr3),
+            padding: EdgeInsets.only(bottom: LayoutTokens.gr2),
             child: TextField(
               controller: _searchCtrl,
               onChanged: (v) => setState(() => _query = v),
@@ -230,6 +277,81 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
               style: TextStyle(color: colors.textPrimary),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.only(bottom: LayoutTokens.gr3),
+            child: Row(
+              children: [
+                Expanded(
+                  child: AlbumBrowseMenu<GameFormat?>(
+                    icon: Icons.category_outlined,
+                    label: _formatFilter?.displayName ?? l10n.decksFilterFormat,
+                    value: _formatFilter,
+                    onSelected:
+                        (value) => setState(() => _formatFilter = value),
+                    items: [
+                      PopupMenuItem(
+                        value: null,
+                        child: Text(l10n.albumFilterAll),
+                      ),
+                      for (final format in GameFormatDetails.lobbyPickerOrder)
+                        PopupMenuItem(
+                          value: format,
+                          child: Text(format.displayName),
+                        ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: LayoutTokens.gr2),
+                Expanded(
+                  child: AlbumBrowseMenu<DeckStyle?>(
+                    icon: Icons.palette_outlined,
+                    label:
+                        _styleFilter == null
+                            ? l10n.decksFilterStyle
+                            : localizedDeckStyleName(l10n, _styleFilter!),
+                    value: _styleFilter,
+                    onSelected: (value) => setState(() => _styleFilter = value),
+                    items: [
+                      PopupMenuItem(
+                        value: null,
+                        child: Text(l10n.albumFilterAll),
+                      ),
+                      for (final style in DeckStyle.values)
+                        PopupMenuItem(
+                          value: style,
+                          child: Text(localizedDeckStyleName(l10n, style)),
+                        ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: LayoutTokens.gr2),
+                Expanded(
+                  child: AlbumBrowseMenu<int?>(
+                    icon: Icons.workspace_premium_outlined,
+                    label: libraryBracketFilterLabel(l10n, _bracketFilter),
+                    value: _bracketFilter,
+                    onSelected:
+                        (value) => setState(() => _bracketFilter = value),
+                    items: [
+                      PopupMenuItem(
+                        value: null,
+                        child: Text(l10n.albumFilterAll),
+                      ),
+                      PopupMenuItem(
+                        value: kLibraryBracketUnset,
+                        child: Text(l10n.decksFilterNoBracket),
+                      ),
+                      for (var n = 1; n <= 5; n++)
+                        PopupMenuItem(
+                          value: n,
+                          child: Text('${l10n.deckAlbumCardBracket} $n'),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           _DeckListingSwitch(
             listing: listing,
             onChanged: (value) {
@@ -241,7 +363,9 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
             Padding(
               padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr5),
               child: Text(
-                l10n.decksNoSearchMatches(_query),
+                _query.isEmpty && hasFilters
+                    ? l10n.decksNoFilterMatches
+                    : l10n.decksNoSearchMatches(_query),
                 textAlign: TextAlign.center,
                 style: Theme.of(
                   context,

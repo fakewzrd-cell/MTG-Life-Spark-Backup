@@ -488,10 +488,9 @@ List<Widget> albumListingChildren({
 }
 
 int _gridColumns(double width) {
-  if (width >= 900) return 6;
-  if (width >= 700) return 5;
-  if (width >= 520) return 4;
-  return 3;
+  if (width >= 900) return 4;
+  if (width >= 700) return 3;
+  return 2;
 }
 
 List<Widget> _alphaBlock(
@@ -819,6 +818,7 @@ class _CardGrid extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       itemCount: cards.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
@@ -1062,12 +1062,25 @@ class _ArtImage extends StatelessWidget {
     if (url == null || url!.isEmpty) {
       return ColoredBox(color: colors.surfaceElevated);
     }
-    return CachedNetworkImage(
-      imageUrl: url!,
-      fit: BoxFit.cover,
-      alignment: Alignment.center,
-      placeholder: (_, __) => ColoredBox(color: colors.surfaceElevated),
-      errorWidget: (_, __, ___) => ColoredBox(color: colors.surfaceElevated),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final cacheWidth =
+            width.isFinite && width > 0
+                ? (width * MediaQuery.devicePixelRatioOf(context))
+                    .round()
+                    .clamp(72, 640)
+                : null;
+        return CachedNetworkImage(
+          imageUrl: url!,
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          memCacheWidth: cacheWidth,
+          placeholder: (_, __) => ColoredBox(color: colors.surfaceElevated),
+          errorWidget:
+              (_, __, ___) => ColoredBox(color: colors.surfaceElevated),
+        );
+      },
     );
   }
 }

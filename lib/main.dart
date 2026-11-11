@@ -11,6 +11,7 @@ import 'core/models/match_record.dart';
 import 'core/models/app_settings.dart';
 import 'core/game/game_format.dart';
 import 'core/deck/edhrec_client.dart';
+import 'core/game/scryfall_card_cache.dart';
 import 'core/models/collection_entry.dart';
 import 'core/models/owned_album.dart';
 import 'core/models/deck_card_entry.dart';
@@ -129,7 +130,10 @@ class _AppBootstrapState extends State<_AppBootstrap> {
             ready: _initDone,
             onRevealComplete: () {
               if (!mounted || _revealDone) return;
-              setState(() => _revealDone = true);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted || _revealDone) return;
+                setState(() => _revealDone = true);
+              });
             },
           ),
         );
@@ -248,6 +252,7 @@ Future<void> _openHiveBoxes() async {
     Hive.openBox<CollectionEntry>(CollectionRepository.boxName),
     Hive.openBox<OwnedAlbum>(CollectionRepository.albumBoxName),
     Hive.openBox<String>(EdhrecClient.boxName),
+    Hive.openBox<String>(ScryfallCardCache.boxName),
   ];
   if (kIsWeb) {
     for (final open in opens) {
@@ -256,6 +261,7 @@ Future<void> _openHiveBoxes() async {
   } else {
     await Future.wait(opens);
   }
+  await ScryfallCardCache().purgeExpired();
 }
 
 Future<T> _withStartupTimeout<T>(String label, Future<T> future) {

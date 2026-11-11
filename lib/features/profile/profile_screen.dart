@@ -136,8 +136,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final heroMetrics = ProfileHeroLayoutMetrics.resolve(context);
     final hPad = heroMetrics.overlayHPadding;
     final scrollBottomPad = LayoutTokens.shellBottomInset(context);
-    final hasPlayedGames =
-        profile.totalGamesPlayed > 0 || allMatches.isNotEmpty;
     final firstPlayed =
         allMatches.isEmpty
             ? null
@@ -174,10 +172,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 delegate: SliverChildListDelegate([
                   ProfilePlayerStatsSection(profile: profile, colors: colors),
                   SizedBox(height: LayoutTokens.shellSectionGap),
-                  ProfileDeckPerformanceSection(
-                    colors: colors,
-                    hasPlayedGames: hasPlayedGames,
-                  ),
+                  ProfileDeckPerformanceSection(colors: colors),
                   SizedBox(height: LayoutTokens.shellSectionGap),
                   ProfileRecentGamesModule(matches: allMatches, colors: colors),
                   SizedBox(height: LayoutTokens.gr4),

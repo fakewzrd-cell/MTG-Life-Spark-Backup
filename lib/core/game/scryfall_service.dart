@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../debug/app_log.dart';
 import 'package:http/http.dart' as http;
 
+import 'scryfall_card_cache.dart';
+
 class ScryfallCard {
   /// Scryfall UUID — needed for `/cards/{id}/rulings`.
   final String? id;
@@ -44,6 +46,45 @@ class ScryfallCard {
     this.producedMana = const [],
     this.tokenNames = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'imageUrl': imageUrl,
+    'cardFaceUrl': cardFaceUrl,
+    'oracleText': oracleText,
+    'manaCost': manaCost,
+    'typeLine': typeLine,
+    'isPartner': isPartner,
+    'colorIdentity': colorIdentity,
+    'producedMana': producedMana,
+    'tokenNames': tokenNames,
+  };
+
+  factory ScryfallCard.fromJson(Map<String, dynamic> json) {
+    List<String> strings(String key) {
+      final raw = json[key];
+      if (raw is! List) return const [];
+      return [
+        for (final item in raw)
+          if (item != null) item.toString(),
+      ];
+    }
+
+    return ScryfallCard(
+      id: json['id'] as String?,
+      name: json['name'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String?,
+      cardFaceUrl: json['cardFaceUrl'] as String?,
+      oracleText: json['oracleText'] as String?,
+      manaCost: json['manaCost'] as String?,
+      typeLine: json['typeLine'] as String?,
+      isPartner: json['isPartner'] == true,
+      colorIdentity: strings('colorIdentity'),
+      producedMana: strings('producedMana'),
+      tokenNames: strings('tokenNames'),
+    );
+  }
 
   /// Local placeholder path when the network is unavailable.
   static const offlineImageAsset = 'assets/placeholders/card_placeholder.png';
@@ -88,8 +129,11 @@ class ScryfallService {
   };
 
   final http.Client _client;
+  final ScryfallCardCache? _cache;
 
-  ScryfallService({http.Client? client}) : _client = client ?? http.Client();
+  ScryfallService({http.Client? client, ScryfallCardCache? cache})
+    : _client = client ?? http.Client(),
+      _cache = cache;
 
   // ── Search ────────────────────────────────────────────────────────────────
 
@@ -211,6 +255,9 @@ class ScryfallService {
 
   /// Fetches a single card by exact name (for loading saved commanders).
   Future<ScryfallCard?> fetchCardByName(String name) async {
+    await _cache?.init();
+    final cached = _cache?.read(name);
+    if (cached != null) return cached;
     try {
       final encoded = Uri.encodeComponent(name);
       final uri = Uri.parse('$_base/cards/named?exact=$encoded');
@@ -220,7 +267,9 @@ class ScryfallService {
       if (response.statusCode != 200) return null;
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return _parseCard(json);
+      final card = _parseCard(json);
+      await _cache?.writeAll([card]);
+      return card;
     } catch (e, st) {
       appLog('Scryfall exact fetch failed for $name', error: e, stackTrace: st);
       return null;
@@ -242,15 +291,29 @@ class ScryfallService {
     }
     if (unique.isEmpty) return const [];
 
+    await _cache?.init();
     final found = <ScryfallCard>[];
+    final missing = <String>[];
+    for (final name in unique) {
+      final cached = _cache?.read(name);
+      if (cached != null) {
+        found.add(cached);
+      } else {
+        missing.add(name);
+      }
+    }
+    if (missing.isEmpty) return found;
+
     const batchSize = 75;
-    for (var start = 0; start < unique.length; start += batchSize) {
+    for (var start = 0; start < missing.length; start += batchSize) {
       if (start > 0) {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       }
       final end =
-          start + batchSize > unique.length ? unique.length : start + batchSize;
-      final chunk = unique.sublist(start, end);
+          start + batchSize > missing.length
+              ? missing.length
+              : start + batchSize;
+      final chunk = missing.sublist(start, end);
       try {
         final uri = Uri.parse('$_base/cards/collection');
         final response = await _client
@@ -267,9 +330,12 @@ class ScryfallService {
         if (response.statusCode != 200) continue;
         final json = jsonDecode(response.body) as Map<String, dynamic>;
         final data = json['data'] as List<dynamic>? ?? [];
+        final parsed = <ScryfallCard>[];
         for (final raw in data) {
-          if (raw is Map<String, dynamic>) found.add(_parseCard(raw));
+          if (raw is Map<String, dynamic>) parsed.add(_parseCard(raw));
         }
+        found.addAll(parsed);
+        await _cache?.writeAll(parsed);
       } catch (e, st) {
         appLog('Scryfall collection fetch failed', error: e, stackTrace: st);
       }
@@ -416,8 +482,19 @@ class ScryfallService {
   }
 }
 
+/// Scryfall CDN path for a full card face (`normal`) instead of illustration crop.
+String? scryfallFullCardImageUrl(String? url) {
+  final value = url?.trim();
+  if (value == null || value.isEmpty) return url;
+  return value.replaceAll('/art_crop/', '/normal/');
+}
+
 // ── Provider ───────────────────────────────────────────────────────────────
 
+final scryfallCardCacheProvider = Provider<ScryfallCardCache>((ref) {
+  return ScryfallCardCache();
+});
+
 final scryfallServiceProvider = Provider<ScryfallService>((ref) {
-  return ScryfallService();
+  return ScryfallService(cache: ref.watch(scryfallCardCacheProvider));
 });

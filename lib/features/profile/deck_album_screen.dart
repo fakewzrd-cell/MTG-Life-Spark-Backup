@@ -24,6 +24,7 @@ import '../../ui/components/ui_snack_bar.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
+import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import 'album_listing.dart';
@@ -403,7 +404,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       context: context,
       builder:
           (context) => _BracketPickerDialog(
-            minimum: assessment.minimumChoice,
+            assessment: assessment,
             selected: deck.chosenBracket,
           ),
     );
@@ -461,18 +462,25 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       return;
     }
     setState(() => _loadingCards = true);
-    final cards = await ref
-        .read(scryfallServiceProvider)
-        .fetchCardsByNames(names);
+    final service = ref.read(scryfallServiceProvider);
+    const firstWave = 12;
+    final firstNames =
+        names.length <= firstWave ? names : names.sublist(0, firstWave);
+    final first = await service.fetchCardsByNames(firstNames);
     if (!mounted) return;
-    final byName = <String, ScryfallCard>{};
-    for (final card in cards) {
-      byName[_key(card.name)] = card;
-    }
     setState(() {
-      _cards = byName;
-      _loadingCards = false;
+      _cards = {for (final card in first) _key(card.name): card};
       _facesReady = true;
+      _loadingCards = names.length > firstWave;
+    });
+    if (names.length <= firstWave) return;
+    final rest = await service.fetchCardsByNames(names.sublist(firstWave));
+    if (!mounted) return;
+    setState(() {
+      _cards = {
+        for (final card in [...first, ...rest]) _key(card.name): card,
+      };
+      _loadingCards = false;
     });
   }
 
@@ -532,10 +540,11 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       await _pasteList();
       return;
     }
-    final added = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
+    final added = await Navigator.of(context).push<int>(
+      MaterialPageRoute<int>(
         builder:
             (_) => CollectionSearchPage(
+              checkoutLabel: l10n.collectionCartCheckoutDeck,
               rejectionFor: (card) {
                 final allowed = _commanderColors(deck);
                 if (allowed == null) return null;
@@ -561,7 +570,9 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
             ),
       ),
     );
-    if (added == true && mounted) await _reload();
+    if (!mounted || added == null || added < 1) return;
+    showUiSnackBar(context, l10n.collectionCartSaved(added));
+    await _reload();
   }
 
   Future<void> _pasteList() async {
@@ -937,20 +948,28 @@ class _AlbumBody extends StatelessWidget {
               ],
               if (showStats)
                 DeckStatsView(deck: deck, entries: entries, cards: cards)
-              else ...[
-                if (deck.isCommanderDeck)
-                  Padding(
-                    padding: const EdgeInsets.only(top: LayoutTokens.gr2),
-                    child: _BracketCauses(assessment: bracket),
-                  ),
-                if (deck.isCommanderDeck && fits.isNotEmpty) ...[
-                  SizedBox(height: LayoutTokens.gr2),
-                  _FitsRow(
-                    fits: fits,
-                    imageFor: (name) => _faceUrl(cards[_key(name)]),
-                    onOpen: onOpenFit,
-                  ),
-                ],
+              else if (deck.isCommanderDeck)
+                Padding(
+                  padding: const EdgeInsets.only(top: LayoutTokens.gr2),
+                  child: _BracketCauses(assessment: bracket),
+                ),
+            ],
+          ),
+        ),
+        if (!showStats && deck.isCommanderDeck && fits.isNotEmpty) ...[
+          SizedBox(height: LayoutTokens.gr2),
+          _FitsRow(
+            fits: fits,
+            imageFor: (name) => _faceUrl(cards[_key(name)]),
+            onOpen: onOpenFit,
+          ),
+        ],
+        if (!showStats)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                 if (entries.isEmpty) ...[
                   _DeckSizeLine(
                     deck: deck,
@@ -1039,9 +1058,8 @@ class _AlbumBody extends StatelessWidget {
                   ),
                 ],
               ],
-            ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1782,12 +1800,17 @@ class _FitsRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          fits.any((fit) => fit.cut) ? l10n.deckAlbumCuts : l10n.deckAlbumFits,
-          style: TextStyle(
-            color: colors.textSecondary,
-            fontSize: FontTokens.caption,
-            fontWeight: FontWeight.w700,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr4),
+          child: Text(
+            fits.any((fit) => fit.cut)
+                ? l10n.deckAlbumCuts
+                : l10n.deckAlbumFits,
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: FontTokens.caption,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         SizedBox(height: LayoutTokens.gr2),
@@ -1795,6 +1818,7 @@ class _FitsRow extends StatelessWidget {
           height: 128,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: LayoutTokens.gr4),
             itemCount: fits.length,
             separatorBuilder: (_, __) => SizedBox(width: LayoutTokens.gr2),
             itemBuilder: (context, index) {
@@ -1865,7 +1889,7 @@ class _SuggestionCard extends StatelessWidget {
                         )
                         : CachedNetworkImage(
                           imageUrl: url,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           placeholder:
                               (_, __) => ColoredBox(color: colors.surface),
                           errorWidget:
@@ -1899,43 +1923,170 @@ class _SuggestionCard extends StatelessWidget {
   }
 }
 
-class _BracketPickerDialog extends StatelessWidget {
-  const _BracketPickerDialog({required this.minimum, required this.selected});
+class _BracketPickerDialog extends StatefulWidget {
+  const _BracketPickerDialog({
+    required this.assessment,
+    required this.selected,
+  });
 
-  final int minimum;
+  final BracketAssessment assessment;
   final int? selected;
+
+  @override
+  State<_BracketPickerDialog> createState() => _BracketPickerDialogState();
+}
+
+class _BracketPickerDialogState extends State<_BracketPickerDialog> {
+  late int? _preview = widget.selected;
+  var _analyzed = false;
+
+  int get _minimum => widget.assessment.minimumChoice;
+
+  void _analyze() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _analyzed = true;
+      _preview = _minimum;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = AppColorTokens.of(context);
+    final analyzedLabel =
+        widget.assessment.choosesOneOrTwo
+            ? l10n.deckBracketAnalyzedRange
+            : l10n.deckBracketAnalyzed(widget.assessment.floor);
     return AlertDialog(
       backgroundColor: colors.surface,
       title: Text(l10n.deckAlbumCardBracket),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.deckBracketChoose,
-            style: TextStyle(color: colors.textSecondary, height: 1.35),
-          ),
-          SizedBox(height: LayoutTokens.gr3),
-          Wrap(
-            spacing: LayoutTokens.gr1,
+      content: SizedBox(
+        width: 320,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var value = 1; value <= 5; value++)
-                ChoiceChip(
-                  label: Text('$value'),
-                  selected: selected == value,
-                  onSelected:
-                      value < minimum
-                          ? null
-                          : (_) => Navigator.of(context).pop(value),
+              Text(
+                l10n.deckBracketChoose,
+                style: TextStyle(color: colors.textSecondary, height: 1.35),
+              ),
+              SizedBox(height: LayoutTokens.gr2),
+              Row(
+                children: [
+                  for (var value = 1; value <= 5; value++)
+                    Expanded(
+                      child: Center(
+                        child: _BracketNumberCircle(
+                          value: value,
+                          selected: _preview == value,
+                          enabled: value >= _minimum,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            Navigator.of(context).pop(value);
+                          },
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: LayoutTokens.gr2),
+              UiButton(
+                label: l10n.deckBracketAnalyze,
+                variant: UiButtonVariant.secondary,
+                icon: const Icon(Icons.insights_outlined, size: 20),
+                onPressed: _analyze,
+              ),
+              if (_analyzed) ...[
+                SizedBox(height: LayoutTokens.gr2),
+                Text(
+                  analyzedLabel,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
                 ),
+                _BracketCauses(assessment: widget.assessment),
+              ],
             ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BracketNumberCircle extends StatelessWidget {
+  const _BracketNumberCircle({
+    required this.value,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final int value;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    final background =
+        !enabled
+            ? colors.surface
+            : selected
+            ? colors.primaryAccent
+            : colors.surface;
+    final foreground =
+        !enabled
+            ? colors.textMuted
+            : selected
+            ? colors.onAccent
+            : colors.textPrimary;
+    final border =
+        !enabled
+            ? colors.borderSubtle.withValues(alpha: OpacityTokens.half)
+            : selected
+            ? colors.primaryAccent
+            : colors.borderSubtle;
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      selected: selected,
+      label: '$value',
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: enabled ? onTap : null,
+          child: Ink(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: background,
+              border: Border.all(color: border),
+            ),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Center(
+                child: Text(
+                  '$value',
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: FontTokens.body,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

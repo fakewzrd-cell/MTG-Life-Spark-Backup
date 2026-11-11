@@ -5,22 +5,18 @@ import 'package:video_player/video_player.dart';
 
 void main() {
   test('intro fades in quickly after playback starts', () {
-    expect(
-      BrandedSplash.introFade.inMilliseconds,
-      inInclusiveRange(100, 200),
-    );
+    expect(BrandedSplash.introFade.inMilliseconds, inInclusiveRange(100, 200));
     expect(
       BrandedSplash.videoStartTimeout,
       greaterThan(BrandedSplash.introFade),
     );
   });
 
-  testWidgets('BrandedSplash does not show loading cue on a fast ready path',
-      (tester) async {
+  testWidgets('BrandedSplash does not show loading cue on a fast ready path', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: BrandedSplash(ready: true, useVideoIntro: false),
-      ),
+      const MaterialApp(home: BrandedSplash(ready: true, useVideoIntro: false)),
     );
 
     await tester.pump();
@@ -29,8 +25,9 @@ void main() {
     await tester.pump(BrandedSplash.revealHold);
   });
 
-  testWidgets('BrandedSplash shows loading cue only after slow threshold',
-      (tester) async {
+  testWidgets('BrandedSplash shows loading cue only after slow threshold', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(home: BrandedSplash(useVideoIntro: false)),
     );
@@ -43,8 +40,9 @@ void main() {
     await tester.pump(BrandedSplash.revealDuration);
   });
 
-  testWidgets('BrandedSplash completes after black intro hold when ready',
-      (tester) async {
+  testWidgets('BrandedSplash completes after black intro hold when ready', (
+    tester,
+  ) async {
     var completed = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -64,11 +62,55 @@ void main() {
     expect(completed, isTrue);
   });
 
-  testWidgets('disabled video intro stays black with no player', (tester) async {
+  testWidgets('ready flipping after intro does not setState during build', (
+    tester,
+  ) async {
+    var ready = false;
+    var completed = false;
     await tester.pumpWidget(
-      const MaterialApp(
-        home: BrandedSplash(ready: true, useVideoIntro: false),
+      MaterialApp(
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            return BrandedSplash(
+              ready: ready,
+              useVideoIntro: false,
+              onRevealComplete: () => completed = true,
+            );
+          },
+        ),
       ),
+    );
+    await tester.pump();
+    await tester.pump(BrandedSplash.revealDuration);
+
+    ready = true;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            return BrandedSplash(
+              ready: ready,
+              useVideoIntro: false,
+              onRevealComplete: () => completed = true,
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(BrandedSplash.revealHold);
+    await tester.pump();
+    await tester.pump(BrandedSplash.slowLoadThreshold);
+
+    expect(tester.takeException(), isNull);
+    expect(completed, isTrue);
+  });
+
+  testWidgets('disabled video intro stays black with no player', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: BrandedSplash(ready: true, useVideoIntro: false)),
     );
     await tester.pump();
     expect(find.byType(VideoPlayer), findsNothing);

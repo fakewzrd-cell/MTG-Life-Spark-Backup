@@ -21,25 +21,29 @@ void main() {
       ),
     );
 
+    expect(find.text('Lobby'), findsOneWidget);
     expect(find.text('Host Game'), findsOneWidget);
     expect(find.text('Join Game'), findsOneWidget);
   });
 
-  testWidgets('forfeit dialog shows like/dislike and star of the game',
-      (tester) async {
+  testWidgets('forfeit dialog shows like/dislike and star of the game', (
+    tester,
+  ) async {
     final game = harnessGame(localId: 'alice');
 
     await tester.pumpWidget(
       wrapGameWidget(
         game: game,
         child: Consumer(
-          builder: (context, ref, _) => Scaffold(
-            body: TextButton(
-              onPressed: () =>
-                  showGameForfeitFlow(context, ref, game.localPlayerId),
-              child: const Text('Open forfeit'),
-            ),
-          ),
+          builder:
+              (context, ref, _) => Scaffold(
+                body: TextButton(
+                  onPressed:
+                      () =>
+                          showGameForfeitFlow(context, ref, game.localPlayerId),
+                  child: const Text('Open forfeit'),
+                ),
+              ),
         ),
       ),
     );
@@ -53,14 +57,12 @@ void main() {
     expect(find.text('MVP'), findsNothing);
     expect(find.text('Team Player'), findsNothing);
     expect(find.text('Underdog'), findsNothing);
-    expect(
-      find.widgetWithText(FilledButton, 'Forfeit'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(FilledButton, 'Forfeit'), findsOneWidget);
   });
 
-  testWidgets('end game screen shows standings after match saves',
-      (tester) async {
+  testWidgets('end game screen shows standings after match saves', (
+    tester,
+  ) async {
     final game = harnessGame(
       localId: 'bob',
       gameOver: true,
@@ -72,10 +74,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      wrapGameWidget(
-        game: game,
-        child: const EndGameScreen(),
-      ),
+      wrapGameWidget(game: game, child: const EndGameScreen()),
     );
 
     await tester.pump();
@@ -88,13 +87,10 @@ void main() {
     expect(find.text('Thanks! Your feedback has been recorded.'), findsNothing);
   });
 
-  testWidgets('end game shows thanks when forfeit included feedback',
-      (tester) async {
-    final game = harnessGame(
-      localId: 'bob',
-      gameOver: true,
-      winnerId: 'alice',
-    );
+  testWidgets('end game shows thanks when forfeit included feedback', (
+    tester,
+  ) async {
+    final game = harnessGame(localId: 'bob', gameOver: true, winnerId: 'alice');
 
     await tester.pumpWidget(
       wrapGameWidget(

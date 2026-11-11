@@ -908,6 +908,21 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get decksNoFilterMatches => 'Ningún mazo coincide con estos filtros.';
+
+  @override
+  String get decksFilterFormat => 'Formato';
+
+  @override
+  String get decksFilterStyle => 'Estilo';
+
+  @override
+  String get decksFilterBracket => 'Bracket';
+
+  @override
+  String get decksFilterNoBracket => 'Sin bracket';
+
+  @override
   String get decksStyleNotSet => 'Estilo no definido';
 
   @override
@@ -2086,7 +2101,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commanderSelectConfirm => 'Confirmar';
 
   @override
-  String get commanderSelectInDeck => 'In this deck';
+  String get commanderSelectInDeck => 'En este mazo';
 
   @override
   String get commanderSelectScryfallCommanderHelp =>
@@ -2988,197 +3003,198 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get deckAlbumTitle => 'Deck';
+  String get deckAlbumTitle => 'Mazo';
 
   @override
-  String get deckAlbumOptions => 'Deck options';
+  String get deckAlbumOptions => 'Opciones del mazo';
 
   @override
-  String get deckAlbumMissing => 'This deck is no longer in your library.';
+  String get deckAlbumMissing => 'Este mazo ya no está en tu biblioteca.';
 
   @override
-  String get deckAlbumEmpty => 'Add cards to fill this deck.';
+  String get deckAlbumEmpty => 'Añade cartas para completar este mazo.';
 
   @override
-  String get deckAlbumPaste => 'Paste list';
+  String get deckAlbumPaste => 'Pegar lista';
 
   @override
-  String get deckAlbumExport => 'Copy list';
+  String get deckAlbumExport => 'Exportar';
 
   @override
-  String get deckAlbumCopied => 'Deck list copied.';
+  String get deckAlbumCopied => 'Lista del mazo copiada.';
 
   @override
-  String get deckAlbumPasteTitle => 'Paste deck list';
+  String get deckAlbumPasteTitle => 'Pegar lista del mazo';
 
   @override
   String get deckAlbumPasteHint =>
-      'One card per line, like 1 Sol Ring. On a constructed deck, a Sideboard line starts the sideboard.';
+      'Una carta por línea, como 1 Sol Ring. En construido, una línea Sideboard empieza el sideboard.';
 
   @override
-  String get deckAlbumPasteAction => 'Save list';
+  String get deckAlbumPasteAction => 'Guardar lista';
 
   @override
-  String get deckAlbumPasteEmpty => 'No cards found in that list.';
+  String get deckAlbumPasteEmpty => 'No se encontraron cartas en esa lista.';
 
   @override
   String deckAlbumPasteSaved(int count) {
-    return 'Saved $count cards.';
+    return 'Se guardaron $count cartas.';
   }
 
   @override
   String deckAlbumPasteSkipped(int count) {
-    return 'Saved the list. Skipped $count lines.';
+    return 'Lista guardada. Se omitieron $count líneas.';
   }
 
   @override
-  String get deckAlbumReplaceTitle => 'Replace this list?';
+  String get deckAlbumReplaceTitle => '¿Reemplazar esta lista?';
 
   @override
   String get deckAlbumReplaceBody =>
-      'The cards in this deck will be replaced by the pasted list.';
+      'Las cartas de este mazo se reemplazarán por la lista pegada.';
 
   @override
-  String get deckAlbumReplaceConfirm => 'Replace';
+  String get deckAlbumReplaceConfirm => 'Reemplazar';
 
   @override
   String get deckAlbumSideboard => 'Sideboard';
 
   @override
-  String get deckAlbumOther => 'Other';
+  String get deckAlbumOther => 'Otros';
 
   @override
-  String get deckAlbumCreatures => 'Creatures';
+  String get deckAlbumCreatures => 'Criaturas';
 
   @override
-  String get deckAlbumInstants => 'Instants';
+  String get deckAlbumInstants => 'Instantáneos';
 
   @override
-  String get deckAlbumSorceries => 'Sorceries';
+  String get deckAlbumSorceries => 'Conjuros';
 
   @override
-  String get deckAlbumArtifacts => 'Artifacts';
+  String get deckAlbumArtifacts => 'Artefactos';
 
   @override
-  String get deckAlbumEnchantments => 'Enchantments';
+  String get deckAlbumEnchantments => 'Encantamientos';
 
   @override
   String get deckAlbumPlaneswalkers => 'Planeswalkers';
 
   @override
-  String get deckAlbumLands => 'Lands';
+  String get deckAlbumLands => 'Tierras';
 
   @override
-  String get deckAlbumTabCards => 'Cards';
+  String get deckAlbumTabCards => 'Cartas';
 
   @override
-  String get deckAlbumTabStats => 'Stats';
+  String get deckAlbumTabStats => 'Estadísticas';
 
   @override
-  String get deckStatsManaValue => 'Mana value';
+  String get deckStatsManaValue => 'Valor de maná';
 
   @override
-  String get deckStatsManaCost => 'Mana cost';
+  String get deckStatsManaCost => 'Coste de maná';
 
   @override
-  String get deckStatsManaProduction => 'Mana production';
+  String get deckStatsManaProduction => 'Producción de maná';
 
   @override
-  String get deckStatsCardType => 'Card type';
+  String get deckStatsCardType => 'Tipo de carta';
 
   @override
-  String get deckStatsSubtype => 'Subtype';
+  String get deckStatsSubtype => 'Subtipo';
 
   @override
-  String get deckStatsToken => 'Tokens';
+  String get deckStatsToken => 'Fichas';
 
   @override
-  String get deckStatsEmpty => 'Add cards to see this deck\'s stats.';
+  String get deckStatsEmpty =>
+      'Añade cartas para ver las estadísticas de este mazo.';
 
   @override
-  String get deckStatsNone => 'None';
+  String get deckStatsNone => 'Ninguno';
 
   @override
-  String get deckStatsAverageManaValue => 'Average mana value';
+  String get deckStatsAverageManaValue => 'Valor de maná medio';
 
   @override
-  String get deckStatsLands => 'Lands';
+  String get deckStatsLands => 'Tierras';
 
   @override
   String deckAlbumOffColor(String name) {
-    return '$name is outside this commander\'s colors.';
+    return '$name está fuera de los colores de este comandante.';
   }
 
   @override
   String deckAlbumPlayedIn(int percent) {
-    return 'Played in $percent% of decks with this commander.';
+    return 'En el $percent% de los mazos con este comandante.';
   }
 
   @override
-  String get deckStatsShowRest => 'Show the rest';
+  String get deckStatsShowRest => 'Mostrar el resto';
 
   @override
-  String get deckStatsShowLess => 'Show less';
+  String get deckStatsShowLess => 'Mostrar menos';
 
   @override
   String get deckStatsManaValuePlus => '7+';
 
   @override
-  String get deckAlbumFits => 'Suggested';
+  String get deckAlbumFits => 'Sugeridas';
 
   @override
-  String get deckAlbumCuts => 'Consider cutting';
+  String get deckAlbumCuts => 'Valorar recortar';
 
   @override
-  String get deckAlbumRemoveCard => 'Remove';
+  String get deckAlbumRemoveCard => 'Quitar';
 
   @override
-  String get deckAlbumMoveToSideboard => 'Move to sideboard';
+  String get deckAlbumMoveToSideboard => 'Mover al sideboard';
 
   @override
-  String get deckAlbumMoveToMain => 'Move to deck';
+  String get deckAlbumMoveToMain => 'Mover al mazo';
 
   @override
-  String get deckAlbumSideboardEmpty => 'No sideboard cards.';
+  String get deckAlbumSideboardEmpty => 'No hay cartas en el sideboard.';
 
   @override
   String get deckAlbumCannotAdd =>
-      'This deck can\'t take any more of that card.';
+      'Este mazo no admite más copias de esa carta.';
 
   @override
   String deckAlbumPasteTooBig(String format, int count) {
-    return 'A $format deck can only have $count cards.';
+    return 'Un mazo de $format solo puede tener $count cartas.';
   }
 
   @override
   String deckAlbumSideboardLimit(int count) {
-    return 'The sideboard can only have $count cards.';
+    return 'El sideboard solo puede tener $count cartas.';
   }
 
   @override
   String get deckAlbumCopyLimit =>
-      'A card in this list is over the copy limit for this format.';
+      'Una carta de esta lista supera el límite de copias de este formato.';
 
   @override
   String get deckAlbumCardBracket => 'Bracket';
 
   @override
-  String get albumCountAdd => 'Add a copy';
+  String get albumCountAdd => 'Añadir una copia';
 
   @override
-  String get albumCountRemove => 'Remove a copy';
+  String get albumCountRemove => 'Quitar una copia';
 
   @override
-  String get albumSearchHint => 'Search cards…';
+  String get albumSearchHint => 'Buscar cartas…';
 
   @override
-  String get albumFilter => 'Filter';
+  String get albumFilter => 'Filtro';
 
   @override
-  String get albumFilterAll => 'All';
+  String get albumFilterAll => 'Todas';
 
   @override
-  String get albumSortBy => 'Sort by';
+  String get albumSortBy => 'Ordenar por';
 
   @override
   String get albumSortName => 'A–Z';
@@ -3187,28 +3203,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get albumSortNameDesc => 'Z–A';
 
   @override
-  String get albumSortCount => 'Copies';
+  String get albumSortCount => 'Copias';
 
   @override
-  String get albumSortType => 'Type';
+  String get albumSortType => 'Tipo';
 
   @override
-  String get albumNoMatches => 'No cards match.';
+  String get albumNoMatches => 'Ninguna carta coincide.';
 
   @override
-  String get deckAlbumViewTypes => 'Types';
+  String get deckAlbumViewTypes => 'Tipos';
 
   @override
-  String get deckAlbumViewGrid => 'Grid';
+  String get deckAlbumViewGrid => 'Cuadrícula';
 
   @override
   String get deckAlbumViewAlpha => 'A–Z';
 
   @override
-  String get deckLibraryViewFormats => 'Formats';
+  String get deckLibraryViewFormats => 'Formatos';
 
   @override
-  String get deckLibraryViewCovers => 'Covers';
+  String get deckLibraryViewCovers => 'Portadas';
 
   @override
   String get deckBracketGameChangers => 'Game Changers';
@@ -3217,13 +3233,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deckBracketMassLandDenial => 'Mass land denial';
 
   @override
-  String get deckBracketExtraTurns => 'Extra turns';
+  String get deckBracketExtraTurns => 'Turnos extra';
 
   @override
   String get deckBracketCombos => 'Combos';
 
   @override
-  String get deckBracketEarlyCombos => 'Early combos';
+  String get deckBracketEarlyCombos => 'Combos tempranos';
 
   @override
   String deckBracketCombo(String cards) {
@@ -3232,120 +3248,173 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String deckBracketEarlyCombo(String cards) {
-    return 'Early combo: $cards';
+    return 'Combo temprano: $cards';
   }
 
   @override
   String get deckBracketCombosUnavailable =>
-      'Two-card combos could not be checked.';
+      'No se pudieron comprobar los combos de dos cartas.';
 
   @override
   String get deckBracketChoose =>
-      'Choose a bracket. It can\'t sit below this deck\'s floor.';
+      'Elige un bracket. No puede quedar por debajo del suelo de este mazo.';
 
   @override
-  String get collectionAlbumSearchHint => 'Search albums…';
+  String get deckBracketAnalyze => 'Analizar';
 
   @override
-  String get collectionAlbumNoMatches => 'No albums match.';
+  String deckBracketAnalyzed(int n) {
+    return 'Esta lista es Bracket $n.';
+  }
 
   @override
-  String get collectionAlbumSortCards => 'Cards';
+  String get deckBracketAnalyzedRange => 'Esta lista es Bracket 1–2.';
 
   @override
-  String get collectionAlbumFilterWithCards => 'With cards';
+  String get collectionAlbumSearchHint => 'Buscar álbumes…';
 
   @override
-  String get collectionAlbumFilterEmpty => 'Empty';
+  String get collectionAlbumNoMatches => 'Ningún álbum coincide.';
+
+  @override
+  String get collectionAlbumSortCards => 'Cartas';
+
+  @override
+  String get collectionAlbumFilterWithCards => 'Con cartas';
+
+  @override
+  String get collectionAlbumFilterEmpty => 'Vacío';
 
   @override
   String get collectionAlbumsEmpty =>
-      'Create an album, then add the cards you own.';
+      'Crea un álbum y añade las cartas que tienes.';
 
   @override
-  String get collectionNewAlbum => 'New album';
+  String get collectionNewAlbum => 'Álbum nuevo';
 
   @override
-  String get collectionAlbumNameTitle => 'Album name';
+  String get collectionAlbumNameTitle => 'Nombre del álbum';
 
   @override
-  String get collectionAlbumNameHint => 'Name';
+  String get collectionAlbumNameHint => 'Nombre';
 
   @override
   String collectionAlbumCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count cards',
-      one: '1 card',
+      other: '$count cartas',
+      one: '1 carta',
     );
     return '$_temp0';
   }
 
   @override
-  String get collectionAlbumEmpty => 'Add the cards you own in this album.';
+  String get collectionAlbumEmpty =>
+      'Añade las cartas que tienes en este álbum.';
 
   @override
   String get collectionAlbumReplaceBody =>
-      'The cards in this album will be replaced by the pasted list.';
+      'Las cartas de este álbum se reemplazarán por la lista pegada.';
 
   @override
-  String get collectionRenameAlbum => 'Rename album';
+  String get collectionRenameAlbum => 'Renombrar álbum';
 
   @override
-  String get collectionDeleteAlbum => 'Delete album';
+  String get collectionDeleteAlbum => 'Eliminar álbum';
 
   @override
   String collectionDeleteAlbumBody(String name) {
-    return '$name and the cards in it will be removed.';
+    return 'Se eliminarán $name y las cartas que contiene.';
   }
 
   @override
-  String get collectionAddCards => 'Add cards';
+  String get collectionAddCards => 'Añadir cartas';
 
   @override
-  String get collectionAddSearch => 'Search';
+  String get collectionAddSearch => 'Buscar';
 
   @override
-  String get collectionAddSearchBody => 'Find a card and add how many you own.';
+  String get collectionAddSearchBody => 'Busca cartas y ponlas en el carrito.';
 
   @override
-  String get deckAddSearchBody => 'Find a card and add how many copies.';
+  String get deckAddSearchBody => 'Busca cartas y ponlas en el carrito.';
 
   @override
-  String get deckAddPasteBody => 'Paste a deck list.';
+  String get deckAddPasteBody => 'Pega una lista de mazo.';
 
   @override
-  String get collectionAddPasteBody => 'Paste a list of cards you own.';
+  String get collectionAddPasteBody =>
+      'Pega una lista de las cartas que tienes.';
 
   @override
-  String get collectionSearchTitle => 'Search';
+  String get collectionSearchTitle => 'Buscar';
 
   @override
-  String get collectionSearchHint => 'Card name';
+  String get collectionSearchHint => 'Nombre de carta';
 
   @override
-  String get collectionAddCountTitle => 'How many?';
+  String get collectionAddCountTitle => '¿Cuántas?';
 
   @override
   String collectionAddSaved(int count, String name) {
-    return 'Added $count $name';
+    return 'Añadidas $count $name';
   }
 
   @override
-  String get collectionTitle => 'Collection';
+  String collectionCartLabel(int count) {
+    return 'Carrito · $count';
+  }
 
   @override
-  String get collectionPasteTitle => 'Paste collection';
+  String get collectionCartTitle => 'Carrito';
 
   @override
-  String get collectionPasteHint => 'One card per line, like 1 Sol Ring.';
+  String get collectionCartCheckoutAlbum => 'Añadir al álbum';
 
   @override
-  String get collectionSuggestions => 'Commanders you own';
+  String get collectionCartCheckoutDeck => 'Añadir al mazo';
+
+  @override
+  String collectionCartSaved(int count) {
+    return 'Se añadieron $count cartas';
+  }
+
+  @override
+  String collectionCartPartial(int count) {
+    return 'Se añadieron $count. Algunas cartas no se pudieron añadir.';
+  }
+
+  @override
+  String get collectionCartDiscardTitle => '¿Salir sin añadir?';
+
+  @override
+  String get collectionCartDiscardBody =>
+      'Las cartas del carrito no se guardarán.';
+
+  @override
+  String get collectionCartLeave => 'Salir';
+
+  @override
+  String get collectionCartAddOne => 'Añadir una';
+
+  @override
+  String get collectionCartRemoveOne => 'Quitar una';
+
+  @override
+  String get collectionTitle => 'Colección';
+
+  @override
+  String get collectionPasteTitle => 'Pegar colección';
+
+  @override
+  String get collectionPasteHint => 'Una carta por línea, como 1 Sol Ring.';
+
+  @override
+  String get collectionSuggestions => 'Comandantes que tienes';
 
   @override
   String collectionSuggestionCount(String name, int owned, int total) {
-    return '$name, $owned of $total';
+    return '$name, $owned de $total';
   }
 }

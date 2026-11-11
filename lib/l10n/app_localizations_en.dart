@@ -903,6 +903,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get decksNoFilterMatches => 'No decks match these filters.';
+
+  @override
+  String get decksFilterFormat => 'Format';
+
+  @override
+  String get decksFilterStyle => 'Style';
+
+  @override
+  String get decksFilterBracket => 'Bracket';
+
+  @override
+  String get decksFilterNoBracket => 'No bracket';
+
+  @override
   String get decksStyleNotSet => 'Style not set';
 
   @override
@@ -2989,7 +3004,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deckAlbumPaste => 'Paste list';
 
   @override
-  String get deckAlbumExport => 'Copy list';
+  String get deckAlbumExport => 'Export';
 
   @override
   String get deckAlbumCopied => 'Deck list copied.';
@@ -3230,6 +3245,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose a bracket. It can\'t sit below this deck\'s floor.';
 
   @override
+  String get deckBracketAnalyze => 'Analyze';
+
+  @override
+  String deckBracketAnalyzed(int n) {
+    return 'This list is Bracket $n.';
+  }
+
+  @override
+  String get deckBracketAnalyzedRange => 'This list is Bracket 1–2.';
+
+  @override
   String get collectionAlbumSearchHint => 'Search albums…';
 
   @override
@@ -3293,10 +3319,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collectionAddSearch => 'Search';
 
   @override
-  String get collectionAddSearchBody => 'Find a card and add how many you own.';
+  String get collectionAddSearchBody =>
+      'Search cards and drop them in your cart.';
 
   @override
-  String get deckAddSearchBody => 'Find a card and add how many copies.';
+  String get deckAddSearchBody => 'Search cards and drop them in your cart.';
 
   @override
   String get deckAddPasteBody => 'Paste a deck list.';
@@ -3317,6 +3344,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String collectionAddSaved(int count, String name) {
     return 'Added $count $name';
   }
+
+  @override
+  String collectionCartLabel(int count) {
+    return 'Cart · $count';
+  }
+
+  @override
+  String get collectionCartTitle => 'Cart';
+
+  @override
+  String get collectionCartCheckoutAlbum => 'Add to album';
+
+  @override
+  String get collectionCartCheckoutDeck => 'Add to deck';
+
+  @override
+  String collectionCartSaved(int count) {
+    return 'Added $count cards';
+  }
+
+  @override
+  String collectionCartPartial(int count) {
+    return 'Added $count. Some cards could not be added.';
+  }
+
+  @override
+  String get collectionCartDiscardTitle => 'Leave without adding?';
+
+  @override
+  String get collectionCartDiscardBody =>
+      'Cards in your cart will not be saved.';
+
+  @override
+  String get collectionCartLeave => 'Leave';
+
+  @override
+  String get collectionCartAddOne => 'Add one';
+
+  @override
+  String get collectionCartRemoveOne => 'Remove one';
 
   @override
   String get collectionTitle => 'Collection';

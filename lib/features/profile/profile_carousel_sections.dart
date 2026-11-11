@@ -1627,13 +1627,8 @@ class _ProfileRecentMatchCardState
 
 class ProfileDeckPerformanceSection extends ConsumerStatefulWidget {
   final AppColorTokens colors;
-  final bool hasPlayedGames;
 
-  const ProfileDeckPerformanceSection({
-    super.key,
-    required this.colors,
-    this.hasPlayedGames = false,
-  });
+  const ProfileDeckPerformanceSection({super.key, required this.colors});
 
   @override
   ConsumerState<ProfileDeckPerformanceSection> createState() =>
@@ -1656,12 +1651,7 @@ class _ProfileDeckPerformanceSectionState
     final l10n = AppLocalizations.of(context);
 
     final deckTitleStyle = TypographyTokens.sectionTitle(colors.textPrimary);
-    final showPlaceholder = repoDecks.isEmpty || !widget.hasPlayedGames;
     final needsAddPrompt = repoDecks.isEmpty;
-    final placeholderMessage =
-        needsAddPrompt
-            ? l10n.profileEmptyDeckPerf
-            : l10n.profileEmptyRecentGames;
 
     void openDecks() => context.go(AppRoutes.decks);
 
@@ -1688,28 +1678,17 @@ class _ProfileDeckPerformanceSectionState
 
     Widget carouselRow(double cardHeight) {
       final children = <Widget>[];
-      if (showPlaceholder) {
-        if (needsAddPrompt) {
-          children.add(
-            ProfileCarouselAddPromptCard(
-              message: placeholderMessage,
-              colors: colors,
-              width: kProfileCarouselCardWidth,
-              height: cardHeight,
-              onTap: openDecks,
-              semanticsLabel: l10n.decksAddDeck,
-            ),
-          );
-        } else {
-          children.add(
-            ProfileCarouselPlaceholderCard(
-              message: placeholderMessage,
-              colors: colors,
-              width: kProfileCarouselCardWidth,
-              height: cardHeight,
-            ),
-          );
-        }
+      if (needsAddPrompt) {
+        children.add(
+          ProfileCarouselAddPromptCard(
+            message: l10n.profileEmptyDeckPerf,
+            colors: colors,
+            width: kProfileCarouselCardWidth,
+            height: cardHeight,
+            onTap: openDecks,
+            semanticsLabel: l10n.decksAddDeck,
+          ),
+        );
       } else {
         for (final deck in repoDecks) {
           children.add(
@@ -1769,19 +1748,45 @@ TextStyle _profileDeckCardMetaStyle(
   color: accent ? colors.primaryAccent : colors.textSecondary,
 );
 
-/// Format + deck style on one line (single layout pass — no baseline drift).
-class _ProfileDeckFormatStyleLine extends StatelessWidget {
-  const _ProfileDeckFormatStyleLine({required this.deck, required this.colors});
+/// Compact bracket for profile cards. Commander only; em dash if unset.
+String? profileDeckBracketLabel(AppLocalizations l10n, PlayerDeck deck) {
+  if (!deck.isCommanderDeck) return null;
+  final n = deck.chosenBracket;
+  return n == null
+      ? '${l10n.deckAlbumCardBracket} —'
+      : '${l10n.deckAlbumCardBracket} $n';
+}
+
+/// Format + bracket + deck style on one line (single layout pass).
+class ProfileDeckFormatStyleLine extends StatelessWidget {
+  const ProfileDeckFormatStyleLine({
+    super.key,
+    required this.deck,
+    required this.colors,
+  });
 
   final PlayerDeck deck;
   final AppColorTokens colors;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final base = _profileDeckCardMetaStyle(colors, accent: false);
     final styleColor =
         deck.hasDeckStyle ? colors.textSecondary : colors.primaryAccent;
-    return Text.rich(
+    final bracket = profileDeckBracketLabel(l10n, deck);
+    final strut = StrutStyle(
+      fontSize: base.fontSize,
+      height: base.height,
+      fontWeight: base.fontWeight,
+      leadingDistribution: TextLeadingDistribution.even,
+      forceStrutHeight: true,
+    );
+    const heightBehavior = TextHeightBehavior(
+      applyHeightToFirstAscent: true,
+      applyHeightToLastDescent: false,
+    );
+    final formatStyle = Text.rich(
       TextSpan(
         style: base,
         children: [
@@ -1791,27 +1796,33 @@ class _ProfileDeckFormatStyleLine extends StatelessWidget {
           ),
           const TextSpan(text: ' · '),
           TextSpan(
-            text: localizedDeckStyleLabel(
-              AppLocalizations.of(context),
-              deck.deckStyle,
-            ),
+            text: localizedDeckStyleLabel(l10n, deck.deckStyle),
             style: base.copyWith(color: styleColor),
           ),
         ],
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      strutStyle: StrutStyle(
-        fontSize: base.fontSize,
-        height: base.height,
-        fontWeight: base.fontWeight,
-        leadingDistribution: TextLeadingDistribution.even,
-        forceStrutHeight: true,
-      ),
-      textHeightBehavior: const TextHeightBehavior(
-        applyHeightToFirstAscent: true,
-        applyHeightToLastDescent: false,
-      ),
+      strutStyle: strut,
+      textHeightBehavior: heightBehavior,
+    );
+    if (bracket == null) return formatStyle;
+
+    // Pin bracket to the trailing edge so it stays fully visible; format/style
+    // ellipsize in the remaining width instead of clipping the level.
+    return Row(
+      children: [
+        Expanded(child: formatStyle),
+        SizedBox(width: LayoutTokens.gr0),
+        Text(
+          bracket,
+          maxLines: 1,
+          softWrap: false,
+          style: base.copyWith(color: colors.primaryAccent),
+          strutStyle: strut,
+          textHeightBehavior: heightBehavior,
+        ),
+      ],
     );
   }
 }
@@ -1837,84 +1848,102 @@ class ProfileDeckCard extends StatelessWidget {
       builder: (context, slot) {
         final slotWidth = slot.hasBoundedWidth ? slot.maxWidth : width;
         final slotHeight = slot.hasBoundedHeight ? slot.maxHeight : height;
+        final bracketLabel = profileDeckBracketLabel(
+          AppLocalizations.of(context),
+          deck,
+        );
         return SizedBox(
           width: slotWidth,
           height: slotHeight,
-          child: ProfileCarouselCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Flexible(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final artH = profileDeckCardArtHeight(
-                        slotWidth,
-                        slotHeight,
-                        deck: deck,
-                        hasPartner: deck.hasPartner,
-                      );
-                      final maxH =
-                          constraints.maxHeight.isFinite
-                              ? constraints.maxHeight
-                              : artH;
-                      // Inset so the card rim shadow isn't clipped by the
-                      // carousel Material; still fill nearly the full band height.
-                      const shadowInset = LayoutTokens.gr1;
-                      final widthLimit =
-                          constraints.maxWidth.isFinite
-                              ? math.max(
-                                0.0,
-                                constraints.maxWidth - shadowInset,
-                              )
-                              : artH;
-                      final byHeight = math.max(
-                        0.0,
-                        math.min(artH, maxH) - shadowInset,
-                      );
-                      final portraitSize = math.min(byHeight, widthLimit);
-                      return Padding(
-                        padding: const EdgeInsets.all(LayoutTokens.gr0),
-                        child: Center(
-                          child: ResolvedDeckCommanderAvatarCluster(
-                            deck: deck,
-                            colors: colors,
-                            size: portraitSize,
-                            portraitStyle: CommanderPortraitStyle.card,
-                            // Fill the portrait frame height; crop sides if needed.
-                            imageFit: BoxFit.cover,
-                          ),
+          child: Semantics(
+            button: true,
+            label:
+                bracketLabel == null
+                    ? deck.displayName
+                    : '${deck.displayName}, $bracketLabel',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.go(AppRoutes.deckAlbum(deck.id)),
+                borderRadius: _kProfileCarouselCardRadius,
+                child: ProfileCarouselCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Flexible(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final artH = profileDeckCardArtHeight(
+                              slotWidth,
+                              slotHeight,
+                              deck: deck,
+                              hasPartner: deck.hasPartner,
+                            );
+                            final maxH =
+                                constraints.maxHeight.isFinite
+                                    ? constraints.maxHeight
+                                    : artH;
+                            // Inset so the card rim shadow isn't clipped by the
+                            // carousel Material; still fill nearly the full band height.
+                            const shadowInset = LayoutTokens.gr1;
+                            final widthLimit =
+                                constraints.maxWidth.isFinite
+                                    ? math.max(
+                                      0.0,
+                                      constraints.maxWidth - shadowInset,
+                                    )
+                                    : artH;
+                            final byHeight = math.max(
+                              0.0,
+                              math.min(artH, maxH) - shadowInset,
+                            );
+                            final portraitSize = math.min(byHeight, widthLimit);
+                            return Padding(
+                              padding: const EdgeInsets.all(LayoutTokens.gr0),
+                              child: Center(
+                                child: ResolvedDeckCommanderAvatarCluster(
+                                  deck: deck,
+                                  colors: colors,
+                                  size: portraitSize,
+                                  portraitStyle: CommanderPortraitStyle.card,
+                                  // Full printed card in the portrait frame, no zoom crop.
+                                  imageFit: BoxFit.contain,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      SizedBox(height: LayoutTokens.gr1),
+                      Text(
+                        deck.displayName,
+                        style: _profileDeckCardTitleStyle(colors),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: LayoutTokens.gr0),
+                      Text(
+                        deck.isCommanderDeck && deck.hasPartner
+                            ? '${deck.commanderName} // ${deck.partnerCommanderName}'
+                            : deck.commanderName,
+                        style: _profileDeckCardSubtitleStyle(colors),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: LayoutTokens.gr0),
+                      ProfileDeckFormatStyleLine(deck: deck, colors: colors),
+                      SizedBox(height: LayoutTokens.gr1),
+                      DeckWinLossRatioBar(
+                        deck: deck,
+                        colors: colors,
+                        height: LayoutTokens.gr1,
+                      ),
+                      SizedBox(height: LayoutTokens.gr1),
+                      _ProfileDeckRecordLine(deck: deck, colors: colors),
+                    ],
                   ),
                 ),
-                SizedBox(height: LayoutTokens.gr1),
-                Text(
-                  deck.displayName,
-                  style: _profileDeckCardTitleStyle(colors),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: LayoutTokens.gr0),
-                Text(
-                  deck.isCommanderDeck && deck.hasPartner
-                      ? '${deck.commanderName} // ${deck.partnerCommanderName}'
-                      : deck.commanderName,
-                  style: _profileDeckCardSubtitleStyle(colors),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: LayoutTokens.gr0),
-                _ProfileDeckFormatStyleLine(deck: deck, colors: colors),
-                SizedBox(height: LayoutTokens.gr1),
-                DeckWinLossRatioBar(
-                  deck: deck,
-                  colors: colors,
-                  height: LayoutTokens.gr1,
-                ),
-                SizedBox(height: LayoutTokens.gr1),
-                _ProfileDeckRecordLine(deck: deck, colors: colors),
-              ],
+              ),
             ),
           ),
         );

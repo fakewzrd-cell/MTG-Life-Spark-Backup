@@ -36,6 +36,9 @@ class AppRoutes {
 
   /// Primary route for deck library (shell tab).
   static const decks = '/decks';
+
+  static String deckAlbum(String deckId) =>
+      '$decks/${Uri.encodeComponent(deckId)}';
   static const profileAvatar = '/home/avatar';
   static const feedback = '/settings/feedback';
   static const commanderSelect = '/commander-select';

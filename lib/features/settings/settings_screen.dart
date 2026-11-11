@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/debug/app_log.dart';
 import '../../core/game/game_format.dart';
+import '../../core/game/scryfall_card_cache.dart';
 import '../../core/models/app_settings.dart';
 import '../../core/persistence/providers.dart';
 import '../../l10n/app_localizations.dart';
@@ -387,6 +388,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _clearCache() async {
     final l10n = AppLocalizations.of(context);
     try {
+      await ScryfallCardCache().clear();
       await DefaultCacheManager().emptyCache();
       if (!mounted) return;
       showUiSnackBar(context, l10n.cacheCleared);

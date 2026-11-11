@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/game/game_format.dart';
 import '../../core/models/match_record.dart';
@@ -10,6 +11,7 @@ import '../../core/models/player_deck.dart';
 import '../../core/models/player_profile.dart';
 import '../../core/persistence/providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/utils/app_router.dart';
 import '../../shared/utils/commander_image_resolver.dart';
 import '../../shared/utils/wizard_rank_titles.dart';
 import '../../shared/widgets/profile_default_banner.dart';
@@ -436,6 +438,7 @@ class _DeckHighlightCard extends ConsumerWidget {
           localPlayerId: profile.playerId,
         );
 
+    final l10n = AppLocalizations.of(context);
     final count = switch (statKind) {
       _DeckHighlightStat.wins => deck.wins,
       _DeckHighlightStat.losses => deck.losses,
@@ -444,85 +447,96 @@ class _DeckHighlightCard extends ConsumerWidget {
       _DeckHighlightStat.wins => count == 1 ? '1 Win' : '$count Wins',
       _DeckHighlightStat.losses => count == 1 ? '1 Loss' : '$count Losses',
     };
+    final bracket = profileDeckBracketLabel(l10n, deck);
+    final formatLine =
+        bracket == null
+            ? deck.gameFormat.displayName
+            : '${deck.gameFormat.displayName} · $bracket';
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (imageUrl != null && imageUrl.isNotEmpty)
-          CachedNetworkImage(
-            imageUrl: imageUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            placeholder: (_, __) => defaultBannerFill(context),
-            errorWidget: (_, __, ___) => defaultBannerFill(context),
-          )
-        else
-          defaultProfileBannerArt(context),
-        profileArtCardVignette(),
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: LayoutTokens.gr3,
-            vertical: LayoutTokens.gr3,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.78),
-                  fontSize: FontTokens.caption,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.go(AppRoutes.deckAlbum(deck.id)),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (imageUrl != null && imageUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholder: (_, __) => defaultBannerFill(context),
+                errorWidget: (_, __, ___) => defaultBannerFill(context),
+              )
+            else
+              defaultProfileBannerArt(context),
+            profileArtCardVignette(),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: LayoutTokens.gr3,
+                vertical: LayoutTokens.gr3,
               ),
-              SizedBox(height: LayoutTokens.gr2),
-              Text(
-                deck.displayName,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: FontTokens.body,
-                  fontWeight: FontWeight.w700,
-                  height: 1.15,
-                  letterSpacing: -0.2,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.78),
+                      fontSize: FontTokens.caption,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  Text(
+                    deck.displayName,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: FontTokens.body,
+                      fontWeight: FontWeight.w700,
+                      height: 1.15,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr1),
+                  Text(
+                    formatLine,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.72),
+                      fontSize: FontTokens.caption,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  Text(
+                    statLabel,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: FontTokens.headline,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: LayoutTokens.gr1),
-              Text(
-                deck.gameFormat.displayName,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  fontSize: FontTokens.caption,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: LayoutTokens.gr2),
-              Text(
-                statLabel,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: FontTokens.headline,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

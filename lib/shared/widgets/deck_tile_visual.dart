@@ -58,8 +58,10 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
     final hasPartner = deck.hasPartner;
 
     if (portraitStyle == CommanderPortraitStyle.card) {
+      final fullPrimary = scryfallFullCardImageUrl(primaryUrl);
+      final fullPartner = scryfallFullCardImageUrl(partnerUrl);
       if (!hasPartner) {
-        return _cardPortraitTile(url: primaryUrl, height: size, fit: imageFit);
+        return _cardPortraitTile(url: fullPrimary, height: size, fit: imageFit);
       }
       final small = size * 0.58;
       final bigW = size * _cardAspectWidthOverHeight;
@@ -74,7 +76,7 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
               left: 0,
               top: 0,
               child: _cardPortraitTile(
-                url: primaryUrl,
+                url: fullPrimary,
                 height: size,
                 fit: imageFit,
               ),
@@ -100,8 +102,8 @@ class DeckCommanderAvatarCluster extends StatelessWidget {
                   padding: const EdgeInsets.all(LayoutTokens.gr0),
                   child: _cardPortraitTile(
                     url:
-                        partnerUrl != null && partnerUrl.isNotEmpty
-                            ? partnerUrl
+                        fullPartner != null && fullPartner.isNotEmpty
+                            ? fullPartner
                             : null,
                     height: small - LayoutTokens.gr1,
                     fit: imageFit,

@@ -872,6 +872,21 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get decksNoFilterMatches => 'これらのフィルターに一致するデッキはありません。';
+
+  @override
+  String get decksFilterFormat => 'フォーマット';
+
+  @override
+  String get decksFilterStyle => 'スタイル';
+
+  @override
+  String get decksFilterBracket => 'ブラケット';
+
+  @override
+  String get decksFilterNoBracket => 'ブラケットなし';
+
+  @override
   String get decksStyleNotSet => 'スタイル未設定';
 
   @override
@@ -2023,7 +2038,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commanderSelectConfirm => '確定';
 
   @override
-  String get commanderSelectInDeck => 'In this deck';
+  String get commanderSelectInDeck => 'このデッキ内';
 
   @override
   String get commanderSelectScryfallCommanderHelp => '統率者名を入力して Scryfall を検索。';
@@ -2885,197 +2900,194 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get deckAlbumTitle => 'Deck';
+  String get deckAlbumTitle => 'デッキ';
 
   @override
-  String get deckAlbumOptions => 'Deck options';
+  String get deckAlbumOptions => 'デッキのオプション';
 
   @override
-  String get deckAlbumMissing => 'This deck is no longer in your library.';
+  String get deckAlbumMissing => 'このデッキはライブラリにありません。';
 
   @override
-  String get deckAlbumEmpty => 'Add cards to fill this deck.';
+  String get deckAlbumEmpty => 'カードを追加してデッキを揃えてください。';
 
   @override
-  String get deckAlbumPaste => 'Paste list';
+  String get deckAlbumPaste => 'リストを貼り付け';
 
   @override
-  String get deckAlbumExport => 'Copy list';
+  String get deckAlbumExport => 'エクスポート';
 
   @override
-  String get deckAlbumCopied => 'Deck list copied.';
+  String get deckAlbumCopied => 'デッキリストをコピーしました。';
 
   @override
-  String get deckAlbumPasteTitle => 'Paste deck list';
+  String get deckAlbumPasteTitle => 'デッキリストを貼り付け';
 
   @override
   String get deckAlbumPasteHint =>
-      'One card per line, like 1 Sol Ring. On a constructed deck, a Sideboard line starts the sideboard.';
+      '1行に1枚、例: 1 Sol Ring。構築では Sideboard の行からサイドボードになります。';
 
   @override
-  String get deckAlbumPasteAction => 'Save list';
+  String get deckAlbumPasteAction => 'リストを保存';
 
   @override
-  String get deckAlbumPasteEmpty => 'No cards found in that list.';
+  String get deckAlbumPasteEmpty => 'そのリストにカードが見つかりません。';
 
   @override
   String deckAlbumPasteSaved(int count) {
-    return 'Saved $count cards.';
+    return '$count 枚を保存しました。';
   }
 
   @override
   String deckAlbumPasteSkipped(int count) {
-    return 'Saved the list. Skipped $count lines.';
+    return 'リストを保存しました。$count 行をスキップしました。';
   }
 
   @override
-  String get deckAlbumReplaceTitle => 'Replace this list?';
+  String get deckAlbumReplaceTitle => 'このリストを置き換えますか？';
 
   @override
-  String get deckAlbumReplaceBody =>
-      'The cards in this deck will be replaced by the pasted list.';
+  String get deckAlbumReplaceBody => 'このデッキのカードは貼り付けたリストに置き換わります。';
 
   @override
-  String get deckAlbumReplaceConfirm => 'Replace';
+  String get deckAlbumReplaceConfirm => '置き換える';
 
   @override
-  String get deckAlbumSideboard => 'Sideboard';
+  String get deckAlbumSideboard => 'サイドボード';
 
   @override
-  String get deckAlbumOther => 'Other';
+  String get deckAlbumOther => 'その他';
 
   @override
-  String get deckAlbumCreatures => 'Creatures';
+  String get deckAlbumCreatures => 'クリーチャー';
 
   @override
-  String get deckAlbumInstants => 'Instants';
+  String get deckAlbumInstants => 'インスタント';
 
   @override
-  String get deckAlbumSorceries => 'Sorceries';
+  String get deckAlbumSorceries => 'ソーサリー';
 
   @override
-  String get deckAlbumArtifacts => 'Artifacts';
+  String get deckAlbumArtifacts => 'アーティファクト';
 
   @override
-  String get deckAlbumEnchantments => 'Enchantments';
+  String get deckAlbumEnchantments => 'エンチャント';
 
   @override
-  String get deckAlbumPlaneswalkers => 'Planeswalkers';
+  String get deckAlbumPlaneswalkers => 'プレインズウォーカー';
 
   @override
-  String get deckAlbumLands => 'Lands';
+  String get deckAlbumLands => '土地';
 
   @override
-  String get deckAlbumTabCards => 'Cards';
+  String get deckAlbumTabCards => 'カード';
 
   @override
-  String get deckAlbumTabStats => 'Stats';
+  String get deckAlbumTabStats => '統計';
 
   @override
-  String get deckStatsManaValue => 'Mana value';
+  String get deckStatsManaValue => 'マナ値';
 
   @override
-  String get deckStatsManaCost => 'Mana cost';
+  String get deckStatsManaCost => 'マナ・コスト';
 
   @override
-  String get deckStatsManaProduction => 'Mana production';
+  String get deckStatsManaProduction => 'マナ産出';
 
   @override
-  String get deckStatsCardType => 'Card type';
+  String get deckStatsCardType => 'カード・タイプ';
 
   @override
-  String get deckStatsSubtype => 'Subtype';
+  String get deckStatsSubtype => 'サブタイプ';
 
   @override
-  String get deckStatsToken => 'Tokens';
+  String get deckStatsToken => 'トークン';
 
   @override
-  String get deckStatsEmpty => 'Add cards to see this deck\'s stats.';
+  String get deckStatsEmpty => 'カードを追加すると、このデッキの統計が表示されます。';
 
   @override
-  String get deckStatsNone => 'None';
+  String get deckStatsNone => 'なし';
 
   @override
-  String get deckStatsAverageManaValue => 'Average mana value';
+  String get deckStatsAverageManaValue => '平均マナ値';
 
   @override
-  String get deckStatsLands => 'Lands';
+  String get deckStatsLands => '土地';
 
   @override
   String deckAlbumOffColor(String name) {
-    return '$name is outside this commander\'s colors.';
+    return '$name はこの統率者の色に含まれません。';
   }
 
   @override
   String deckAlbumPlayedIn(int percent) {
-    return 'Played in $percent% of decks with this commander.';
+    return 'この統率者のデッキの $percent% で採用。';
   }
 
   @override
-  String get deckStatsShowRest => 'Show the rest';
+  String get deckStatsShowRest => '残りを表示';
 
   @override
-  String get deckStatsShowLess => 'Show less';
+  String get deckStatsShowLess => '折りたたむ';
 
   @override
   String get deckStatsManaValuePlus => '7+';
 
   @override
-  String get deckAlbumFits => 'Suggested';
+  String get deckAlbumFits => 'おすすめ';
 
   @override
-  String get deckAlbumCuts => 'Consider cutting';
+  String get deckAlbumCuts => 'カット候補';
 
   @override
-  String get deckAlbumRemoveCard => 'Remove';
+  String get deckAlbumRemoveCard => '取り除く';
 
   @override
-  String get deckAlbumMoveToSideboard => 'Move to sideboard';
+  String get deckAlbumMoveToSideboard => 'サイドボードへ';
 
   @override
-  String get deckAlbumMoveToMain => 'Move to deck';
+  String get deckAlbumMoveToMain => 'デッキへ';
 
   @override
-  String get deckAlbumSideboardEmpty => 'No sideboard cards.';
+  String get deckAlbumSideboardEmpty => 'サイドボードのカードはありません。';
 
   @override
-  String get deckAlbumCannotAdd =>
-      'This deck can\'t take any more of that card.';
+  String get deckAlbumCannotAdd => 'このデッキには、そのカードをもう入れられません。';
 
   @override
   String deckAlbumPasteTooBig(String format, int count) {
-    return 'A $format deck can only have $count cards.';
+    return '$format のデッキは $count 枚までです。';
   }
 
   @override
   String deckAlbumSideboardLimit(int count) {
-    return 'The sideboard can only have $count cards.';
+    return 'サイドボードは $count 枚までです。';
   }
 
   @override
-  String get deckAlbumCopyLimit =>
-      'A card in this list is over the copy limit for this format.';
+  String get deckAlbumCopyLimit => 'このリストのカードが、このフォーマットの枚数制限を超えています。';
 
   @override
-  String get deckAlbumCardBracket => 'Bracket';
+  String get deckAlbumCardBracket => 'ブラケット';
 
   @override
-  String get albumCountAdd => 'Add a copy';
+  String get albumCountAdd => '1枚追加';
 
   @override
-  String get albumCountRemove => 'Remove a copy';
+  String get albumCountRemove => '1枚減らす';
 
   @override
-  String get albumSearchHint => 'Search cards…';
+  String get albumSearchHint => 'カードを検索…';
 
   @override
-  String get albumFilter => 'Filter';
+  String get albumFilter => 'フィルター';
 
   @override
-  String get albumFilterAll => 'All';
+  String get albumFilterAll => 'すべて';
 
   @override
-  String get albumSortBy => 'Sort by';
+  String get albumSortBy => '並び替え';
 
   @override
   String get albumSortName => 'A–Z';
@@ -3084,165 +3096,211 @@ class AppLocalizationsJa extends AppLocalizations {
   String get albumSortNameDesc => 'Z–A';
 
   @override
-  String get albumSortCount => 'Copies';
+  String get albumSortCount => '枚数';
 
   @override
-  String get albumSortType => 'Type';
+  String get albumSortType => 'タイプ';
 
   @override
-  String get albumNoMatches => 'No cards match.';
+  String get albumNoMatches => '一致するカードはありません。';
 
   @override
-  String get deckAlbumViewTypes => 'Types';
+  String get deckAlbumViewTypes => 'タイプ';
 
   @override
-  String get deckAlbumViewGrid => 'Grid';
+  String get deckAlbumViewGrid => 'グリッド';
 
   @override
   String get deckAlbumViewAlpha => 'A–Z';
 
   @override
-  String get deckLibraryViewFormats => 'Formats';
+  String get deckLibraryViewFormats => 'フォーマット';
 
   @override
-  String get deckLibraryViewCovers => 'Covers';
+  String get deckLibraryViewCovers => 'カバー';
 
   @override
-  String get deckBracketGameChangers => 'Game Changers';
+  String get deckBracketGameChangers => 'ゲームチェンジャー';
 
   @override
-  String get deckBracketMassLandDenial => 'Mass land denial';
+  String get deckBracketMassLandDenial => '大量土地破壊';
 
   @override
-  String get deckBracketExtraTurns => 'Extra turns';
+  String get deckBracketExtraTurns => '追加ターン';
 
   @override
-  String get deckBracketCombos => 'Combos';
+  String get deckBracketCombos => 'コンボ';
 
   @override
-  String get deckBracketEarlyCombos => 'Early combos';
+  String get deckBracketEarlyCombos => '早期コンボ';
 
   @override
   String deckBracketCombo(String cards) {
-    return 'Combo: $cards';
+    return 'コンボ: $cards';
   }
 
   @override
   String deckBracketEarlyCombo(String cards) {
-    return 'Early combo: $cards';
+    return '早期コンボ: $cards';
   }
 
   @override
-  String get deckBracketCombosUnavailable =>
-      'Two-card combos could not be checked.';
+  String get deckBracketCombosUnavailable => '2枚コンボを確認できませんでした。';
 
   @override
-  String get deckBracketChoose =>
-      'Choose a bracket. It can\'t sit below this deck\'s floor.';
+  String get deckBracketChoose => 'ブラケットを選んでください。このデッキの下限より下にはできません。';
 
   @override
-  String get collectionAlbumSearchHint => 'Search albums…';
+  String get deckBracketAnalyze => '分析';
 
   @override
-  String get collectionAlbumNoMatches => 'No albums match.';
+  String deckBracketAnalyzed(int n) {
+    return 'このリストはブラケット $n です。';
+  }
 
   @override
-  String get collectionAlbumSortCards => 'Cards';
+  String get deckBracketAnalyzedRange => 'このリストはブラケット 1–2 です。';
 
   @override
-  String get collectionAlbumFilterWithCards => 'With cards';
+  String get collectionAlbumSearchHint => 'アルバムを検索…';
 
   @override
-  String get collectionAlbumFilterEmpty => 'Empty';
+  String get collectionAlbumNoMatches => '一致するアルバムはありません。';
 
   @override
-  String get collectionAlbumsEmpty =>
-      'Create an album, then add the cards you own.';
+  String get collectionAlbumSortCards => 'カード';
 
   @override
-  String get collectionNewAlbum => 'New album';
+  String get collectionAlbumFilterWithCards => 'カードあり';
 
   @override
-  String get collectionAlbumNameTitle => 'Album name';
+  String get collectionAlbumFilterEmpty => '空';
 
   @override
-  String get collectionAlbumNameHint => 'Name';
+  String get collectionAlbumsEmpty => 'アルバムを作り、持っているカードを追加してください。';
+
+  @override
+  String get collectionNewAlbum => '新しいアルバム';
+
+  @override
+  String get collectionAlbumNameTitle => 'アルバム名';
+
+  @override
+  String get collectionAlbumNameHint => '名前';
 
   @override
   String collectionAlbumCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count cards',
-      one: '1 card',
+      other: '$count 枚',
+      one: '1 枚',
     );
     return '$_temp0';
   }
 
   @override
-  String get collectionAlbumEmpty => 'Add the cards you own in this album.';
+  String get collectionAlbumEmpty => 'このアルバムに持っているカードを追加してください。';
 
   @override
-  String get collectionAlbumReplaceBody =>
-      'The cards in this album will be replaced by the pasted list.';
+  String get collectionAlbumReplaceBody => 'このアルバムのカードは貼り付けたリストに置き換わります。';
 
   @override
-  String get collectionRenameAlbum => 'Rename album';
+  String get collectionRenameAlbum => 'アルバム名を変更';
 
   @override
-  String get collectionDeleteAlbum => 'Delete album';
+  String get collectionDeleteAlbum => 'アルバムを削除';
 
   @override
   String collectionDeleteAlbumBody(String name) {
-    return '$name and the cards in it will be removed.';
+    return '$name とその中のカードが削除されます。';
   }
 
   @override
-  String get collectionAddCards => 'Add cards';
+  String get collectionAddCards => 'カードを追加';
 
   @override
-  String get collectionAddSearch => 'Search';
+  String get collectionAddSearch => '検索';
 
   @override
-  String get collectionAddSearchBody => 'Find a card and add how many you own.';
+  String get collectionAddSearchBody => 'カードを探してカートに入れます。';
 
   @override
-  String get deckAddSearchBody => 'Find a card and add how many copies.';
+  String get deckAddSearchBody => 'カードを探してカートに入れます。';
 
   @override
-  String get deckAddPasteBody => 'Paste a deck list.';
+  String get deckAddPasteBody => 'デッキリストを貼り付けます。';
 
   @override
-  String get collectionAddPasteBody => 'Paste a list of cards you own.';
+  String get collectionAddPasteBody => '持っているカードのリストを貼り付けます。';
 
   @override
-  String get collectionSearchTitle => 'Search';
+  String get collectionSearchTitle => '検索';
 
   @override
-  String get collectionSearchHint => 'Card name';
+  String get collectionSearchHint => 'カード名';
 
   @override
-  String get collectionAddCountTitle => 'How many?';
+  String get collectionAddCountTitle => '何枚？';
 
   @override
   String collectionAddSaved(int count, String name) {
-    return 'Added $count $name';
+    return '$name を $count 枚追加しました';
   }
 
   @override
-  String get collectionTitle => 'Collection';
+  String collectionCartLabel(int count) {
+    return 'カート · $count';
+  }
 
   @override
-  String get collectionPasteTitle => 'Paste collection';
+  String get collectionCartTitle => 'カート';
 
   @override
-  String get collectionPasteHint => 'One card per line, like 1 Sol Ring.';
+  String get collectionCartCheckoutAlbum => 'アルバムに追加';
 
   @override
-  String get collectionSuggestions => 'Commanders you own';
+  String get collectionCartCheckoutDeck => 'デッキに追加';
+
+  @override
+  String collectionCartSaved(int count) {
+    return '$count 枚を追加しました';
+  }
+
+  @override
+  String collectionCartPartial(int count) {
+    return '$count 枚を追加。一部のカードは追加できませんでした。';
+  }
+
+  @override
+  String get collectionCartDiscardTitle => '追加せずに戻りますか？';
+
+  @override
+  String get collectionCartDiscardBody => 'カートのカードは保存されません。';
+
+  @override
+  String get collectionCartLeave => '戻る';
+
+  @override
+  String get collectionCartAddOne => '1枚追加';
+
+  @override
+  String get collectionCartRemoveOne => '1枚減らす';
+
+  @override
+  String get collectionTitle => 'コレクション';
+
+  @override
+  String get collectionPasteTitle => 'コレクションを貼り付け';
+
+  @override
+  String get collectionPasteHint => '1行に1枚、例: 1 Sol Ring。';
+
+  @override
+  String get collectionSuggestions => '持っている統率者';
 
   @override
   String collectionSuggestionCount(String name, int owned, int total) {
-    return '$name, $owned of $total';
+    return '$name、$owned/$total';
   }
 }
