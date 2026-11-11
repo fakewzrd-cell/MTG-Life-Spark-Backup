@@ -2387,6 +2387,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Profil, Decks, Spiele und Feedback auf diesem Telefon speichern';
 
   @override
+  String get profileOptionsRestore => 'Backup laden';
+
+  @override
+  String get profileOptionsRestoreSubtitle =>
+      'Ersetzt alle lokalen Daten durch eine .lifespark-Datei';
+
+  @override
   String get profilePicTitle => 'Profilbild';
 
   @override
@@ -3205,6 +3212,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get albumNoMatches => 'Keine Karten passen.';
 
   @override
+  String get deckAlbumFaceCover => 'Cover';
+
+  @override
+  String get deckAlbumChooseCommander => 'Commander wählen';
+
+  @override
+  String get deckAlbumChooseCover => 'Cover wählen';
+
+  @override
   String get deckAlbumViewTypes => 'Typen';
 
   @override
@@ -3329,10 +3345,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get collectionAddSearchBody =>
-      'Suche Karten und lege sie in den Warenkorb.';
+      'Suche Karten und füge sie deiner Liste hinzu.';
 
   @override
-  String get deckAddSearchBody => 'Suche Karten und lege sie in den Warenkorb.';
+  String get deckAddSearchBody =>
+      'Suche Karten und füge sie deiner Liste hinzu.';
 
   @override
   String get deckAddPasteBody => 'Eine Deckliste einfügen.';
@@ -3357,11 +3374,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String collectionCartLabel(int count) {
-    return 'Warenkorb · $count';
+    return 'Liste · $count';
   }
 
   @override
-  String get collectionCartTitle => 'Warenkorb';
+  String get collectionCartTitle => 'Liste';
 
   @override
   String get collectionCartCheckoutAlbum => 'Zum Album';
@@ -3383,8 +3400,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get collectionCartDiscardTitle => 'Ohne Hinzufügen verlassen?';
 
   @override
-  String get collectionCartDiscardBody =>
-      'Karten im Warenkorb werden nicht gespeichert.';
+  String get collectionCartDiscardBody => 'Die Liste wird nicht gespeichert.';
 
   @override
   String get collectionCartLeave => 'Verlassen';

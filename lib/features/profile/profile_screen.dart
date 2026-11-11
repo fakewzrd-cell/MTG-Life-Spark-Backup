@@ -21,6 +21,7 @@ import '../../ui/tokens/motion_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
+import 'backup_restore_flow.dart';
 import 'profile_carousel_sections.dart';
 import 'profile_hero_layout.dart';
 import 'profile_options_sheet.dart';
@@ -73,6 +74,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await Future<void>.delayed(MotionTokens.standard);
         if (!mounted) return;
         await _exportBackup();
+      case ProfileSheetAction.restoreProfile:
+        await Future<void>.delayed(MotionTokens.standard);
+        if (!mounted) return;
+        await restoreLifeSparkBackup(
+          context: context,
+          ref: ref,
+          logTag: 'Profile',
+        );
     }
   }
 

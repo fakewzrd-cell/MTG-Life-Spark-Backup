@@ -36,17 +36,25 @@ void main() {
     );
   }
 
-  testWidgets('profile options sheet lists edit and backup actions',
-      (tester) async {
+  testWidgets('profile options sheet lists edit and backup actions', (
+    tester,
+  ) async {
     await pumpHost(tester);
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit profile'), findsOneWidget);
     expect(find.text('Back up profile'), findsOneWidget);
+    expect(find.text('Load backup'), findsOneWidget);
     expect(find.text('Change your name or avatar'), findsOneWidget);
-    expect(find.text('Save profile, decks, games, and feedback on this phone'),
-        findsOneWidget);
+    expect(
+      find.text('Save profile, decks, games, and feedback on this phone'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Replace all local data from a .lifespark file'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('choosing Edit profile returns editProfile', (tester) async {
@@ -111,5 +119,37 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(result, ProfileSheetAction.backupProfile);
+  });
+
+  testWidgets('choosing Load backup returns restoreProfile', (tester) async {
+    ProfileSheetAction? result;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark(),
+        localizationsDelegates: testLocalizationDelegates,
+        supportedLocales: testSupportedLocales,
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () async {
+                    result = await showProfileOptionsSheet(context);
+                  },
+                  child: const Text('Open'),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Load backup'));
+    await tester.pumpAndSettle();
+
+    expect(result, ProfileSheetAction.restoreProfile);
   });
 }

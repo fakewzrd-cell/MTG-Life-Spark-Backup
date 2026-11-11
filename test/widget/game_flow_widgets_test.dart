@@ -7,6 +7,7 @@ import 'package:mgt_life_spark/features/end_game/end_game_screen.dart';
 import 'package:mgt_life_spark/features/game/widgets/game_bottom_bar.dart';
 import 'package:mgt_life_spark/features/game_lobby/game_lobby_screen.dart';
 import 'package:mgt_life_spark/shared/theme/app_theme.dart';
+import 'package:mgt_life_spark/shared/widgets/brand_logo.dart';
 import '../support/game_widget_harness.dart';
 import '../support/test_l10n.dart';
 
@@ -22,6 +23,7 @@ void main() {
     );
 
     expect(find.text('Lobby'), findsOneWidget);
+    expect(find.byType(BrandLogo), findsNothing);
     expect(find.text('Host Game'), findsOneWidget);
     expect(find.text('Join Game'), findsOneWidget);
   });

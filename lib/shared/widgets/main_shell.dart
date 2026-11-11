@@ -75,6 +75,9 @@ class MainShell extends ConsumerWidget {
         child: Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           extendBody: true,
+          // Search fields live at the top of decks/collection. Don't lift
+          // Add deck / New album / Add cards / the cart bar with the keyboard.
+          resizeToAvoidBottomInset: false,
           body: navigationShell,
           bottomNavigationBar: AppBottomNavBar(
             selectedIndex: navigationShell.currentIndex,

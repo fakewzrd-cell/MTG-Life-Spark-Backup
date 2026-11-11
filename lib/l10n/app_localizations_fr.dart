@@ -2401,6 +2401,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Enregistrer profil, decks, parties et avis sur ce téléphone';
 
   @override
+  String get profileOptionsRestore => 'Charger une sauvegarde';
+
+  @override
+  String get profileOptionsRestoreSubtitle =>
+      'Remplace toutes les données locales depuis un fichier .lifespark';
+
+  @override
   String get profilePicTitle => 'Photo de profil';
 
   @override
@@ -3219,6 +3226,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get albumNoMatches => 'Aucune carte ne correspond.';
 
   @override
+  String get deckAlbumFaceCover => 'Couverture';
+
+  @override
+  String get deckAlbumChooseCommander => 'Choisir un commander';
+
+  @override
+  String get deckAlbumChooseCover => 'Choisir une couverture';
+
+  @override
   String get deckAlbumViewTypes => 'Types';
 
   @override
@@ -3343,11 +3359,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get collectionAddSearchBody =>
-      'Cherche des cartes et mets-les dans le panier.';
+      'Cherche des cartes et ajoute-les à ta liste.';
 
   @override
   String get deckAddSearchBody =>
-      'Cherche des cartes et mets-les dans le panier.';
+      'Cherche des cartes et ajoute-les à ta liste.';
 
   @override
   String get deckAddPasteBody => 'Colle une liste de deck.';
@@ -3372,11 +3388,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String collectionCartLabel(int count) {
-    return 'Panier · $count';
+    return 'Liste · $count';
   }
 
   @override
-  String get collectionCartTitle => 'Panier';
+  String get collectionCartTitle => 'Liste';
 
   @override
   String get collectionCartCheckoutAlbum => 'Ajouter à l’album';
@@ -3399,7 +3415,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get collectionCartDiscardBody =>
-      'Les cartes du panier ne seront pas enregistrées.';
+      'Rien dans ta liste ne sera enregistré.';
 
   @override
   String get collectionCartLeave => 'Quitter';

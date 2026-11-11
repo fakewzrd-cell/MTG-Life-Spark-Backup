@@ -2305,6 +2305,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get profileOptionsBackupSubtitle => 'プロフィール、デッキ、試合、フィードバックをこの端末に保存';
 
   @override
+  String get profileOptionsRestore => 'バックアップを読み込む';
+
+  @override
+  String get profileOptionsRestoreSubtitle =>
+      '.lifespark ファイルからこの端末のデータを置き換えます';
+
+  @override
   String get profilePicTitle => 'プロフィール写真';
 
   @override
@@ -3105,6 +3112,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get albumNoMatches => '一致するカードはありません。';
 
   @override
+  String get deckAlbumFaceCover => 'カバー';
+
+  @override
+  String get deckAlbumChooseCommander => '統率者を選ぶ';
+
+  @override
+  String get deckAlbumChooseCover => 'カバーを選ぶ';
+
+  @override
   String get deckAlbumViewTypes => 'タイプ';
 
   @override
@@ -3223,10 +3239,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get collectionAddSearch => '検索';
 
   @override
-  String get collectionAddSearchBody => 'カードを探してカートに入れます。';
+  String get collectionAddSearchBody => 'カードを探してリストに入れます。';
 
   @override
-  String get deckAddSearchBody => 'カードを探してカートに入れます。';
+  String get deckAddSearchBody => 'カードを探してリストに入れます。';
 
   @override
   String get deckAddPasteBody => 'デッキリストを貼り付けます。';
@@ -3250,11 +3266,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String collectionCartLabel(int count) {
-    return 'カート · $count';
+    return 'リスト · $count';
   }
 
   @override
-  String get collectionCartTitle => 'カート';
+  String get collectionCartTitle => 'リスト';
 
   @override
   String get collectionCartCheckoutAlbum => 'アルバムに追加';
@@ -3276,7 +3292,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get collectionCartDiscardTitle => '追加せずに戻りますか？';
 
   @override
-  String get collectionCartDiscardBody => 'カートのカードは保存されません。';
+  String get collectionCartDiscardBody => 'リストの内容は保存されません。';
 
   @override
   String get collectionCartLeave => '戻る';

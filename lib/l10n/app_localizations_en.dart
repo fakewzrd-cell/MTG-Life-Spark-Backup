@@ -2387,6 +2387,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Save profile, decks, games, and feedback on this phone';
 
   @override
+  String get profileOptionsRestore => 'Load backup';
+
+  @override
+  String get profileOptionsRestoreSubtitle =>
+      'Replace all local data from a .lifespark file';
+
+  @override
   String get profilePicTitle => 'Profile picture';
 
   @override
@@ -3197,6 +3204,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albumNoMatches => 'No cards match.';
 
   @override
+  String get deckAlbumFaceCover => 'Cover';
+
+  @override
+  String get deckAlbumChooseCommander => 'Choose commander';
+
+  @override
+  String get deckAlbumChooseCover => 'Choose cover';
+
+  @override
   String get deckAlbumViewTypes => 'Types';
 
   @override
@@ -3320,10 +3336,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collectionAddSearchBody =>
-      'Search cards and drop them in your cart.';
+      'Search cards and add them to your list.';
 
   @override
-  String get deckAddSearchBody => 'Search cards and drop them in your cart.';
+  String get deckAddSearchBody => 'Search cards and add them to your list.';
 
   @override
   String get deckAddPasteBody => 'Paste a deck list.';
@@ -3347,11 +3363,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String collectionCartLabel(int count) {
-    return 'Cart · $count';
+    return 'List · $count';
   }
 
   @override
-  String get collectionCartTitle => 'Cart';
+  String get collectionCartTitle => 'List';
 
   @override
   String get collectionCartCheckoutAlbum => 'Add to album';
@@ -3373,8 +3389,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collectionCartDiscardTitle => 'Leave without adding?';
 
   @override
-  String get collectionCartDiscardBody =>
-      'Cards in your cart will not be saved.';
+  String get collectionCartDiscardBody => 'Nothing in your list will be saved.';
 
   @override
   String get collectionCartLeave => 'Leave';

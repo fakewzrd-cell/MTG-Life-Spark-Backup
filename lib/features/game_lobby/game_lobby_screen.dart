@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
-import '../../shared/widgets/brand_logo.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
@@ -11,8 +10,8 @@ import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
 
-/// Game lobby — mark + title, then large Host / Join with equal gaps
-/// logo→Host, Host→Join, and Join→nav.
+/// Game lobby — title, then large Host / Join with equal gaps
+/// title→Host, Host→Join, and Join→nav.
 class GameLobbyScreen extends StatelessWidget {
   const GameLobbyScreen({super.key});
 
@@ -83,16 +82,10 @@ class _LobbyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const BrandLogo(layout: BrandLogoLayout.mark, height: 36),
-        SizedBox(height: LayoutTokens.gr2),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TypographyTokens.headline(context),
-        ),
-      ],
+    return Text(
+      title,
+      textAlign: TextAlign.center,
+      style: TypographyTokens.headline(context),
     );
   }
 }

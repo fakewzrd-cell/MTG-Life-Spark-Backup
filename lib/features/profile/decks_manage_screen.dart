@@ -279,75 +279,78 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
           ),
           Padding(
             padding: EdgeInsets.only(bottom: LayoutTokens.gr3),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: AlbumBrowseMenu<GameFormat?>(
-                    icon: Icons.category_outlined,
-                    label: _formatFilter?.displayName ?? l10n.decksFilterFormat,
-                    value: _formatFilter,
-                    onSelected:
-                        (value) => setState(() => _formatFilter = value),
-                    items: [
+                AlbumBrowseMenu<GameFormat?>(
+                  icon: Icons.category_outlined,
+                  label: _formatFilter?.displayName ?? l10n.decksFilterFormat,
+                  value: _formatFilter,
+                  onSelected: (value) => setState(() => _formatFilter = value),
+                  items: [
+                    PopupMenuItem(
+                      value: null,
+                      child: Text(l10n.albumFilterAll),
+                    ),
+                    for (final format in GameFormatDetails.lobbyPickerOrder)
                       PopupMenuItem(
-                        value: null,
-                        child: Text(l10n.albumFilterAll),
+                        value: format,
+                        child: Text(format.displayName),
                       ),
-                      for (final format in GameFormatDetails.lobbyPickerOrder)
-                        PopupMenuItem(
-                          value: format,
-                          child: Text(format.displayName),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-                SizedBox(width: LayoutTokens.gr2),
-                Expanded(
-                  child: AlbumBrowseMenu<DeckStyle?>(
-                    icon: Icons.palette_outlined,
-                    label:
-                        _styleFilter == null
-                            ? l10n.decksFilterStyle
-                            : localizedDeckStyleName(l10n, _styleFilter!),
-                    value: _styleFilter,
-                    onSelected: (value) => setState(() => _styleFilter = value),
-                    items: [
-                      PopupMenuItem(
-                        value: null,
-                        child: Text(l10n.albumFilterAll),
+                SizedBox(height: LayoutTokens.gr2),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AlbumBrowseMenu<DeckStyle?>(
+                        icon: Icons.palette_outlined,
+                        label:
+                            _styleFilter == null
+                                ? l10n.decksFilterStyle
+                                : localizedDeckStyleName(l10n, _styleFilter!),
+                        value: _styleFilter,
+                        onSelected:
+                            (value) => setState(() => _styleFilter = value),
+                        items: [
+                          PopupMenuItem(
+                            value: null,
+                            child: Text(l10n.albumFilterAll),
+                          ),
+                          for (final style in DeckStyle.values)
+                            PopupMenuItem(
+                              value: style,
+                              child: Text(localizedDeckStyleName(l10n, style)),
+                            ),
+                        ],
                       ),
-                      for (final style in DeckStyle.values)
-                        PopupMenuItem(
-                          value: style,
-                          child: Text(localizedDeckStyleName(l10n, style)),
-                        ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: LayoutTokens.gr2),
-                Expanded(
-                  child: AlbumBrowseMenu<int?>(
-                    icon: Icons.workspace_premium_outlined,
-                    label: libraryBracketFilterLabel(l10n, _bracketFilter),
-                    value: _bracketFilter,
-                    onSelected:
-                        (value) => setState(() => _bracketFilter = value),
-                    items: [
-                      PopupMenuItem(
-                        value: null,
-                        child: Text(l10n.albumFilterAll),
+                    ),
+                    SizedBox(width: LayoutTokens.gr2),
+                    Expanded(
+                      child: AlbumBrowseMenu<int?>(
+                        icon: Icons.workspace_premium_outlined,
+                        label: libraryBracketFilterLabel(l10n, _bracketFilter),
+                        value: _bracketFilter,
+                        onSelected:
+                            (value) => setState(() => _bracketFilter = value),
+                        items: [
+                          PopupMenuItem(
+                            value: null,
+                            child: Text(l10n.albumFilterAll),
+                          ),
+                          PopupMenuItem(
+                            value: kLibraryBracketUnset,
+                            child: Text(l10n.decksFilterNoBracket),
+                          ),
+                          for (var n = 1; n <= 5; n++)
+                            PopupMenuItem(
+                              value: n,
+                              child: Text('${l10n.deckAlbumCardBracket} $n'),
+                            ),
+                        ],
                       ),
-                      PopupMenuItem(
-                        value: kLibraryBracketUnset,
-                        child: Text(l10n.decksFilterNoBracket),
-                      ),
-                      for (var n = 1; n <= 5; n++)
-                        PopupMenuItem(
-                          value: n,
-                          child: Text('${l10n.deckAlbumCardBracket} $n'),
-                        ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -391,6 +394,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: UiAppBar(
         title:
             showingDecks
@@ -410,7 +414,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
                 LayoutTokens.gr4,
                 LayoutTokens.gr2,
                 LayoutTokens.gr4,
-                MediaQuery.paddingOf(context).bottom + LayoutTokens.gr2,
+                MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2,
               ),
               child: UiButton(
                 label: l10n.decksAddDeck,

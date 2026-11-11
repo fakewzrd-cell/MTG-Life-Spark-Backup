@@ -17,7 +17,6 @@ import '../../shared/theme/theme_provider.dart';
 import '../../shared/utils/app_locale.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/widgets/brand_logo.dart';
-import '../../ui/components/shell_destructive_dialog.dart';
 import '../../ui/components/ui_snack_bar.dart';
 import '../../ui/components/ui_surface.dart';
 import '../../ui/tokens/app_color_palettes.dart';
@@ -27,6 +26,7 @@ import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import '../game/widgets/hub_guide_sheet.dart';
+import '../profile/backup_restore_flow.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -415,55 +415,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _restoreBackup() async {
-    final l10n = AppLocalizations.of(context);
-    try {
-      final pending = await ref
-          .read(backupServiceProvider)
-          .pickBackupFile(fileTypeLabel: l10n.backupFileTypeLabel);
-      if (!mounted) return;
-      if (pending == null) return;
-
-      final confirmed = await showShellDestructiveConfirm(
-        context: context,
-        title: l10n.backupRestoreTitle(pending.profile.username),
-        message: l10n.backupRestoreMessage,
-        confirmLabel: l10n.backupRestoreConfirm,
-        cancelLabel: l10n.commonCancel,
-      );
-      if (!confirmed || !mounted) return;
-
-      final backup = await ref
-          .read(backupServiceProvider)
-          .restoreBackup(pending);
-      if (!mounted) return;
-
-      _settings = ref.read(settingsRepositoryProvider).settings;
-      ref.read(colorSchemePreferenceProvider.notifier).hydrateFromRepository();
-      bumpSettingsRevision(ref);
-      bumpProfileRevision(ref);
-      bumpDeckListRevision(ref);
-      setState(() {});
-      showUiSnackBar(context, l10n.backupRestored(backup.profile.username));
-    } catch (e, st) {
-      appLog('Settings: restore backup failed', error: e, stackTrace: st);
-      if (!mounted) return;
-      showUiSnackBar(context, _localizeBackupError(l10n, e), isError: true);
-    }
+    final restored = await restoreLifeSparkBackup(
+      context: context,
+      ref: ref,
+      logTag: 'Settings',
+    );
+    if (!restored || !mounted) return;
+    _settings = ref.read(settingsRepositoryProvider).settings;
+    setState(() {});
   }
-}
-
-String _localizeBackupError(AppLocalizations l10n, Object error) {
-  if (error is FormatException) {
-    switch (error.message) {
-      case 'Not a Life Spark backup file.':
-        return l10n.backupNotValidFile;
-      case 'Backup file is not valid JSON.':
-        return l10n.backupNotValidJson;
-      case 'Could not read the selected backup file.':
-        return l10n.backupCouldNotRead;
-    }
-  }
-  return l10n.backupRestoreFailed;
 }
 
 class _SettingsDivider extends StatelessWidget {

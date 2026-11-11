@@ -2396,6 +2396,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Guarda perfil, mazos, partidas y comentarios en este teléfono';
 
   @override
+  String get profileOptionsRestore => 'Cargar copia de seguridad';
+
+  @override
+  String get profileOptionsRestoreSubtitle =>
+      'Reemplaza todos los datos locales desde un archivo .lifespark';
+
+  @override
   String get profilePicTitle => 'Foto de perfil';
 
   @override
@@ -3212,6 +3219,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get albumNoMatches => 'Ninguna carta coincide.';
 
   @override
+  String get deckAlbumFaceCover => 'Portada';
+
+  @override
+  String get deckAlbumChooseCommander => 'Elegir comandante';
+
+  @override
+  String get deckAlbumChooseCover => 'Elegir portada';
+
+  @override
   String get deckAlbumViewTypes => 'Tipos';
 
   @override
@@ -3335,10 +3351,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get collectionAddSearch => 'Buscar';
 
   @override
-  String get collectionAddSearchBody => 'Busca cartas y ponlas en el carrito.';
+  String get collectionAddSearchBody => 'Busca cartas y añádelas a tu lista.';
 
   @override
-  String get deckAddSearchBody => 'Busca cartas y ponlas en el carrito.';
+  String get deckAddSearchBody => 'Busca cartas y añádelas a tu lista.';
 
   @override
   String get deckAddPasteBody => 'Pega una lista de mazo.';
@@ -3363,11 +3379,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String collectionCartLabel(int count) {
-    return 'Carrito · $count';
+    return 'Lista · $count';
   }
 
   @override
-  String get collectionCartTitle => 'Carrito';
+  String get collectionCartTitle => 'Lista';
 
   @override
   String get collectionCartCheckoutAlbum => 'Añadir al álbum';
@@ -3389,8 +3405,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get collectionCartDiscardTitle => '¿Salir sin añadir?';
 
   @override
-  String get collectionCartDiscardBody =>
-      'Las cartas del carrito no se guardarán.';
+  String get collectionCartDiscardBody => 'Nada de tu lista se guardará.';
 
   @override
   String get collectionCartLeave => 'Salir';

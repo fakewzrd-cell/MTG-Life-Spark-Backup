@@ -1294,6 +1294,8 @@
   "profileOptionsEditSubtitle": "Change your name or avatar",
   "profileOptionsBackup": "Back up profile",
   "profileOptionsBackupSubtitle": "Save profile, decks, games, and feedback on this phone",
+  "profileOptionsRestore": "Load backup",
+  "profileOptionsRestoreSubtitle": "Replace all local data from a .lifespark file",
   "profilePicTitle": "Profile picture",
   "profilePicNoCards": "No cards found for \"{query}\"",
   "@profilePicNoCards": {
@@ -1873,6 +1875,9 @@
   "albumSortCount": "Copies",
   "albumSortType": "Type",
   "albumNoMatches": "No cards match.",
+  "deckAlbumFaceCover": "Cover",
+  "deckAlbumChooseCommander": "Choose commander",
+  "deckAlbumChooseCover": "Choose cover",
   "deckAlbumViewTypes": "Types",
   "deckAlbumViewGrid": "Grid",
   "deckAlbumViewAlpha": "A–Z",
@@ -1920,8 +1925,8 @@
   },
   "collectionAddCards": "Add cards",
   "collectionAddSearch": "Search",
-  "collectionAddSearchBody": "Search cards and drop them in your cart.",
-  "deckAddSearchBody": "Search cards and drop them in your cart.",
+  "collectionAddSearchBody": "Search cards and add them to your list.",
+  "deckAddSearchBody": "Search cards and add them to your list.",
   "deckAddPasteBody": "Paste a deck list.",
   "collectionAddPasteBody": "Paste a list of cards you own.",
   "collectionSearchTitle": "Search",
@@ -1934,13 +1939,13 @@
       "name": {"type": "String"}
     }
   },
-  "collectionCartLabel": "Cart · {count}",
+  "collectionCartLabel": "List · {count}",
   "@collectionCartLabel": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "collectionCartTitle": "Cart",
+  "collectionCartTitle": "List",
   "collectionCartCheckoutAlbum": "Add to album",
   "collectionCartCheckoutDeck": "Add to deck",
   "collectionCartSaved": "Added {count} cards",
@@ -1956,7 +1961,7 @@
     }
   },
   "collectionCartDiscardTitle": "Leave without adding?",
-  "collectionCartDiscardBody": "Cards in your cart will not be saved.",
+  "collectionCartDiscardBody": "Nothing in your list will be saved.",
   "collectionCartLeave": "Leave",
   "collectionCartAddOne": "Add one",
   "collectionCartRemoveOne": "Remove one",

@@ -4331,6 +4331,18 @@ abstract class AppLocalizations {
   /// **'Save profile, decks, games, and feedback on this phone'**
   String get profileOptionsBackupSubtitle;
 
+  /// No description provided for @profileOptionsRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load backup'**
+  String get profileOptionsRestore;
+
+  /// No description provided for @profileOptionsRestoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all local data from a .lifespark file'**
+  String get profileOptionsRestoreSubtitle;
+
   /// No description provided for @profilePicTitle.
   ///
   /// In en, this message translates to:
@@ -5746,6 +5758,24 @@ abstract class AppLocalizations {
   /// **'No cards match.'**
   String get albumNoMatches;
 
+  /// No description provided for @deckAlbumFaceCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get deckAlbumFaceCover;
+
+  /// No description provided for @deckAlbumChooseCommander.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose commander'**
+  String get deckAlbumChooseCommander;
+
+  /// No description provided for @deckAlbumChooseCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose cover'**
+  String get deckAlbumChooseCover;
+
   /// No description provided for @deckAlbumViewTypes.
   ///
   /// In en, this message translates to:
@@ -5953,13 +5983,13 @@ abstract class AppLocalizations {
   /// No description provided for @collectionAddSearchBody.
   ///
   /// In en, this message translates to:
-  /// **'Search cards and drop them in your cart.'**
+  /// **'Search cards and add them to your list.'**
   String get collectionAddSearchBody;
 
   /// No description provided for @deckAddSearchBody.
   ///
   /// In en, this message translates to:
-  /// **'Search cards and drop them in your cart.'**
+  /// **'Search cards and add them to your list.'**
   String get deckAddSearchBody;
 
   /// No description provided for @deckAddPasteBody.
@@ -6001,13 +6031,13 @@ abstract class AppLocalizations {
   /// No description provided for @collectionCartLabel.
   ///
   /// In en, this message translates to:
-  /// **'Cart · {count}'**
+  /// **'List · {count}'**
   String collectionCartLabel(int count);
 
   /// No description provided for @collectionCartTitle.
   ///
   /// In en, this message translates to:
-  /// **'Cart'**
+  /// **'List'**
   String get collectionCartTitle;
 
   /// No description provided for @collectionCartCheckoutAlbum.
@@ -6043,7 +6073,7 @@ abstract class AppLocalizations {
   /// No description provided for @collectionCartDiscardBody.
   ///
   /// In en, this message translates to:
-  /// **'Cards in your cart will not be saved.'**
+  /// **'Nothing in your list will be saved.'**
   String get collectionCartDiscardBody;
 
   /// No description provided for @collectionCartLeave.

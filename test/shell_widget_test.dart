@@ -46,6 +46,36 @@ void main() {
     expect(find.text('Add deck'), findsOneWidget);
   });
 
+  testWidgets('add deck button stays down when the keyboard opens', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deckRepositoryProvider.overrideWithValue(TestDeckRepository()),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: testLocalizationDelegates,
+          supportedLocales: testSupportedLocales,
+          locale: const Locale('en'),
+          home: const DecksManageScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final before = tester.getBottomLeft(find.text('Add deck')).dy;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pump();
+
+    expect(
+      tester.getBottomLeft(find.text('Add deck')).dy,
+      closeTo(before, 0.5),
+    );
+  });
+
   testWidgets('decks manage filters which deck to open', (tester) async {
     final commander = PlayerDeck(
       id: 'edh-1',
@@ -82,11 +112,13 @@ void main() {
     expect(find.text('Format'), findsOneWidget);
     expect(find.text('Style'), findsOneWidget);
     expect(find.text('Bracket'), findsOneWidget);
+    final formatY = tester.getTopLeft(find.text('Format')).dy;
+    final styleY = tester.getTopLeft(find.text('Style')).dy;
+    final bracketY = tester.getTopLeft(find.text('Bracket')).dy;
+    expect(formatY, lessThan(styleY));
+    expect(styleY, closeTo(bracketY, 0.5));
     expect(find.text('Azorius Tempo'), findsOneWidget);
-    expect(
-      find.text('Atraxa Counters', skipOffstage: false),
-      findsOneWidget,
-    );
+    expect(find.text('Atraxa Counters', skipOffstage: false), findsOneWidget);
 
     await tester.tap(find.text('Format'));
     await tester.pumpAndSettle();
@@ -96,10 +128,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Azorius Tempo'), findsOneWidget);
-    expect(
-      find.text('Atraxa Counters', skipOffstage: false),
-      findsNothing,
-    );
+    expect(find.text('Atraxa Counters', skipOffstage: false), findsNothing);
   });
 
   testWidgets('deck options sheet lists actions', (tester) async {

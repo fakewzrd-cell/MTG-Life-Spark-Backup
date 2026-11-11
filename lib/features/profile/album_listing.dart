@@ -43,6 +43,8 @@ class AlbumListCard {
     this.inclusion,
     this.canAddCopy = true,
     this.warning,
+    this.isFaceSlot = false,
+    this.isBlank = false,
   });
 
   final String name;
@@ -55,6 +57,15 @@ class AlbumListCard {
 
   /// Why this card needs attention, shown beside the row.
   final String? warning;
+
+  /// Pinned commander or cover identity, shown above type groups.
+  final bool isFaceSlot;
+
+  /// Empty commander/cover slot waiting for a pick.
+  final bool isBlank;
+
+  String get listingKey =>
+      isFaceSlot ? (isBlank ? 'face-blank' : 'face') : name;
 }
 
 class AlbumListingSwitch extends StatelessWidget {
@@ -70,14 +81,28 @@ class AlbumListingSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = AppColorTokens.of(context);
     return Wrap(
       spacing: LayoutTokens.gr1,
       children: [
         for (final mode in AlbumListing.values)
           ChoiceChip(
-            label: Text(_listingLabel(l10n, mode)),
+            showCheckmark: false,
+            label: Text(
+              _listingLabel(l10n, mode),
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontWeight: listing == mode ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
             selected: listing == mode,
             onSelected: (_) => onChanged(mode),
+            selectedColor: colors.surfaceElevated,
+            backgroundColor: colors.surface,
+            side: BorderSide(
+              color:
+                  listing == mode ? colors.textSecondary : colors.borderSubtle,
+            ),
           ),
       ],
     );
@@ -138,6 +163,10 @@ class AlbumCardBrowser extends StatefulWidget {
     this.onSideCount,
     this.onMoveToSideboard,
     this.onMoveToMain,
+    this.onCardTap,
+    this.onCardLongPress,
+    this.faceCards = const [],
+    this.faceTitle,
   });
 
   final List<AlbumListCard> cards;
@@ -159,6 +188,12 @@ class AlbumCardBrowser extends StatefulWidget {
   final AlbumCountChange? onSideCount;
   final void Function(AlbumListCard card)? onMoveToSideboard;
   final void Function(AlbumListCard card)? onMoveToMain;
+  final void Function(AlbumListCard card)? onCardTap;
+  final void Function(AlbumListCard card)? onCardLongPress;
+
+  /// Pinned commander or cover, shown above Types / Grid / A–Z groups.
+  final List<AlbumListCard> faceCards;
+  final String? faceTitle;
 
   @override
   State<AlbumCardBrowser> createState() => _AlbumCardBrowserState();
@@ -271,8 +306,29 @@ class _AlbumCardBrowserState extends State<AlbumCardBrowser> {
             ],
           ],
         ),
-        if (cards.isEmpty && sideboard.isEmpty) ...[
-          if (widget.aboveSections != null) widget.aboveSections!,
+        ...albumListingChildren(
+          context: context,
+          listing: widget.listing,
+          cards: cards,
+          sideboard: sideboard,
+          sideboardMax: widget.sideboardMax,
+          showEmptySideboard:
+              widget.showEmptySideboard && widget.sideboard.isEmpty,
+          sideboardKey: widget.sideboardKey,
+          aboveSections: widget.aboveSections,
+          sort: _sort,
+          onCount: widget.onCount,
+          onSideCount: widget.onSideCount,
+          onMoveToSideboard: widget.onMoveToSideboard,
+          onMoveToMain: widget.onMoveToMain,
+          onCardTap: widget.onCardTap,
+          onCardLongPress: widget.onCardLongPress,
+          faceCards: widget.faceCards,
+          faceTitle: widget.faceTitle,
+        ),
+        if (cards.isEmpty &&
+            sideboard.isEmpty &&
+            (widget.faceCards.isEmpty || _query.isNotEmpty))
           Padding(
             padding: const EdgeInsets.only(top: LayoutTokens.gr5),
             child: Text(
@@ -280,23 +336,6 @@ class _AlbumCardBrowserState extends State<AlbumCardBrowser> {
               textAlign: TextAlign.center,
               style: TextStyle(color: colors.textSecondary),
             ),
-          ),
-        ] else
-          ...albumListingChildren(
-            context: context,
-            listing: widget.listing,
-            cards: cards,
-            sideboard: sideboard,
-            sideboardMax: widget.sideboardMax,
-            showEmptySideboard:
-                widget.showEmptySideboard && widget.sideboard.isEmpty,
-            sideboardKey: widget.sideboardKey,
-            aboveSections: widget.aboveSections,
-            sort: _sort,
-            onCount: widget.onCount,
-            onSideCount: widget.onSideCount,
-            onMoveToSideboard: widget.onMoveToSideboard,
-            onMoveToMain: widget.onMoveToMain,
           ),
       ],
     );
@@ -394,12 +433,39 @@ List<Widget> albumListingChildren({
   AlbumCountChange? onSideCount,
   void Function(AlbumListCard card)? onMoveToSideboard,
   void Function(AlbumListCard card)? onMoveToMain,
+  void Function(AlbumListCard card)? onCardTap,
+  void Function(AlbumListCard card)? onCardLongPress,
+  List<AlbumListCard> faceCards = const [],
+  String? faceTitle,
 }) {
   final l10n = AppLocalizations.of(context);
   final width = MediaQuery.sizeOf(context).width;
   final sections = _sections(cards, sort);
+  final title = faceTitle;
+  final hasFace = faceCards.isNotEmpty && title != null && title.isNotEmpty;
   return [
     if (aboveSections != null) aboveSections,
+    if (hasFace) ...[
+      SizedBox(
+        height: aboveSections != null ? LayoutTokens.gr1 : LayoutTokens.gr4,
+      ),
+      _SectionLabel(
+        title: title,
+        count: faceCards.fold<int>(
+          0,
+          (sum, card) => sum + (card.isBlank ? 0 : card.count),
+        ),
+      ),
+      ..._cardsInListing(
+        listing: listing,
+        cards: faceCards,
+        width: width,
+        sort: sort,
+        onCount: onCount,
+        onCardTap: onCardTap,
+        onCardLongPress: onCardLongPress,
+      ),
+    ],
     if (listing == AlbumListing.alpha)
       ..._alphaBlock(
         cards,
@@ -407,12 +473,14 @@ List<Widget> albumListingChildren({
         onCount,
         onMove: onMoveToSideboard,
         moveTooltip: l10n.deckAlbumMoveToSideboard,
+        onCardTap: onCardTap,
+        onCardLongPress: onCardLongPress,
       )
     else
       for (var i = 0; i < sections.length; i++) ...[
         SizedBox(
           height:
-              i == 0 && aboveSections != null
+              i == 0 && (aboveSections != null || hasFace)
                   ? LayoutTokens.gr1
                   : LayoutTokens.gr4,
         ),
@@ -420,22 +488,17 @@ List<Widget> albumListingChildren({
           title: _groupLabel(l10n, sections[i].group),
           count: sections[i].total,
         ),
-        if (listing == AlbumListing.grid)
-          _CardGrid(
-            cards: sections[i].cards,
-            columns: _gridColumns(width),
-            onCount: onCount,
-            onMove: onMoveToSideboard,
-            moveLabel: l10n.deckAlbumMoveToSideboard,
-          )
-        else
-          for (final card in sections[i].cards)
-            _AlbumCardRow(
-              card: card,
-              onCount: onCount,
-              onMove: onMoveToSideboard,
-              moveTooltip: l10n.deckAlbumMoveToSideboard,
-            ),
+        ..._cardsInListing(
+          listing: listing,
+          cards: sections[i].cards,
+          width: width,
+          sort: sort,
+          onCount: onCount,
+          onMove: onMoveToSideboard,
+          moveTooltip: l10n.deckAlbumMoveToSideboard,
+          onCardTap: onCardTap,
+          onCardLongPress: onCardLongPress,
+        ),
       ],
     if (sideboard.isNotEmpty || showEmptySideboard)
       KeyedSubtree(
@@ -464,6 +527,8 @@ List<Widget> albumListingChildren({
                 onCount: onSideCount,
                 onMove: onMoveToMain,
                 moveLabel: l10n.deckAlbumMoveToMain,
+                onCardTap: onCardTap,
+                onCardLongPress: onCardLongPress,
               )
             else if (listing == AlbumListing.alpha)
               for (final card in _sorted(sideboard, sort))
@@ -472,6 +537,8 @@ List<Widget> albumListingChildren({
                   onCount: onSideCount,
                   onMove: onMoveToMain,
                   moveTooltip: l10n.deckAlbumMoveToMain,
+                  onCardTap: onCardTap,
+                  onCardLongPress: onCardLongPress,
                 )
             else
               for (final card in _sorted(sideboard, sort))
@@ -480,9 +547,59 @@ List<Widget> albumListingChildren({
                   onCount: onSideCount,
                   onMove: onMoveToMain,
                   moveTooltip: l10n.deckAlbumMoveToMain,
+                  onCardTap: onCardTap,
+                  onCardLongPress: onCardLongPress,
                 ),
           ],
         ),
+      ),
+  ];
+}
+
+List<Widget> _cardsInListing({
+  required AlbumListing listing,
+  required List<AlbumListCard> cards,
+  required double width,
+  required AlbumSort sort,
+  AlbumCountChange? onCount,
+  void Function(AlbumListCard card)? onMove,
+  String? moveTooltip,
+  void Function(AlbumListCard card)? onCardTap,
+  void Function(AlbumListCard card)? onCardLongPress,
+}) {
+  if (listing == AlbumListing.grid) {
+    return [
+      _CardGrid(
+        cards: cards,
+        columns: _gridColumns(width),
+        onCount: onCount,
+        onMove: onMove,
+        moveLabel: moveTooltip,
+        onCardTap: onCardTap,
+        onCardLongPress: onCardLongPress,
+      ),
+    ];
+  }
+  if (listing == AlbumListing.alpha) {
+    return _alphaBlock(
+      cards,
+      sort,
+      onCount,
+      onMove: onMove,
+      moveTooltip: moveTooltip,
+      onCardTap: onCardTap,
+      onCardLongPress: onCardLongPress,
+    );
+  }
+  return [
+    for (final card in cards)
+      _AlbumCardRow(
+        card: card,
+        onCount: onCount,
+        onMove: onMove,
+        moveTooltip: moveTooltip,
+        onCardTap: onCardTap,
+        onCardLongPress: onCardLongPress,
       ),
   ];
 }
@@ -499,6 +616,8 @@ List<Widget> _alphaBlock(
   AlbumCountChange? onCount, {
   void Function(AlbumListCard card)? onMove,
   String? moveTooltip,
+  void Function(AlbumListCard card)? onCardTap,
+  void Function(AlbumListCard card)? onCardLongPress,
 }) {
   final sorted = _sorted(cards, sort);
   return [
@@ -508,8 +627,60 @@ List<Widget> _alphaBlock(
         onCount: onCount,
         onMove: onMove,
         moveTooltip: moveTooltip,
+        onCardTap: onCardTap,
+        onCardLongPress: onCardLongPress,
       ),
   ];
+}
+
+void _showAlbumCard(
+  BuildContext context,
+  AlbumListCard card, {
+  String? actionLabel,
+  void Function(AlbumListCard card)? onMove,
+}) {
+  showAlbumCardViewer(
+    context,
+    name: card.name,
+    imageUrl: card.imageUrl,
+    actionLabel: onMove == null ? null : actionLabel,
+    onAction: onMove == null ? null : () => onMove(card),
+  );
+}
+
+VoidCallback _albumCardTap(
+  BuildContext context,
+  AlbumListCard card, {
+  void Function(AlbumListCard card)? onCardTap,
+  String? moveLabel,
+  void Function(AlbumListCard card)? onMove,
+  AlbumCountChange? onCount,
+}) {
+  if (card.isBlank) {
+    if (onCardTap != null) return () => onCardTap(card);
+    if (onCount != null) return () => onCount(card, 1);
+    return () {};
+  }
+  if (onCardTap != null) return () => onCardTap(card);
+  return () =>
+      _showAlbumCard(context, card, actionLabel: moveLabel, onMove: onMove);
+}
+
+GestureLongPressCallback? _albumCardLongPress(
+  BuildContext context,
+  AlbumListCard card, {
+  void Function(AlbumListCard card)? onCardTap,
+  void Function(AlbumListCard card)? onCardLongPress,
+  String? moveLabel,
+  void Function(AlbumListCard card)? onMove,
+}) {
+  if (card.isBlank) return null;
+  if (onCardLongPress != null) return () => onCardLongPress(card);
+  if (onCardTap != null) {
+    return () =>
+        _showAlbumCard(context, card, actionLabel: moveLabel, onMove: onMove);
+  }
+  return null;
 }
 
 int _compareCards(AlbumListCard a, AlbumListCard b, AlbumSort sort) {
@@ -537,7 +708,10 @@ class _AlbumSection {
   final DeckCardGroup group;
   final List<AlbumListCard> cards;
 
-  int get total => cards.fold<int>(0, (sum, card) => sum + card.count);
+  int get total => cards.fold<int>(
+    0,
+    (sum, card) => sum + (card.count < 1 ? 1 : card.count),
+  );
 }
 
 List<_AlbumSection> _sections(List<AlbumListCard> cards, AlbumSort sort) {
@@ -620,12 +794,16 @@ class _AlbumCardRow extends StatelessWidget {
     this.onCount,
     this.onMove,
     this.moveTooltip,
+    this.onCardTap,
+    this.onCardLongPress,
   });
 
   final AlbumListCard card;
   final AlbumCountChange? onCount;
   final void Function(AlbumListCard card)? onMove;
   final String? moveTooltip;
+  final void Function(AlbumListCard card)? onCardTap;
+  final void Function(AlbumListCard card)? onCardLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -635,12 +813,24 @@ class _AlbumCardRow extends StatelessWidget {
       button: true,
       label: '${card.count} ${card.name}',
       child: GestureDetector(
-        onTap:
-            () => showAlbumCardViewer(
-              context,
-              name: card.name,
-              imageUrl: card.imageUrl,
-            ),
+        key: ValueKey('album-card-${card.listingKey}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _albumCardTap(
+          context,
+          card,
+          onCardTap: onCardTap,
+          moveLabel: moveTooltip,
+          onMove: onMove,
+          onCount: onCount,
+        ),
+        onLongPress: _albumCardLongPress(
+          context,
+          card,
+          onCardTap: onCardTap,
+          onCardLongPress: onCardLongPress,
+          moveLabel: moveTooltip,
+          onMove: onMove,
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: LayoutTokens.gr1),
           child: Row(
@@ -686,20 +876,22 @@ class _AlbumCardRow extends StatelessWidget {
                 SizedBox(width: LayoutTokens.gr1),
                 _CardWarning(message: card.warning!),
               ],
-              if (onMove != null) ...[
+              if (onMove != null && !card.isBlank) ...[
                 SizedBox(width: LayoutTokens.gr1),
                 _MoveButton(
                   tooltip: moveTooltip ?? '',
                   onPressed: () => onMove!(card),
                 ),
               ],
-              SizedBox(width: LayoutTokens.gr2),
-              _CountStepper(
-                count: card.count,
-                canIncrease: card.canAddCopy,
-                onDelta:
-                    onCount == null ? null : (delta) => onCount!(card, delta),
-              ),
+              if (!card.isBlank) ...[
+                SizedBox(width: LayoutTokens.gr2),
+                _CountStepper(
+                  count: card.count,
+                  canIncrease: card.canAddCopy,
+                  onDelta:
+                      onCount == null ? null : (delta) => onCount!(card, delta),
+                ),
+              ],
             ],
           ),
         ),
@@ -714,12 +906,16 @@ class _NameLine extends StatelessWidget {
     this.onCount,
     this.onMove,
     this.moveTooltip,
+    this.onCardTap,
+    this.onCardLongPress,
   });
 
   final AlbumListCard card;
   final AlbumCountChange? onCount;
   final void Function(AlbumListCard card)? onMove;
   final String? moveTooltip;
+  final void Function(AlbumListCard card)? onCardTap;
+  final void Function(AlbumListCard card)? onCardLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -728,12 +924,24 @@ class _NameLine extends StatelessWidget {
       button: true,
       label: '${card.count} ${card.name}',
       child: GestureDetector(
-        onTap:
-            () => showAlbumCardViewer(
-              context,
-              name: card.name,
-              imageUrl: card.imageUrl,
-            ),
+        key: ValueKey('album-card-${card.listingKey}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _albumCardTap(
+          context,
+          card,
+          onCardTap: onCardTap,
+          moveLabel: moveTooltip,
+          onMove: onMove,
+          onCount: onCount,
+        ),
+        onLongPress: _albumCardLongPress(
+          context,
+          card,
+          onCardTap: onCardTap,
+          onCardLongPress: onCardLongPress,
+          moveLabel: moveTooltip,
+          onMove: onMove,
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: LayoutTokens.gr1),
           child: Row(
@@ -775,14 +983,14 @@ class _NameLine extends StatelessWidget {
                 SizedBox(width: LayoutTokens.gr1),
                 _CardWarning(message: card.warning!),
               ],
-              if (onMove != null) ...[
+              if (onMove != null && !card.isBlank) ...[
                 SizedBox(width: LayoutTokens.gr1),
                 _MoveButton(
                   tooltip: moveTooltip ?? '',
                   onPressed: () => onMove!(card),
                 ),
               ],
-              if (onCount != null) ...[
+              if (onCount != null && !card.isBlank) ...[
                 SizedBox(width: LayoutTokens.gr2),
                 _CountStepper(
                   count: card.count,
@@ -805,6 +1013,8 @@ class _CardGrid extends StatelessWidget {
     this.onCount,
     this.onMove,
     this.moveLabel,
+    this.onCardTap,
+    this.onCardLongPress,
   });
 
   final List<AlbumListCard> cards;
@@ -812,6 +1022,8 @@ class _CardGrid extends StatelessWidget {
   final AlbumCountChange? onCount;
   final void Function(AlbumListCard card)? onMove;
   final String? moveLabel;
+  final void Function(AlbumListCard card)? onCardTap;
+  final void Function(AlbumListCard card)? onCardLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -832,6 +1044,8 @@ class _CardGrid extends StatelessWidget {
             onCount: onCount,
             onMove: onMove,
             moveLabel: moveLabel,
+            onCardTap: onCardTap,
+            onCardLongPress: onCardLongPress,
           ),
     );
   }
@@ -843,12 +1057,16 @@ class _GridTile extends StatelessWidget {
     this.onCount,
     this.onMove,
     this.moveLabel,
+    this.onCardTap,
+    this.onCardLongPress,
   });
 
   final AlbumListCard card;
   final AlbumCountChange? onCount;
   final void Function(AlbumListCard card)? onMove;
   final String? moveLabel;
+  final void Function(AlbumListCard card)? onCardTap;
+  final void Function(AlbumListCard card)? onCardLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -857,27 +1075,47 @@ class _GridTile extends StatelessWidget {
       button: true,
       label: '${card.count} ${card.name}',
       child: GestureDetector(
-        onTap:
-            () => showAlbumCardViewer(
-              context,
-              name: card.name,
-              imageUrl: card.imageUrl,
-              actionLabel: onMove == null ? null : moveLabel,
-              onAction: onMove == null ? null : () => onMove!(card),
-            ),
+        key: ValueKey('album-card-${card.listingKey}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _albumCardTap(
+          context,
+          card,
+          onCardTap: onCardTap,
+          moveLabel: moveLabel,
+          onMove: onMove,
+          onCount: onCount,
+        ),
+        onLongPress: _albumCardLongPress(
+          context,
+          card,
+          onCardTap: onCardTap,
+          onCardLongPress: onCardLongPress,
+          moveLabel: moveLabel,
+          onMove: onMove,
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(RadiusTokens.md),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _ArtImage(url: card.imageUrl, colors: colors),
+              if (card.isBlank)
+                ColoredBox(
+                  color: colors.surfaceElevated,
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: colors.textMuted,
+                    size: 36,
+                  ),
+                )
+              else
+                _ArtImage(url: card.imageUrl, colors: colors),
               if (card.warning != null)
                 Positioned(
                   top: 4,
                   left: 4,
                   child: _CardWarning(message: card.warning!),
                 ),
-              if (onCount != null)
+              if (onCount != null && !card.isBlank)
                 Positioned(
                   left: 0,
                   right: 0,
@@ -891,7 +1129,7 @@ class _GridTile extends StatelessWidget {
                     ),
                   ),
                 )
-              else if (card.count > 1)
+              else if (!card.isBlank && card.count > 1)
                 Positioned(
                   top: 4,
                   right: 4,
@@ -1008,7 +1246,11 @@ class _CountStepper extends StatelessWidget {
     final controls = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        button(Icons.remove_rounded, l10n.albumCountRemove, () => onDelta!(-1)),
+        button(
+          Icons.remove_rounded,
+          l10n.albumCountRemove,
+          count <= 0 ? null : () => onDelta!(-1),
+        ),
         SizedBox(
           width: dense ? 18 : 22,
           child: Text(
@@ -1096,7 +1338,7 @@ class BlurredBottomAction extends StatelessWidget {
   static double height(BuildContext context) {
     return LayoutTokens.gr2 +
         buttonHeight +
-        MediaQuery.paddingOf(context).bottom +
+        MediaQuery.viewPaddingOf(context).bottom +
         LayoutTokens.gr2;
   }
 
@@ -1124,7 +1366,7 @@ class BlurredBottomAction extends StatelessWidget {
               LayoutTokens.gr4,
               LayoutTokens.gr2,
               LayoutTokens.gr4,
-              MediaQuery.paddingOf(context).bottom + LayoutTokens.gr2,
+              MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2,
             ),
             child: child,
           ),

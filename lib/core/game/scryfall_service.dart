@@ -489,6 +489,13 @@ String? scryfallFullCardImageUrl(String? url) {
   return value.replaceAll('/art_crop/', '/normal/');
 }
 
+/// Full printed card for album and search tiles (`normal`, not art crop).
+String? scryfallDisplayCardUrl(ScryfallCard card) {
+  final face = card.cardFaceUrl?.trim();
+  if (face != null && face.isNotEmpty) return face;
+  return scryfallFullCardImageUrl(card.imageUrl);
+}
+
 // ── Provider ───────────────────────────────────────────────────────────────
 
 final scryfallCardCacheProvider = Provider<ScryfallCardCache>((ref) {

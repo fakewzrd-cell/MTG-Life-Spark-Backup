@@ -278,13 +278,8 @@ Map<String, dynamic> deckToJson(PlayerDeck d) => {
 PlayerDeck deckFromJson(Map<String, dynamic> json) {
   final id = (json['id'] as String?)?.trim();
   final displayName = (json['displayName'] as String?)?.trim();
-  final commanderName = (json['commanderName'] as String?)?.trim();
-  if (id == null ||
-      id.isEmpty ||
-      displayName == null ||
-      displayName.isEmpty ||
-      commanderName == null ||
-      commanderName.isEmpty) {
+  final commanderName = (json['commanderName'] as String?)?.trim() ?? '';
+  if (id == null || id.isEmpty || displayName == null || displayName.isEmpty) {
     throw const FormatException('Deck entry is missing required fields.');
   }
   return PlayerDeck(

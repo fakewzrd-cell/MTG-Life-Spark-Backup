@@ -23,4 +23,22 @@ void main() {
     expect(scryfallFullCardImageUrl(''), '');
     expect(scryfallFullCardImageUrl('   '), '   ');
   });
+
+  test('listing URL prefers the full card face', () {
+    const card = ScryfallCard(
+      name: 'Sol Ring',
+      imageUrl: 'https://cards.scryfall.io/art_crop/front/a/b/uuid.jpg',
+      cardFaceUrl: 'https://cards.scryfall.io/normal/front/a/b/uuid.jpg',
+    );
+    expect(scryfallDisplayCardUrl(card), card.cardFaceUrl);
+    expect(
+      scryfallDisplayCardUrl(
+        const ScryfallCard(
+          name: 'Bolt',
+          imageUrl: 'https://cards.scryfall.io/art_crop/front/a/b/bolt.jpg',
+        ),
+      ),
+      'https://cards.scryfall.io/normal/front/a/b/bolt.jpg',
+    );
+  });
 }

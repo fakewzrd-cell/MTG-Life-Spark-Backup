@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/debug/app_log.dart';
+import '../../core/deck/deck_list_text.dart';
 import '../../core/game/scryfall_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/components/ui_app_bar.dart';
@@ -138,6 +139,7 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
   String? _pulseName;
   var _checkingOut = false;
   var _requestId = 0;
+  var _listing = AlbumListing.grid;
 
   int get _cartCopies =>
       _cart.values.fold<int>(0, (sum, line) => sum + line.count);
@@ -187,6 +189,43 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
         _error = AppLocalizations.of(context).lookupNetworkError;
       });
     }
+  }
+
+  ScryfallCard? _sourceFor(String name) {
+    final inCart = _cart[name]?.card;
+    if (inCart != null) return inCart;
+    for (final card in _results) {
+      if (card.name == name) return card;
+    }
+    return null;
+  }
+
+  List<AlbumListCard> _albumCards() {
+    return [
+      for (final card in _results)
+        AlbumListCard(
+          name: card.name,
+          count: _cart[card.name]?.count ?? 0,
+          group: deckCardGroupForTypeLine(card.typeLine),
+          imageUrl: scryfallDisplayCardUrl(card),
+          manaCost: card.manaCost,
+          canAddCopy: (_cart[card.name]?.count ?? 0) < 99,
+        ),
+    ];
+  }
+
+  void _onListingTap(AlbumListCard card) {
+    final source = _sourceFor(card.name);
+    if (source == null) return;
+    _addToCart(source);
+  }
+
+  void _onListingCount(AlbumListCard card, int delta) {
+    if (delta > 0) {
+      _onListingTap(card);
+      return;
+    }
+    _setCount(card.name, card.count + delta);
   }
 
   void _pulse(String name) {
@@ -383,6 +422,7 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
         _onLeave();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: UiAppBar(title: l10n.collectionSearchTitle),
         body: Stack(
           children: [
@@ -406,6 +446,19 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
                   ),
                 ),
                 if (_searching) const LinearProgressIndicator(),
+                if (_results.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      LayoutTokens.gr4,
+                      0,
+                      LayoutTokens.gr4,
+                      LayoutTokens.gr2,
+                    ),
+                    child: AlbumListingSwitch(
+                      listing: _listing,
+                      onChanged: (value) => setState(() => _listing = value),
+                    ),
+                  ),
                 Expanded(
                   child:
                       _error != null && _results.isEmpty
@@ -419,33 +472,23 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
                               ),
                             ),
                           )
-                          : ListView.separated(
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  cartOpen
-                                      ? BlurredBottomAction.height(context)
-                                      : LayoutTokens.gr2,
+                          : ListView(
+                            padding: EdgeInsets.fromLTRB(
+                              LayoutTokens.gr4,
+                              0,
+                              LayoutTokens.gr4,
+                              cartOpen
+                                  ? BlurredBottomAction.height(context) +
+                                      LayoutTokens.gr5
+                                  : LayoutTokens.gr2,
                             ),
-                            itemCount: _results.length,
-                            separatorBuilder:
-                                (_, __) => Divider(
-                                  height: 1,
-                                  color: colors.borderSubtle,
-                                ),
-                            itemBuilder: (context, index) {
-                              final card = _results[index];
-                              final count = _cart[card.name]?.count ?? 0;
-                              return _CartResultRow(
-                                card: card,
-                                count: count,
-                                pulsing: _pulseName == card.name,
-                                onAdd: () => _addToCart(card),
-                                onRemove:
-                                    count < 1
-                                        ? null
-                                        : () => _setCount(card.name, count - 1),
-                              );
-                            },
+                            children: albumListingChildren(
+                              context: context,
+                              listing: _listing,
+                              cards: _albumCards(),
+                              onCount: _onListingCount,
+                              onCardTap: _onListingTap,
+                            ),
                           ),
                 ),
               ],
@@ -478,8 +521,8 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    Icons.shopping_bag_rounded,
-                                    color: colors.primaryAccent,
+                                    Icons.style_outlined,
+                                    color: colors.textPrimary,
                                   ),
                                   SizedBox(width: LayoutTokens.gr1),
                                   Expanded(
@@ -562,7 +605,7 @@ class _CartResultRow extends StatelessWidget {
     final inCart = count > 0;
     final info = Row(
       children: [
-        _CartThumb(url: card.imageUrl ?? card.cardFaceUrl),
+        _CartThumb(url: scryfallDisplayCardUrl(card)),
         SizedBox(width: LayoutTokens.gr2),
         Expanded(
           child: Column(
@@ -630,36 +673,28 @@ class _CartResultRow extends StatelessWidget {
         ),
       ],
     );
-    return AnimatedContainer(
-      duration: MotionTokens.fast,
-      curve: MotionTokens.easeOut,
-      color:
-          inCart
-              ? colors.primaryAccent.withValues(alpha: 0.12)
-              : colors.backgroundPrimary,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: inset ? LayoutTokens.gr4 : 0,
-          vertical: LayoutTokens.gr1,
-        ),
-        child:
-            inCart
-                ? Row(
-                  children: [
-                    Expanded(child: InkWell(onTap: onAdd, child: info)),
-                    stepper,
-                  ],
-                )
-                : InkWell(
-                  onTap: onAdd,
-                  child: Row(
-                    children: [
-                      Expanded(child: info),
-                      Icon(Icons.add_rounded, color: colors.primaryAccent),
-                    ],
-                  ),
-                ),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: inset ? LayoutTokens.gr4 : 0,
+        vertical: LayoutTokens.gr1,
       ),
+      child:
+          inCart
+              ? Row(
+                children: [
+                  Expanded(child: InkWell(onTap: onAdd, child: info)),
+                  stepper,
+                ],
+              )
+              : InkWell(
+                onTap: onAdd,
+                child: Row(
+                  children: [
+                    Expanded(child: info),
+                    Icon(Icons.add_rounded, color: colors.textSecondary),
+                  ],
+                ),
+              ),
     );
   }
 }

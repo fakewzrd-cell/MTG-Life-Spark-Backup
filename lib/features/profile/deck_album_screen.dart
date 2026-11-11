@@ -484,9 +484,9 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     });
   }
 
-  Future<void> _editCommander() async {
+  Future<void> _editFace() async {
     final deck = _deck;
-    if (deck == null || !deck.isCommanderDeck) return;
+    if (deck == null) return;
     await applyDeckSheetAction(
       context: context,
       ref: ref,
@@ -494,6 +494,47 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       deck: deck,
       action: DeckSheetAction.editCover,
     );
+    if (!mounted) return;
+    await _reload();
+  }
+
+  Future<void> _clearFace() async {
+    final deck = _deck;
+    if (deck == null || deck.commanderName.trim().isEmpty) return;
+    final repo = ref.read(deckRepositoryProvider);
+    if (deck.isCommanderDeck) {
+      final listRepo = ref.read(deckListRepositoryProvider);
+      await listRepo.init();
+      await listRepo.changeCount(
+        deck.id,
+        deck.commanderName,
+        board: DeckBoard.commander,
+        delta: -99,
+      );
+      final partner = deck.partnerCommanderName;
+      if (partner != null && partner.trim().isNotEmpty) {
+        await listRepo.changeCount(
+          deck.id,
+          partner,
+          board: DeckBoard.commander,
+          delta: -99,
+        );
+      }
+      deck.commanderName = '';
+      deck.commanderImageUrl = null;
+      deck.commanderManaCost = null;
+      deck.partnerCommanderName = null;
+      deck.partnerCommanderImageUrl = null;
+      deck.partnerManaCost = null;
+      deck.commanderColorIdentity = <String>[];
+    } else {
+      deck.commanderName = '';
+      deck.commanderImageUrl = null;
+      deck.commanderManaCost = null;
+      deck.commanderColorIdentity = <String>[];
+    }
+    await repo.save(deck);
+    bumpDeckListRevision(ref);
     if (!mounted) return;
     await _reload();
   }
@@ -540,7 +581,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       await _pasteList();
       return;
     }
-    final added = await Navigator.of(context).push<int>(
+    final added = await Navigator.of(context, rootNavigator: true).push<int>(
       MaterialPageRoute<int>(
         builder:
             (_) => CollectionSearchPage(
@@ -676,6 +717,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
 
     final coverBleeds = deck != null && !_showTitle;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: deck != null,
       appBar: UiAppBar(
         backgroundColor: coverBleeds ? Colors.transparent : null,
@@ -742,8 +784,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
                       onRevealSideboard: _revealSideboard,
                       sideboardKey: _sideboardKey,
                       onPickBracket: _pickBracket,
-                      onEditCommander:
-                          deck.isCommanderDeck ? _editCommander : null,
+                      onEditFace: _editFace,
+                      onClearFace: _clearFace,
                       showStats: _showStats,
                       onShowStats:
                           (value) => setState(() => _showStats = value),
@@ -766,6 +808,42 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
               ),
     );
   }
+}
+
+List<AlbumListCard> _faceSlotCards(
+  BuildContext context,
+  PlayerDeck deck,
+  Map<String, ScryfallCard> cards,
+) {
+  final l10n = AppLocalizations.of(context);
+  final name = deck.commanderName.trim();
+  if (name.isEmpty) {
+    return [
+      AlbumListCard(
+        name:
+            deck.isCommanderDeck
+                ? l10n.deckAlbumChooseCommander
+                : l10n.deckAlbumChooseCover,
+        count: 0,
+        group: DeckCardGroup.other,
+        isFaceSlot: true,
+        isBlank: true,
+        canAddCopy: false,
+      ),
+    ];
+  }
+  final card = cards[_key(name)];
+  return [
+    AlbumListCard(
+      name: name,
+      count: 1,
+      group: deckCardGroupForTypeLine(card?.typeLine),
+      imageUrl: _faceUrl(card) ?? deck.commanderImageUrl,
+      manaCost: card?.manaCost ?? deck.commanderManaCost,
+      isFaceSlot: true,
+      canAddCopy: false,
+    ),
+  ];
 }
 
 AlbumListCard _albumCard(
@@ -848,9 +926,8 @@ String _key(String name) =>
     name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
 String? _faceUrl(ScryfallCard? card) {
-  final face = card?.cardFaceUrl;
-  if (face != null && face.isNotEmpty) return face;
-  return card?.imageUrl;
+  if (card == null) return null;
+  return scryfallDisplayCardUrl(card);
 }
 
 class _AlbumBody extends StatelessWidget {
@@ -872,7 +949,8 @@ class _AlbumBody extends StatelessWidget {
     required this.showStats,
     required this.onShowStats,
     required this.onPickBracket,
-    this.onEditCommander,
+    required this.onEditFace,
+    required this.onClearFace,
   });
 
   final PlayerDeck deck;
@@ -893,7 +971,8 @@ class _AlbumBody extends StatelessWidget {
   final bool showStats;
   final ValueChanged<bool> onShowStats;
   final VoidCallback onPickBracket;
-  final VoidCallback? onEditCommander;
+  final VoidCallback onEditFace;
+  final VoidCallback onClearFace;
 
   @override
   Widget build(BuildContext context) {
@@ -921,7 +1000,7 @@ class _AlbumBody extends StatelessWidget {
           themeTags: meta?.themeTags ?? const [],
           bracket: bracket,
           onBracketTap: onPickBracket,
-          onCommanderTap: onEditCommander,
+          onCommanderTap: onEditFace,
           loadingFaces: loadingCards,
           commanderFaceUrl: _faceUrl(cards[_key(deck.commanderName)]),
           partnerFaceUrl:
@@ -1031,13 +1110,26 @@ class _AlbumBody extends StatelessWidget {
                             : formatSideboardSize(deck.gameFormat),
                     showEmptySideboard: !deck.isCommanderDeck,
                     sideboardKey: sideboardKey,
+                    faceTitle:
+                        deck.isCommanderDeck
+                            ? l10n.commanderSelectLabelCommander
+                            : l10n.deckAlbumFaceCover,
+                    faceCards: _faceSlotCards(context, deck, cards),
                     cards: [
                       for (final entry in main)
                         _albumCard(context, deck, entries, cards, meta, entry),
                     ],
-                    onCount:
-                        (card, delta) =>
-                            onCount(card.name, delta, sideboard: false),
+                    onCount: (card, delta) {
+                      if (card.isFaceSlot) {
+                        if (card.isBlank || delta > 0) {
+                          onEditFace();
+                          return;
+                        }
+                        if (delta < 0) onClearFace();
+                        return;
+                      }
+                      onCount(card.name, delta, sideboard: false);
+                    },
                     onSideCount:
                         (card, delta) =>
                             onCount(card.name, delta, sideboard: true),

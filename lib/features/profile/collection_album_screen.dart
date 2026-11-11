@@ -26,6 +26,7 @@ class CollectionAlbumScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: UiAppBar(title: AppLocalizations.of(context).collectionTitle),
       body: const CollectionAlbumView(),
     );
@@ -150,7 +151,7 @@ class _CollectionAlbumViewState extends ConsumerState<CollectionAlbumView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = AppColorTokens.of(context);
-    final bottom = MediaQuery.paddingOf(context).bottom + LayoutTokens.gr2;
+    final bottom = MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2;
     final repo = ref.read(collectionRepositoryProvider);
     final albums = _visibleAlbums(repo);
     final noMatches = _albums.isNotEmpty && albums.isEmpty;
@@ -622,7 +623,7 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
       return;
     }
     final l10n = AppLocalizations.of(context);
-    final added = await Navigator.of(context).push<int>(
+    final added = await Navigator.of(context, rootNavigator: true).push<int>(
       MaterialPageRoute<int>(
         builder:
             (_) => CollectionSearchPage(
@@ -728,6 +729,7 @@ class _OwnedAlbumPageState extends ConsumerState<OwnedAlbumPage> {
               ],
             );
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: UiAppBar(title: widget.albumName),
       body: Stack(
         children: [
@@ -754,9 +756,8 @@ String _key(String name) =>
     name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
 String? _faceUrl(ScryfallCard? card) {
-  final face = card?.cardFaceUrl;
-  if (face != null && face.isNotEmpty) return face;
-  return card?.imageUrl;
+  if (card == null) return null;
+  return scryfallDisplayCardUrl(card);
 }
 
 class _CollectionPasteDialog extends StatefulWidget {
