@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_color_palettes.dart';
 
-/// Life Spark color system — **dark-first**, scheme-aware palette.
+/// Life Spark color system — **light Slate (blue) by default**, scheme-aware.
 ///
 /// The active palette comes from [AppColorPalettes] and is switched in Settings.
 /// [applyPalette] is called when building [ThemeData]; legacy [AppTheme] getters
@@ -14,7 +14,7 @@ import 'app_color_palettes.dart';
 class ColorTokens {
   ColorTokens._();
 
-  static AppColorPalette _palette = AppColorPalettes.violet;
+  static AppColorPalette _palette = AppColorPalettes.slate;
 
   static AppColorPalette get palette => _palette;
 

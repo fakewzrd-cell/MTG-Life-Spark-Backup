@@ -79,68 +79,70 @@ class _PlayerWhisperSheetState extends ConsumerState<_PlayerWhisperSheet> {
         bottom: MediaQuery.viewInsetsOf(context).bottom + LayoutTokens.gr4,
         top: LayoutTokens.gr2,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            l10n.whisperSheetTitle(widget.target.username),
-            style: GameModalChrome.sheetTitleStyle(context),
-          ),
-          SizedBox(height: LayoutTokens.gr1),
-          Text(
-            l10n.whisperSheetSubtitle,
-            style: GameModalChrome.dialogBodyStyle(context),
-          ),
-          SizedBox(height: LayoutTokens.gr3),
-          Wrap(
-            spacing: LayoutTokens.gr1,
-            runSpacing: LayoutTokens.gr1,
-            children: [
-              for (final label in presets)
-                ActionChip(
-                  label: Text(
-                    label,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: FontTokens.body,
-                    ),
-                  ),
-                  backgroundColor: colors.surface,
-                  side: BorderSide(color: colors.borderSubtle),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: RadiusTokens.radiusXl,
-                  ),
-                  onPressed: () => _send(label),
-                ),
-            ],
-          ),
-          SizedBox(height: LayoutTokens.gr3),
-          UiTextField(
-            controller: _customController,
-            labelText: l10n.whisperCustomLabel,
-            hintText: l10n.whisperCustomHint,
-            maxLength: _kWhisperMaxLength,
-            onSubmitted: (v) {
-              if (v.trim().isNotEmpty) _send(v);
-            },
-          ),
-          SizedBox(height: LayoutTokens.gr3),
-          FilledButton(
-            onPressed: () {
-              final text = _customController.text.trim();
-              if (text.isEmpty) return;
-              _send(text);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.primaryAccent,
-              foregroundColor: colors.onAccent,
-              minimumSize: Size.fromHeight(LayoutTokens.minTapTarget),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.whisperSheetTitle(widget.target.username),
+              style: GameModalChrome.sheetTitleStyle(context),
             ),
-            child: Text(l10n.whisperSend),
-          ),
-        ],
+            SizedBox(height: LayoutTokens.gr1),
+            Text(
+              l10n.whisperSheetSubtitle,
+              style: GameModalChrome.dialogBodyStyle(context),
+            ),
+            SizedBox(height: LayoutTokens.gr3),
+            Wrap(
+              spacing: LayoutTokens.gr1,
+              runSpacing: LayoutTokens.gr1,
+              children: [
+                for (final label in presets)
+                  ActionChip(
+                    label: Text(
+                      label,
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: FontTokens.body,
+                      ),
+                    ),
+                    backgroundColor: colors.surface,
+                    side: BorderSide(color: colors.borderSubtle),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: RadiusTokens.radiusXl,
+                    ),
+                    onPressed: () => _send(label),
+                  ),
+              ],
+            ),
+            SizedBox(height: LayoutTokens.gr3),
+            UiTextField(
+              controller: _customController,
+              labelText: l10n.whisperCustomLabel,
+              hintText: l10n.whisperCustomHint,
+              maxLength: _kWhisperMaxLength,
+              onSubmitted: (v) {
+                if (v.trim().isNotEmpty) _send(v);
+              },
+            ),
+            SizedBox(height: LayoutTokens.gr3),
+            FilledButton(
+              onPressed: () {
+                final text = _customController.text.trim();
+                if (text.isEmpty) return;
+                _send(text);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.primaryAccent,
+                foregroundColor: colors.onAccent,
+                minimumSize: Size.fromHeight(LayoutTokens.minTapTarget),
+              ),
+              child: Text(l10n.whisperSend),
+            ),
+          ],
+        ),
       ),
     );
   }

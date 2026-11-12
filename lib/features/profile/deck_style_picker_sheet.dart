@@ -5,28 +5,54 @@ import '../../core/models/deck_style.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/deck_style_l10n.dart';
 import '../../ui/theme/app_color_tokens.dart';
-import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import 'deck_picker_sheet_scaffold.dart';
 
+/// Result of a style picker. [style] is `null` when the user chose All.
+class DeckStyleFilterPick {
+  const DeckStyleFilterPick.all() : style = null;
+  const DeckStyleFilterPick.style(DeckStyle this.style);
+  final DeckStyle? style;
+}
+
+Future<DeckStyleFilterPick?> _showDeckStylePicker(
+  BuildContext context, {
+  DeckStyle? selected,
+  bool includeAll = false,
+}) {
+  return showGameBottomSheet<DeckStyleFilterPick>(
+    context: context,
+    isScrollControlled: true,
+    builder:
+        (ctx) =>
+            _DeckStylePickerSheet(initial: selected, includeAll: includeAll),
+  );
+}
+
 /// Searchable list of [DeckStyle] values for create/edit deck flows.
 Future<DeckStyle?> showDeckStylePickerSheet(
   BuildContext context, {
   DeckStyle? selected,
+}) async {
+  final picked = await _showDeckStylePicker(context, selected: selected);
+  return picked?.style;
+}
+
+/// Library filter: All is a real choice, distinct from dismissing the sheet.
+Future<DeckStyleFilterPick?> showDeckStyleFilterSheet(
+  BuildContext context, {
+  DeckStyle? selected,
 }) {
-  return showGameBottomSheet<DeckStyle>(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) => _DeckStylePickerSheet(initial: selected),
-  );
+  return _showDeckStylePicker(context, selected: selected, includeAll: true);
 }
 
 class _DeckStylePickerSheet extends StatefulWidget {
-  const _DeckStylePickerSheet({this.initial});
+  const _DeckStylePickerSheet({this.initial, this.includeAll = false});
 
   final DeckStyle? initial;
+  final bool includeAll;
 
   @override
   State<_DeckStylePickerSheet> createState() => _DeckStylePickerSheetState();
@@ -58,7 +84,19 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
 
   void _pick(DeckStyle style) {
     HapticFeedback.selectionClick();
-    Navigator.pop(context, style);
+    Navigator.pop(context, DeckStyleFilterPick.style(style));
+  }
+
+  void _pickAll() {
+    HapticFeedback.selectionClick();
+    Navigator.pop(context, const DeckStyleFilterPick.all());
+  }
+
+  bool _showAllRow(AppLocalizations l10n) {
+    if (!widget.includeAll) return false;
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return l10n.albumFilterAll.toLowerCase().contains(q);
   }
 
   @override
@@ -67,6 +105,7 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
     final l10n = AppLocalizations.of(context);
 
     final filtered = _filtered(l10n);
+    final showAll = _showAllRow(l10n);
     return DeckPickerSheetScaffold(
       title: l10n.stylePickerTitle,
       searchField: TextField(
@@ -82,74 +121,23 @@ class _DeckStylePickerSheetState extends State<_DeckStylePickerSheet> {
         style: TextStyle(color: colors.textPrimary),
         onChanged: (v) => setState(() => _query = v),
       ),
-      itemCount: filtered.length,
+      itemCount: filtered.length + (showAll ? 1 : 0),
       itemBuilder: (context, i) {
-        final style = filtered[i];
-        final isSelected = widget.initial == style;
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _pick(style),
-            borderRadius: RadiusTokens.radiusXl,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color:
-                    isSelected
-                        ? colors.primaryAccent.withValues(alpha: 0.12)
-                        : colors.surface,
-                borderRadius: RadiusTokens.radiusXl,
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? colors.primaryAccent.withValues(alpha: 0.5)
-                          : colors.borderSubtle.withValues(alpha: 0.35),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(LayoutTokens.gr2),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            localizedDeckStyleName(l10n, style),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: colors.textPrimary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: FontTokens.body,
-                            ),
-                          ),
-                          SizedBox(height: LayoutTokens.gr0),
-                          Text(
-                            localizedDeckStyleDescription(l10n, style),
-                            // Scrollable list — allow full copy; avoid silent clipping.
-                            style: TextStyle(
-                              color: colors.textSecondary,
-                              fontSize: FontTokens.sm,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isSelected) ...[
-                      SizedBox(width: LayoutTokens.gr2),
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: colors.primaryAccent,
-                        size: 24,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
+        if (showAll && i == 0) {
+          return DeckPickerChoiceTile(
+            key: const ValueKey('deck-style-filter-all'),
+            title: l10n.albumFilterAll,
+            isSelected: widget.initial == null,
+            onTap: _pickAll,
+          );
+        }
+        final style = filtered[showAll ? i - 1 : i];
+        return DeckPickerChoiceTile(
+          key: ValueKey('deck-style-${style.id}'),
+          title: localizedDeckStyleName(l10n, style),
+          subtitle: localizedDeckStyleDescription(l10n, style),
+          isSelected: widget.initial == style,
+          onTap: () => _pick(style),
         );
       },
     );

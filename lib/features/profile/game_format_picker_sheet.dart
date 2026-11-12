@@ -4,22 +4,47 @@ import 'package:flutter/services.dart';
 import '../../core/game/game_format.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
-import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import 'deck_picker_sheet_scaffold.dart';
 
+/// Result of a format picker. [format] is `null` when the user chose All.
+class GameFormatFilterPick {
+  const GameFormatFilterPick.all() : format = null;
+  const GameFormatFilterPick.format(GameFormat this.format);
+  final GameFormat? format;
+}
+
+Future<GameFormatFilterPick?> _showGameFormatPicker(
+  BuildContext context, {
+  GameFormat? selected,
+  bool includeAll = false,
+}) {
+  return showGameBottomSheet<GameFormatFilterPick>(
+    context: context,
+    isScrollControlled: true,
+    builder:
+        (ctx) =>
+            _GameFormatPickerSheet(initial: selected, includeAll: includeAll),
+  );
+}
+
 /// Searchable list of [GameFormat] values for create/edit deck flows.
 Future<GameFormat?> showGameFormatPickerSheet(
   BuildContext context, {
   GameFormat? selected,
+}) async {
+  final picked = await _showGameFormatPicker(context, selected: selected);
+  return picked?.format;
+}
+
+/// Library filter: All is a real choice, distinct from dismissing the sheet.
+Future<GameFormatFilterPick?> showGameFormatFilterSheet(
+  BuildContext context, {
+  GameFormat? selected,
 }) {
-  return showGameBottomSheet<GameFormat>(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) => _GameFormatPickerSheet(initial: selected),
-  );
+  return _showGameFormatPicker(context, selected: selected, includeAll: true);
 }
 
 String _formatPickerSubtitle(AppLocalizations l10n, GameFormat format) {
@@ -31,9 +56,10 @@ String _formatPickerSubtitle(AppLocalizations l10n, GameFormat format) {
 }
 
 class _GameFormatPickerSheet extends StatefulWidget {
-  const _GameFormatPickerSheet({this.initial});
+  const _GameFormatPickerSheet({this.initial, this.includeAll = false});
 
   final GameFormat? initial;
+  final bool includeAll;
 
   @override
   State<_GameFormatPickerSheet> createState() => _GameFormatPickerSheetState();
@@ -49,7 +75,7 @@ class _GameFormatPickerSheetState extends State<_GameFormatPickerSheet> {
     super.dispose();
   }
 
-  List<GameFormat> get _filtered {
+  List<GameFormat> _filtered() {
     final q = _query.trim().toLowerCase();
     final ordered = GameFormatDetails.lobbyPickerOrder;
     if (q.isEmpty) return ordered;
@@ -60,13 +86,27 @@ class _GameFormatPickerSheetState extends State<_GameFormatPickerSheet> {
 
   void _pick(GameFormat format) {
     HapticFeedback.selectionClick();
-    Navigator.pop(context, format);
+    Navigator.pop(context, GameFormatFilterPick.format(format));
+  }
+
+  void _pickAll() {
+    HapticFeedback.selectionClick();
+    Navigator.pop(context, const GameFormatFilterPick.all());
+  }
+
+  bool _showAllRow(AppLocalizations l10n) {
+    if (!widget.includeAll) return false;
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return l10n.albumFilterAll.toLowerCase().contains(q);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
+    final filtered = _filtered();
+    final showAll = _showAllRow(l10n);
 
     return DeckPickerSheetScaffold(
       title: l10n.formatPickerTitle,
@@ -83,105 +123,25 @@ class _GameFormatPickerSheetState extends State<_GameFormatPickerSheet> {
         style: TextStyle(color: colors.textPrimary),
         onChanged: (v) => setState(() => _query = v),
       ),
-      itemCount: _filtered.length,
+      itemCount: filtered.length + (showAll ? 1 : 0),
       itemBuilder: (context, i) {
-        final format = _filtered[i];
-        final isSelected = widget.initial == format;
-        return _PickerTile(
-          colors: colors,
-          selected: isSelected,
-          onTap: () => _pick(format),
+        if (showAll && i == 0) {
+          return DeckPickerChoiceTile(
+            key: const ValueKey('deck-format-filter-all'),
+            title: l10n.albumFilterAll,
+            isSelected: widget.initial == null,
+            onTap: _pickAll,
+          );
+        }
+        final format = filtered[showAll ? i - 1 : i];
+        return DeckPickerChoiceTile(
+          key: ValueKey('deck-format-${format.name}'),
           title: format.displayName,
           subtitle: _formatPickerSubtitle(l10n, format),
-          subtitleMaxLines: 2,
+          isSelected: widget.initial == format,
+          onTap: () => _pick(format),
         );
       },
-    );
-  }
-}
-
-class _PickerTile extends StatelessWidget {
-  const _PickerTile({
-    required this.colors,
-    required this.selected,
-    required this.onTap,
-    required this.title,
-    required this.subtitle,
-    this.subtitleMaxLines = 2,
-  });
-
-  final AppColorTokens colors;
-  final bool selected;
-  final VoidCallback onTap;
-  final String title;
-  final String subtitle;
-  final int subtitleMaxLines;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: RadiusTokens.radiusXl,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color:
-                selected
-                    ? colors.primaryAccent.withValues(alpha: 0.12)
-                    : colors.surface,
-            borderRadius: RadiusTokens.radiusXl,
-            border: Border.all(
-              color:
-                  selected
-                      ? colors.primaryAccent.withValues(alpha: 0.5)
-                      : colors.borderSubtle.withValues(alpha: 0.35),
-            ),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(LayoutTokens.gr2),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: FontTokens.body,
-                        ),
-                      ),
-                      SizedBox(height: LayoutTokens.gr0),
-                      Text(
-                        subtitle,
-                        maxLines: subtitleMaxLines,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.textSecondary,
-                          fontSize: FontTokens.sm,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (selected) ...[
-                  SizedBox(width: LayoutTokens.gr2),
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: colors.primaryAccent,
-                    size: 24,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

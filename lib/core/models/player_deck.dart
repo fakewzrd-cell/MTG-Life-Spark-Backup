@@ -63,6 +63,11 @@ class PlayerDeck extends HiveObject {
   @HiveField(15)
   int? chosenBracket;
 
+  /// When the deck profile (name, cover, list, format, style, bracket) last
+  /// changed. `0` on decks saved before this field existed.
+  @HiveField(16, defaultValue: 0)
+  int updatedAtMillis;
+
   PlayerDeck({
     required this.id,
     required this.displayName,
@@ -80,6 +85,7 @@ class PlayerDeck extends HiveObject {
     this.deckStyleId = '',
     this.isPinned = false,
     this.chosenBracket,
+    this.updatedAtMillis = 0,
   });
 
   bool get hasDeckStyle => DeckStyle.isValidId(deckStyleId);
@@ -125,6 +131,7 @@ class PlayerDeck extends HiveObject {
     commanderColorIdentity: commanderColorIdentity,
     format: format.name,
     deckStyleId: deckStyleId,
+    updatedAtMillis: DateTime.now().millisecondsSinceEpoch,
   );
 
   /// Saved deck format must match the lobby host format for picker and W/L.

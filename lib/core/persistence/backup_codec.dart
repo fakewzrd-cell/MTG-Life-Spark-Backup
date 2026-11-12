@@ -249,8 +249,8 @@ AppSettings settingsFromJson(Map<String, dynamic> json) => AppSettings(
   onboardingCompleted: json['onboardingCompleted'] as bool? ?? true,
   keepDisplayAwake: json['keepDisplayAwake'] as bool? ?? true,
   hideSystemBars: json['hideSystemBars'] as bool? ?? false,
-  useDarkTheme: json['useDarkTheme'] as bool? ?? true,
-  colorSchemeId: (json['colorSchemeId'] as String?) ?? 'violet',
+  useDarkTheme: json['useDarkTheme'] as bool? ?? false,
+  colorSchemeId: (json['colorSchemeId'] as String?) ?? 'slate',
   lifeGestureHintDismissed: json['lifeGestureHintDismissed'] as bool? ?? false,
   hubGuideCompleted: json['hubGuideCompleted'] as bool? ?? false,
   localeCode: (json['localeCode'] as String?) ?? 'system',
@@ -273,6 +273,7 @@ Map<String, dynamic> deckToJson(PlayerDeck d) => {
   'deckStyleId': d.deckStyleId,
   'isPinned': d.isPinned,
   'chosenBracket': d.chosenBracket,
+  if (d.updatedAtMillis > 0) 'updatedAtMillis': d.updatedAtMillis,
 };
 
 PlayerDeck deckFromJson(Map<String, dynamic> json) {
@@ -299,6 +300,7 @@ PlayerDeck deckFromJson(Map<String, dynamic> json) {
     deckStyleId: (json['deckStyleId'] as String?) ?? '',
     isPinned: json['isPinned'] as bool? ?? false,
     chosenBracket: (json['chosenBracket'] as num?)?.toInt(),
+    updatedAtMillis: (json['updatedAtMillis'] as num?)?.toInt() ?? 0,
   );
 }
 
@@ -344,6 +346,8 @@ Map<String, dynamic> ownedAlbumToJson(OwnedAlbum album) => {
   'id': album.id,
   'name': album.name,
   'createdAtMillis': album.createdAtMillis,
+  if (album.favorited) 'favorited': true,
+  if (album.lastOpenedMillis > 0) 'lastOpenedMillis': album.lastOpenedMillis,
 };
 
 OwnedAlbum ownedAlbumFromJson(Map<String, dynamic> json) {
@@ -356,6 +360,8 @@ OwnedAlbum ownedAlbumFromJson(Map<String, dynamic> json) {
     id: id,
     name: name,
     createdAtMillis: (json['createdAtMillis'] as num?)?.toInt() ?? 0,
+    favorited: json['favorited'] as bool? ?? false,
+    lastOpenedMillis: (json['lastOpenedMillis'] as num?)?.toInt() ?? 0,
   );
 }
 

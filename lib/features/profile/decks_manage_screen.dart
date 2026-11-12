@@ -22,6 +22,9 @@ import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
 import 'album_listing.dart';
+import 'deck_bracket_filter_sheet.dart';
+import 'deck_style_picker_sheet.dart';
+import 'game_format_picker_sheet.dart';
 import 'new_deck_sheet.dart';
 import 'collection_album_screen.dart';
 import 'library_destination_switch.dart';
@@ -53,9 +56,6 @@ Map<GameFormat, List<PlayerDeck>> _groupDecksByFormat(List<PlayerDeck> decks) {
   }
   return grouped;
 }
-
-/// `null` = any bracket, `-1` = no bracket set, `1`–`5` = that level.
-const int kLibraryBracketUnset = -1;
 
 String libraryBracketFilterLabel(AppLocalizations l10n, int? bracket) {
   if (bracket == null) return l10n.decksFilterBracket;
@@ -165,6 +165,51 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     _reload();
   }
 
+  Future<void> _pickStyleFilter() async {
+    final picked = await showDeckStyleFilterSheet(
+      context,
+      selected: _styleFilter,
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _styleFilter = picked.style);
+  }
+
+  Future<void> _pickFormatFilter() async {
+    final picked = await showGameFormatFilterSheet(
+      context,
+      selected: _formatFilter,
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _formatFilter = picked.format);
+  }
+
+  Future<void> _pickBracketFilter() async {
+    final picked = await showDeckBracketFilterSheet(
+      context,
+      selected: _bracketFilter,
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _bracketFilter = picked.value);
+  }
+
+  void _clearLibraryBrowse() {
+    _searchCtrl.clear();
+    setState(() {
+      _query = '';
+      _formatFilter = null;
+      _styleFilter = null;
+      _bracketFilter = null;
+    });
+  }
+
+  Widget _clearFiltersButton(AppLocalizations l10n, {Key? key}) {
+    return TextButton(
+      key: key,
+      onPressed: _clearLibraryBrowse,
+      child: Text(l10n.decksClearFilters),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(deckListRevisionProvider, (_, __) => _reload());
@@ -172,6 +217,7 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
     final l10n = AppLocalizations.of(context);
     final hasFilters =
         _formatFilter != null || _styleFilter != null || _bracketFilter != null;
+    final hasBrowseNarrowing = hasFilters || _query.isNotEmpty;
     final filtered =
         _decks
             .where(
@@ -251,6 +297,8 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
         padding: LayoutTokens.shellScrollPadding(
           context,
           top: LayoutTokens.gr2,
+        ).copyWith(
+          bottom: BlurredBottomAction.height(context, aboveShellDock: true),
         ),
         children: [
           Padding(
@@ -282,76 +330,45 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AlbumBrowseMenu<GameFormat?>(
+                AlbumBrowseChip(
+                  key: const ValueKey('library-format-filter'),
                   icon: Icons.category_outlined,
                   label: _formatFilter?.displayName ?? l10n.decksFilterFormat,
-                  value: _formatFilter,
-                  onSelected: (value) => setState(() => _formatFilter = value),
-                  items: [
-                    PopupMenuItem(
-                      value: null,
-                      child: Text(l10n.albumFilterAll),
-                    ),
-                    for (final format in GameFormatDetails.lobbyPickerOrder)
-                      PopupMenuItem(
-                        value: format,
-                        child: Text(format.displayName),
-                      ),
-                  ],
+                  onTap: _pickFormatFilter,
                 ),
                 SizedBox(height: LayoutTokens.gr2),
                 Row(
                   children: [
                     Expanded(
-                      child: AlbumBrowseMenu<DeckStyle?>(
+                      child: AlbumBrowseChip(
+                        key: const ValueKey('library-style-filter'),
                         icon: Icons.palette_outlined,
                         label:
                             _styleFilter == null
                                 ? l10n.decksFilterStyle
                                 : localizedDeckStyleName(l10n, _styleFilter!),
-                        value: _styleFilter,
-                        onSelected:
-                            (value) => setState(() => _styleFilter = value),
-                        items: [
-                          PopupMenuItem(
-                            value: null,
-                            child: Text(l10n.albumFilterAll),
-                          ),
-                          for (final style in DeckStyle.values)
-                            PopupMenuItem(
-                              value: style,
-                              child: Text(localizedDeckStyleName(l10n, style)),
-                            ),
-                        ],
+                        onTap: _pickStyleFilter,
                       ),
                     ),
                     SizedBox(width: LayoutTokens.gr2),
                     Expanded(
-                      child: AlbumBrowseMenu<int?>(
+                      child: AlbumBrowseChip(
+                        key: const ValueKey('library-bracket-filter'),
                         icon: Icons.workspace_premium_outlined,
                         label: libraryBracketFilterLabel(l10n, _bracketFilter),
-                        value: _bracketFilter,
-                        onSelected:
-                            (value) => setState(() => _bracketFilter = value),
-                        items: [
-                          PopupMenuItem(
-                            value: null,
-                            child: Text(l10n.albumFilterAll),
-                          ),
-                          PopupMenuItem(
-                            value: kLibraryBracketUnset,
-                            child: Text(l10n.decksFilterNoBracket),
-                          ),
-                          for (var n = 1; n <= 5; n++)
-                            PopupMenuItem(
-                              value: n,
-                              child: Text('${l10n.deckAlbumCardBracket} $n'),
-                            ),
-                        ],
+                        onTap: _pickBracketFilter,
                       ),
                     ),
                   ],
                 ),
+                if (hasBrowseNarrowing && !noMatches)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: _clearFiltersButton(
+                      l10n,
+                      key: const ValueKey('library-clear-filters'),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -365,14 +382,25 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
           if (noMatches)
             Padding(
               padding: EdgeInsets.symmetric(vertical: LayoutTokens.gr5),
-              child: Text(
-                _query.isEmpty && hasFilters
-                    ? l10n.decksNoFilterMatches
-                    : l10n.decksNoSearchMatches(_query),
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+              child: Column(
+                children: [
+                  Text(
+                    _query.isEmpty && hasFilters
+                        ? l10n.decksNoFilterMatches
+                        : l10n.decksNoSearchMatches(_query),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                  if (hasBrowseNarrowing) ...[
+                    SizedBox(height: LayoutTokens.gr2),
+                    _clearFiltersButton(
+                      l10n,
+                      key: const ValueKey('library-clear-filters'),
+                    ),
+                  ],
+                ],
               ),
             )
           else if (listing == DeckLibraryListing.covers)
@@ -406,22 +434,28 @@ class _DecksManageScreenState extends ConsumerState<DecksManageScreen> {
         children: [
           const LibraryDestinationSwitch(),
           Expanded(
-            child: showingDecks ? scrollBody : const CollectionAlbumView(),
+            child:
+                showingDecks
+                    ? Stack(
+                      children: [
+                        scrollBody,
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: BlurredBottomAction(
+                            aboveShellDock: true,
+                            child: UiButton(
+                              label: l10n.decksAddDeck,
+                              icon: const Icon(Icons.add_rounded, size: 22),
+                              onPressed: _promptNewDeckName,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                    : const CollectionAlbumView(),
           ),
-          if (showingDecks)
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                LayoutTokens.gr4,
-                LayoutTokens.gr2,
-                LayoutTokens.gr4,
-                MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2,
-              ),
-              child: UiButton(
-                label: l10n.decksAddDeck,
-                icon: const Icon(Icons.add_rounded, size: 22),
-                onPressed: _promptNewDeckName,
-              ),
-            ),
         ],
       ),
     );

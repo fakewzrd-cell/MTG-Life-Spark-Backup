@@ -17,6 +17,7 @@ import '../../shared/theme/theme_provider.dart';
 import '../../shared/utils/app_locale.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/widgets/brand_logo.dart';
+import '../feedback/life_spark_help_mail.dart';
 import '../../ui/components/ui_snack_bar.dart';
 import '../../ui/components/ui_surface.dart';
 import '../../ui/tokens/app_color_palettes.dart';
@@ -217,9 +218,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SizedBox(height: LayoutTokens.shellSectionGap),
           _SectionHeader(l10n.settingsSectionHelp),
           _SettingTile(
+            title: l10n.settingsAbout,
+            subtitle: l10n.settingsAboutSubtitle,
+            onTap: () => context.push(AppRoutes.about),
+          ),
+          const _SettingsDivider(),
+          _SettingTile(
             title: l10n.settingsFeedback,
             subtitle: l10n.settingsFeedbackSubtitle,
             onTap: () => context.push(AppRoutes.feedback),
+          ),
+          const _SettingsDivider(),
+          _SettingTile(
+            title: l10n.settingsReportBug,
+            subtitle: l10n.settingsReportBugSubtitle(kLifeSparkHelpEmail),
+            onTap:
+                () => openLifeSparkHelpMail(
+                  context: context,
+                  subject: l10n.reportBugMailSubject,
+                ),
           ),
           const _SettingsDivider(),
           _SettingTile(

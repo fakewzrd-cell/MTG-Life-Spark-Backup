@@ -187,12 +187,20 @@ class GameSheetBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pad = GameModalChrome.sheetPadding(context);
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     if (!scrollable) {
-      return SafeArea(top: false, child: Padding(padding: pad, child: child));
+      return SafeArea(
+        top: false,
+        // Keyboard lifts the sheet; keep SafeArea off the bottom so dock
+        // padding cannot overflow the remaining height.
+        bottom: !keyboardOpen,
+        child: Padding(padding: pad, child: child),
+      );
     }
 
     return SafeArea(
       top: false,
+      bottom: !keyboardOpen,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final maxH =
@@ -219,6 +227,34 @@ class GameSheetBody extends StatelessWidget {
 /// should use [GameSheetBody] (`scrollable: true`) or a
 /// `ConstrainedBox(maxHeight: …)` + shrink-wrap list — never a fixed
 /// `SizedBox(height: screen * …)`.
+/// Dock clearance to inject into a root-navigator sheet.
+///
+/// The sheet overlay is not under [ShellDockScope] / [MainShell], so we read
+/// the **caller** context. In-game routes (no shell) return 0.
+@visibleForTesting
+double shellDockPaddingForSheet(BuildContext callerContext) {
+  if (!ShellDockScope.isPresent(callerContext)) return 0;
+  return LayoutTokens.shellDockInset(callerContext);
+}
+
+/// Bottom [MediaQuery] padding for a game sheet.
+///
+/// When the keyboard is open it covers the floating shell dock, so injecting
+/// dock padding on top of [viewInsets] overflowed New deck (~77px ≈ nav).
+@visibleForTesting
+double gameSheetPaddingBottom({
+  required double viewInsetsBottom,
+  required double paddingBottom,
+  required double shellDock,
+}) {
+  if (viewInsetsBottom > 0) {
+    // Home indicator sits behind the keyboard; don't keep either inset.
+    return 0;
+  }
+  if (shellDock > 0 && shellDock > paddingBottom) return shellDock;
+  return paddingBottom;
+}
+
 Future<T?> showGameBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -228,6 +264,7 @@ Future<T?> showGameBottomSheet<T>({
   Color? backgroundColor,
 }) {
   final sheetColor = backgroundColor ?? context.gameColors.surface;
+  final shellDock = shellDockPaddingForSheet(context);
   return showModalBottomSheet<T>(
     context: context,
     // Root navigator so the floating [MainShell] bottom nav cannot paint over
@@ -249,10 +286,38 @@ Future<T?> showGameBottomSheet<T>({
     // Wrap so content-sized sheets don't stretch to the full route height
     // under isScrollControlled (that empty band under short menus).
     builder: (ctx) {
+      final mq = MediaQuery.of(ctx);
+      final keyboard = mq.viewInsets.bottom;
+      final bottom = gameSheetPaddingBottom(
+        viewInsetsBottom: keyboard,
+        paddingBottom: mq.padding.bottom,
+        shellDock: shellDock,
+      );
+      Widget inner = builder(ctx);
+      final paddingChanged = bottom != mq.padding.bottom;
+      final consumeKeyboard = keyboard > 0;
+      if (paddingChanged || consumeKeyboard) {
+        inner = MediaQuery(
+          data: mq.copyWith(
+            padding: mq.padding.copyWith(bottom: bottom),
+            // Chrome lifts the sheet by [keyboard]. Zero insets so child
+            // sheets that also pad viewInsets (New deck, pickers, whisper)
+            // cannot double the gap and overflow.
+            viewInsets:
+                consumeKeyboard
+                    ? mq.viewInsets.copyWith(bottom: 0)
+                    : mq.viewInsets,
+          ),
+          child: inner,
+        );
+      }
       return Align(
         alignment: Alignment.bottomCenter,
         heightFactor: 1,
-        child: _SheetPullDownToDismiss(child: builder(ctx)),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: keyboard),
+          child: _SheetPullDownToDismiss(child: inner),
+        ),
       );
     },
   );

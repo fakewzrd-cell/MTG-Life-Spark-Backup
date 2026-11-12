@@ -365,6 +365,18 @@ abstract class AppLocalizations {
   /// **'Help'**
   String get settingsSectionHelp;
 
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsAboutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A note from the maker of Life Spark'**
+  String get settingsAboutSubtitle;
+
   /// No description provided for @settingsFeedback.
   ///
   /// In en, this message translates to:
@@ -376,6 +388,34 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send us your thoughts and suggestions'**
   String get settingsFeedbackSubtitle;
+
+  /// No description provided for @settingsReportBug.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a bug'**
+  String get settingsReportBug;
+
+  /// No description provided for @settingsReportBugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email a problem to {email}'**
+  String settingsReportBugSubtitle(String email);
+
+  /// No description provided for @reportBugMailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Life Spark bug report'**
+  String get reportBugMailSubject;
+
+  /// No description provided for @reportBugClipboardFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'To: {email}\\nSubject: {subject}\\n\\n{message}'**
+  String reportBugClipboardFallback(
+    String email,
+    String subject,
+    String message,
+  );
 
   /// No description provided for @settingsViewHubGuide.
   ///
@@ -436,6 +476,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get commonClose;
+
+  /// No description provided for @cardViewerFlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip'**
+  String get cardViewerFlip;
 
   /// No description provided for @commonTryAgain.
   ///
@@ -1030,6 +1076,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get welcomeSkip;
+
+  /// No description provided for @founderNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A note from Federick'**
+  String get founderNoteTitle;
+
+  /// No description provided for @founderNoteP1.
+  ///
+  /// In en, this message translates to:
+  /// **'Life Spark began as a personal project: to bring the Magic: The Gathering life counter to the next level — more dynamic, more intuitive, and closer to how we actually play at the table.'**
+  String get founderNoteP1;
+
+  /// No description provided for @founderNoteP2.
+  ///
+  /// In en, this message translates to:
+  /// **'I wanted a place where you can share your profile and sit with people who are here to enjoy the game. Not tables built only to win, but tables where combat is fun, everyone has room to play, and everyone has a real chance.'**
+  String get founderNoteP2;
+
+  /// No description provided for @founderNoteP3.
+  ///
+  /// In en, this message translates to:
+  /// **'If Life Spark earns a place in your games, a rating and a short comment on the store would mean a great deal. That is how I keep making this app better for players who want to enjoy Magic and share it.'**
+  String get founderNoteP3;
+
+  /// No description provided for @founderNoteSignoff.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for being here.\n— Federick'**
+  String get founderNoteSignoff;
 
   /// No description provided for @onboardingSlide1Title.
   ///
@@ -1720,6 +1796,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No decks match these filters.'**
   String get decksNoFilterMatches;
+
+  /// No description provided for @decksClearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get decksClearFilters;
 
   /// No description provided for @decksFilterFormat.
   ///
@@ -5012,7 +5094,7 @@ abstract class AppLocalizations {
   /// No description provided for @paletteSlate.
   ///
   /// In en, this message translates to:
-  /// **'Slate'**
+  /// **'Blue'**
   String get paletteSlate;
 
   /// No description provided for @networkCannotReachHost.
@@ -5373,6 +5455,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}, out'**
   String glanceChipOut(String name);
+
+  /// No description provided for @deckAlbumShuffling.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffling cards…'**
+  String get deckAlbumShuffling;
+
+  /// No description provided for @deckAlbumLastUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {when}'**
+  String deckAlbumLastUpdated(String when);
 
   /// No description provided for @deckAlbumTitle.
   ///
@@ -5890,23 +5984,35 @@ abstract class AppLocalizations {
   /// **'No albums match.'**
   String get collectionAlbumNoMatches;
 
-  /// No description provided for @collectionAlbumSortCards.
+  /// No description provided for @collectionAlbumFilterRecent.
   ///
   /// In en, this message translates to:
-  /// **'Cards'**
-  String get collectionAlbumSortCards;
+  /// **'Recent'**
+  String get collectionAlbumFilterRecent;
 
-  /// No description provided for @collectionAlbumFilterWithCards.
+  /// No description provided for @collectionAlbumFilterFavorite.
   ///
   /// In en, this message translates to:
-  /// **'With cards'**
-  String get collectionAlbumFilterWithCards;
+  /// **'Favorite'**
+  String get collectionAlbumFilterFavorite;
 
-  /// No description provided for @collectionAlbumFilterEmpty.
+  /// No description provided for @collectionAlbumFavorite.
   ///
   /// In en, this message translates to:
-  /// **'Empty'**
-  String get collectionAlbumFilterEmpty;
+  /// **'Favorite'**
+  String get collectionAlbumFavorite;
+
+  /// No description provided for @collectionAlbumUnfavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove favorite'**
+  String get collectionAlbumUnfavorite;
+
+  /// No description provided for @collectionAlbumOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Album options'**
+  String get collectionAlbumOptions;
 
   /// No description provided for @collectionAlbumsEmpty.
   ///

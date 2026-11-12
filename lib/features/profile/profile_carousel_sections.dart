@@ -63,6 +63,80 @@ Widget profileArtCardVignette() {
   );
 }
 
+class _MatchFlipCard extends StatefulWidget {
+  const _MatchFlipCard({
+    required this.showBack,
+    required this.front,
+    required this.back,
+  });
+
+  final bool showBack;
+  final Widget front;
+  final Widget back;
+
+  @override
+  State<_MatchFlipCard> createState() => _MatchFlipCardState();
+}
+
+class _MatchFlipCardState extends State<_MatchFlipCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: MotionTokens.slow,
+      value: widget.showBack ? 1 : 0,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_MatchFlipCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.showBack == widget.showBack) return;
+    if (widget.showBack) {
+      _ctrl.forward();
+    } else {
+      _ctrl.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        final t = Curves.easeInOutCubic.transform(_ctrl.value);
+        final angle = t * math.pi;
+        final showBackFace = t >= 0.5;
+        return Transform(
+          alignment: Alignment.center,
+          transform:
+              Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateY(angle),
+          child:
+              showBackFace
+                  ? Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(math.pi),
+                    child: widget.back,
+                  )
+                  : widget.front,
+        );
+      },
+    );
+  }
+}
+
 /// Full-height carousel card with centered guidance copy (empty profile sections).
 class ProfileCarouselPlaceholderCard extends StatelessWidget {
   const ProfileCarouselPlaceholderCard({
@@ -1468,40 +1542,56 @@ class _ProfileRecentMatchCardState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: Material(
-                color: Colors.black.withValues(alpha: 0.45),
-                shape: const CircleBorder(),
-                clipBehavior: Clip.antiAlias,
-                child: IconButton(
-                  onPressed: () => setState(() => _expanded = false),
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: overlayPrimary,
-                  ),
-                  tooltip: l10n.commonClose,
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints(
-                    minWidth: LayoutTokens.minTapTarget,
-                    minHeight: LayoutTokens.minTapTarget,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    m.format,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: overlayPrimary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      height: 1.25,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
+                Material(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: IconButton(
+                    onPressed: () => setState(() => _expanded = false),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: overlayPrimary,
+                    ),
+                    tooltip: l10n.commonClose,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: LayoutTokens.minTapTarget,
+                      minHeight: LayoutTokens.minTapTarget,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: LayoutTokens.gr0),
-            Text(
-              structureLine,
-              style: structureOverlayStyle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            SizedBox(height: LayoutTokens.gr1),
+            Expanded(
+              child: SingleChildScrollView(
+                child:
+                    standingsBlock ??
+                    Text(l10n.profileNoPlayerDetails, style: metaStripStyle),
+              ),
             ),
             SizedBox(height: LayoutTokens.gr1),
             Text(
-              metaBits.join(' · '),
-              style: metaStripStyle,
+              '$structureLine · ${metaBits.join(' · ')}',
+              style: structureOverlayStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1514,20 +1604,6 @@ class _ProfileRecentMatchCardState
                 overflow: TextOverflow.ellipsis,
               ),
             ],
-            SizedBox(height: LayoutTokens.gr1),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.white.withValues(alpha: 0.22),
-            ),
-            SizedBox(height: LayoutTokens.gr2),
-            Expanded(
-              child: SingleChildScrollView(
-                child:
-                    standingsBlock ??
-                    Text(l10n.profileNoPlayerDetails, style: metaStripStyle),
-              ),
-            ),
           ],
         ),
       );
@@ -1555,51 +1631,32 @@ class _ProfileRecentMatchCardState
                 child: SizedBox(
                   height: slotHeight,
                   width: double.infinity,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _recentMatchCommanderArt(context, commanderImageUrl),
-                      AnimatedSwitcher(
-                        duration: MotionTokens.standard,
-                        switchInCurve: Curves.easeOut,
-                        switchOutCurve: Curves.easeIn,
-                        // Only paint the active overlay — avoids double-vignette flash on close.
-                        layoutBuilder:
-                            (current, _) => current ?? const SizedBox.shrink(),
-                        transitionBuilder:
-                            (child, animation) => FadeTransition(
-                              opacity: animation,
-                              child: child,
+                  child: _MatchFlipCard(
+                    showBack: _expanded,
+                    front: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _recentMatchCommanderArt(context, commanderImageUrl),
+                        profileArtCardVignette(),
+                        summaryForeground(),
+                      ],
+                    ),
+                    back: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        const ColoredBox(color: Color(0xF2101018)),
+                        Padding(
+                          padding: EdgeInsets.all(innerPad),
+                          child: SizedBox(
+                            height: expandedInnerH,
+                            width: double.infinity,
+                            child: ClipRect(
+                              child: detailsColumn(expandedInnerH),
                             ),
-                        child:
-                            _expanded
-                                ? Stack(
-                                  key: const ValueKey('recent_match_expanded'),
-                                  fit: StackFit.expand,
-                                  children: [
-                                    profileArtCardVignette(),
-                                    Padding(
-                                      padding: EdgeInsets.all(innerPad),
-                                      child: SizedBox(
-                                        height: expandedInnerH,
-                                        width: double.infinity,
-                                        child: ClipRect(
-                                          child: detailsColumn(expandedInnerH),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                                : Stack(
-                                  key: const ValueKey('recent_match_summary'),
-                                  fit: StackFit.expand,
-                                  children: [
-                                    profileArtCardVignette(),
-                                    summaryForeground(),
-                                  ],
-                                ),
-                      ),
-                    ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1757,7 +1814,7 @@ String? profileDeckBracketLabel(AppLocalizations l10n, PlayerDeck deck) {
       : '${l10n.deckAlbumCardBracket} $n';
 }
 
-/// Format + bracket + deck style on one line (single layout pass).
+/// Format + deck style on one line. Bracket lives on the art chip.
 class ProfileDeckFormatStyleLine extends StatelessWidget {
   const ProfileDeckFormatStyleLine({
     super.key,
@@ -1774,7 +1831,6 @@ class ProfileDeckFormatStyleLine extends StatelessWidget {
     final base = _profileDeckCardMetaStyle(colors, accent: false);
     final styleColor =
         deck.hasDeckStyle ? colors.textSecondary : colors.primaryAccent;
-    final bracket = profileDeckBracketLabel(l10n, deck);
     final strut = StrutStyle(
       fontSize: base.fontSize,
       height: base.height,
@@ -1782,11 +1838,7 @@ class ProfileDeckFormatStyleLine extends StatelessWidget {
       leadingDistribution: TextLeadingDistribution.even,
       forceStrutHeight: true,
     );
-    const heightBehavior = TextHeightBehavior(
-      applyHeightToFirstAscent: true,
-      applyHeightToLastDescent: false,
-    );
-    final formatStyle = Text.rich(
+    return Text.rich(
       TextSpan(
         style: base,
         children: [
@@ -1804,25 +1856,36 @@ class ProfileDeckFormatStyleLine extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       strutStyle: strut,
-      textHeightBehavior: heightBehavior,
+      textHeightBehavior: const TextHeightBehavior(
+        applyHeightToFirstAscent: true,
+        applyHeightToLastDescent: false,
+      ),
     );
-    if (bracket == null) return formatStyle;
+  }
+}
 
-    // Pin bracket to the trailing edge so it stays fully visible; format/style
-    // ellipsize in the remaining width instead of clipping the level.
-    return Row(
-      children: [
-        Expanded(child: formatStyle),
-        SizedBox(width: LayoutTokens.gr0),
-        Text(
-          bracket,
+class _ProfileDeckBracketChip extends StatelessWidget {
+  const _ProfileDeckBracketChip({required this.label, required this.colors});
+
+  final String label;
+  final AppColorTokens colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: colors.surface.withValues(alpha: 0.94),
+      elevation: 1,
+      shadowColor: Colors.black.withValues(alpha: 0.35),
+      borderRadius: BorderRadius.circular(RadiusTokens.lg),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          label,
           maxLines: 1,
-          softWrap: false,
-          style: base.copyWith(color: colors.primaryAccent),
-          strutStyle: strut,
-          textHeightBehavior: heightBehavior,
+          overflow: TextOverflow.ellipsis,
+          style: _profileDeckCardMetaStyle(colors, accent: true),
         ),
-      ],
+      ),
     );
   }
 }
@@ -1900,15 +1963,30 @@ class ProfileDeckCard extends StatelessWidget {
                             final portraitSize = math.min(byHeight, widthLimit);
                             return Padding(
                               padding: const EdgeInsets.all(LayoutTokens.gr0),
-                              child: Center(
-                                child: ResolvedDeckCommanderAvatarCluster(
-                                  deck: deck,
-                                  colors: colors,
-                                  size: portraitSize,
-                                  portraitStyle: CommanderPortraitStyle.card,
-                                  // Full printed card in the portrait frame, no zoom crop.
-                                  imageFit: BoxFit.contain,
-                                ),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Center(
+                                    child: ResolvedDeckCommanderAvatarCluster(
+                                      deck: deck,
+                                      colors: colors,
+                                      size: portraitSize,
+                                      portraitStyle:
+                                          CommanderPortraitStyle.card,
+                                      imageFit: BoxFit.contain,
+                                    ),
+                                  ),
+                                  if (deck.chosenBracket != null &&
+                                      bracketLabel != null)
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: _ProfileDeckBracketChip(
+                                        label: bracketLabel,
+                                        colors: colors,
+                                      ),
+                                    ),
+                                ],
                               ),
                             );
                           },

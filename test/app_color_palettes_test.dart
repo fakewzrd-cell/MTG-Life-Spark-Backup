@@ -15,13 +15,14 @@ double _contrast(Color a, Color b) {
 void main() {
   test('appearance offers violet, slate, and crimson', () {
     expect(AppColorPalettes.all.map((p) => p.id), [
-      AppColorSchemeId.violet,
       AppColorSchemeId.slate,
+      AppColorSchemeId.violet,
       AppColorSchemeId.crimson,
     ]);
-    expect(AppColorPalettes.parse('forest'), AppColorSchemeId.violet);
-    expect(AppColorPalettes.parse('obsidian'), AppColorSchemeId.violet);
-    expect(AppColorPalettes.parse('fog'), AppColorSchemeId.violet);
+    expect(AppColorPalettes.parse('forest'), AppColorSchemeId.slate);
+    expect(AppColorPalettes.parse('obsidian'), AppColorSchemeId.slate);
+    expect(AppColorPalettes.parse('fog'), AppColorSchemeId.slate);
+    expect(AppColorPalettes.parse(null), AppColorSchemeId.slate);
   });
 
   test('dark palette accents have AA label contrast', () {

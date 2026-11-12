@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/deck/bracket_floor.dart';
 import '../../core/deck/deck_limits.dart';
@@ -17,7 +18,9 @@ import '../../core/models/player_deck.dart';
 import '../../core/persistence/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/deck_style_l10n.dart';
+import '../../shared/widgets/deck_shuffle_overlay.dart';
 import '../../shared/widgets/mana_cost_pips.dart';
+import '../../ui/components/frosted_icon_button.dart';
 import '../../ui/components/ui_app_bar.dart';
 import '../../ui/components/ui_button.dart';
 import '../../ui/components/ui_snack_bar.dart';
@@ -48,7 +51,6 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
   List<DeckCardEntry> _entries = const [];
   Map<String, ScryfallCard> _cards = const {};
   var _loadingCards = false;
-  var _facesReady = false;
   var _missing = false;
   var _showTitle = false;
   var _showStats = false;
@@ -56,11 +58,22 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
   BracketAssessment? _bracket;
   CommanderMeta? _meta;
   List<_DeckSuggestion> _fits = const [];
+  late final ShuffleWait _shuffle = ShuffleWait(
+    onChanged: () {
+      if (mounted) setState(() {});
+    },
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
+  }
+
+  @override
+  void dispose() {
+    _shuffle.dispose();
+    super.dispose();
   }
 
   Future<void> _reload() async {
@@ -74,6 +87,10 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       });
       return;
     }
+    setState(() {
+      _deck = deck;
+      _missing = false;
+    });
     final listRepo = ref.read(deckListRepositoryProvider);
     await listRepo.init();
     if (deck.isCommanderDeck) {
@@ -81,12 +98,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     }
     if (!mounted) return;
     setState(() {
-      _deck = deck;
-      _missing = false;
       _entries = listRepo.entriesFor(deck.id);
-      if (!_facesReady && deck.commanderName.trim().isNotEmpty) {
-        _loadingCards = true;
-      }
     });
     await _loadCardDetails();
     await _loadCommanderExtras();
@@ -169,11 +181,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
         .fetchCardsByNames(missing);
     if (!mounted || _deck?.id != deck.id || fetched.isEmpty) return;
     setState(() {
-      final next = Map<String, ScryfallCard>.from(_cards);
-      for (final card in fetched) {
-        next[_key(card.name)] = card;
-      }
-      _cards = next;
+      _cards = {..._cards, ...indexScryfallCards(fetched)};
     });
   }
 
@@ -290,7 +298,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     final fetched = await ref
         .read(scryfallServiceProvider)
         .fetchCardsByNames(names);
-    final byName = {for (final card in fetched) _key(card.name): card};
+    final byName = indexScryfallCards(fetched);
     var allowed = deck.commanderColorIdentity;
     if (allowed.isEmpty) {
       final primary = byName[_key(deck.commanderName)];
@@ -309,6 +317,12 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     return null;
   }
 
+  Future<void> _touchProfileUpdated() async {
+    final deck = _deck;
+    if (deck == null) return;
+    await ref.read(deckRepositoryProvider).save(deck);
+  }
+
   Future<void> _addFit(String name) async {
     final deck = _deck;
     if (deck == null) return;
@@ -324,6 +338,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     if (addableCopies(deck, _entries, name, DeckBoard.main) < 1) return;
     await ref.read(deckListRepositoryProvider).addOneToMain(deck.id, name);
     if (!mounted) return;
+    await _touchProfileUpdated();
+    if (!mounted) return;
     await _reload();
   }
 
@@ -336,6 +352,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
         context,
         name: fit.name,
         imageUrl: _faceUrl(_cards[_key(fit.name)]),
+        backImageUrl: _backUrl(_cards[_key(fit.name)]),
         note: l10n.deckAlbumPlayedIn(fit.percent),
         actionLabel: l10n.deckAlbumRemoveCard,
         onAction: () => _changeCount(fit.name, -1, sideboard: false),
@@ -356,6 +373,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       context,
       name: fit.name,
       imageUrl: _faceUrl(card),
+      backImageUrl: _backUrl(card),
       note: percent == 0 ? null : l10n.deckAlbumPlayedIn(percent),
       actionLabel: l10n.commonAdd,
       onAction: () => _addFit(fit.name),
@@ -381,6 +399,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     await ref
         .read(deckListRepositoryProvider)
         .moveOne(deck.id, name, from: from, to: to);
+    if (!mounted) return;
+    await _touchProfileUpdated();
     if (!mounted) return;
     await _reload();
   }
@@ -411,6 +431,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     if (picked == null || !mounted) return;
     deck.chosenBracket = picked;
     await ref.read(deckRepositoryProvider).save(deck);
+    bumpDeckListRevision(ref);
     if (!mounted) return;
     setState(() => _deck = deck);
   }
@@ -440,6 +461,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       if (!removed) await _attachSuggestionArt(deck, fits);
     }
     if (removed) await _loadCommanderExtras();
+    await _touchProfileUpdated();
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadCardDetails() async {
@@ -456,32 +479,31 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
         setState(() {
           _cards = const {};
           _loadingCards = false;
-          _facesReady = true;
         });
       }
+      _shuffle.end();
       return;
     }
-    setState(() => _loadingCards = true);
     final service = ref.read(scryfallServiceProvider);
-    const firstWave = 12;
-    final firstNames =
-        names.length <= firstWave ? names : names.sublist(0, firstWave);
-    final first = await service.fetchCardsByNames(firstNames);
+    final cached = await service.cachedCardsByNames(names);
     if (!mounted) return;
+    final uniqueCount = service.uniqueCardNames(names).length;
     setState(() {
-      _cards = {for (final card in first) _key(card.name): card};
-      _facesReady = true;
-      _loadingCards = names.length > firstWave;
+      _cards = indexScryfallCards(cached);
+      _loadingCards = cached.length < uniqueCount;
     });
-    if (names.length <= firstWave) return;
-    final rest = await service.fetchCardsByNames(names.sublist(firstWave));
+    if (!_loadingCards) {
+      _shuffle.end();
+      return;
+    }
+    _shuffle.begin();
+    final fetched = await service.fetchCardsByNames(names);
     if (!mounted) return;
     setState(() {
-      _cards = {
-        for (final card in [...first, ...rest]) _key(card.name): card,
-      };
+      _cards = indexScryfallCards(fetched);
       _loadingCards = false;
     });
+    _shuffle.end();
   }
 
   Future<void> _editFace() async {
@@ -613,6 +635,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
     );
     if (!mounted || added == null || added < 1) return;
     showUiSnackBar(context, l10n.collectionCartSaved(added));
+    await _touchProfileUpdated();
+    if (!mounted) return;
     await _reload();
   }
 
@@ -681,6 +705,8 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
         .read(deckListRepositoryProvider)
         .replaceDeckList(deck.id, parsed.cards);
     if (!mounted) return;
+    await _touchProfileUpdated();
+    if (!mounted) return;
     showUiSnackBar(
       context,
       parsed.skippedLines > 0
@@ -721,6 +747,20 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
       extendBodyBehindAppBar: deck != null,
       appBar: UiAppBar(
         backgroundColor: coverBleeds ? Colors.transparent : null,
+        automaticallyImplyLeading: !coverBleeds,
+        leading:
+            coverBleeds
+                ? Center(
+                  child: FrostedIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    tooltip:
+                        MaterialLocalizations.of(context).backButtonTooltip,
+                    onPressed: () {
+                      if (context.canPop()) context.pop();
+                    },
+                  ),
+                )
+                : null,
         title:
             deck == null
                 ? l10n.deckAlbumTitle
@@ -729,11 +769,22 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
                 : null,
         actions: [
           if (deck != null)
-            IconButton(
-              tooltip: l10n.deckAlbumOptions,
-              onPressed: _openOptions,
-              icon: const Icon(Icons.more_horiz),
-            ),
+            coverBleeds
+                ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: FrostedIconButton(
+                      icon: Icons.more_horiz,
+                      tooltip: l10n.deckAlbumOptions,
+                      onPressed: _openOptions,
+                    ),
+                  ),
+                )
+                : IconButton(
+                  tooltip: l10n.deckAlbumOptions,
+                  onPressed: _openOptions,
+                  icon: const Icon(Icons.more_horiz),
+                ),
         ],
       ),
       body:
@@ -797,6 +848,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
                       right: 0,
                       bottom: 0,
                       child: BlurredBottomAction(
+                        aboveShellDock: true,
                         child: UiButton(
                           label: l10n.collectionAddCards,
                           icon: const Icon(Icons.add_rounded, size: 22),
@@ -804,6 +856,7 @@ class _DeckAlbumScreenState extends ConsumerState<DeckAlbumScreen> {
                         ),
                       ),
                     ),
+                  DeckShuffleOverlay(visible: _shuffle.visible),
                 ],
               ),
     );
@@ -839,6 +892,7 @@ List<AlbumListCard> _faceSlotCards(
       count: 1,
       group: deckCardGroupForTypeLine(card?.typeLine),
       imageUrl: _faceUrl(card) ?? deck.commanderImageUrl,
+      backImageUrl: _backUrl(card),
       manaCost: card?.manaCost ?? deck.commanderManaCost,
       isFaceSlot: true,
       canAddCopy: false,
@@ -859,6 +913,7 @@ AlbumListCard _albumCard(
     count: entry.count,
     group: deckCardGroupForTypeLine(cards[_key(entry.name)]?.typeLine),
     imageUrl: _faceUrl(cards[_key(entry.name)]),
+    backImageUrl: _backUrl(cards[_key(entry.name)]),
     manaCost: cards[_key(entry.name)]?.manaCost,
     inclusion: meta?.inclusionFor(entry.name),
     canAddCopy: addableCopies(deck, entries, entry.name, entry.deckBoard) > 0,
@@ -930,6 +985,11 @@ String? _faceUrl(ScryfallCard? card) {
   return scryfallDisplayCardUrl(card);
 }
 
+String? _backUrl(ScryfallCard? card) {
+  if (card == null) return null;
+  return scryfallDisplayBackUrl(card);
+}
+
 class _AlbumBody extends StatelessWidget {
   const _AlbumBody({
     required this.deck,
@@ -991,8 +1051,8 @@ class _AlbumBody extends StatelessWidget {
       padding: EdgeInsets.only(
         bottom:
             reserveAction
-                ? BlurredBottomAction.height(context)
-                : MediaQuery.paddingOf(context).bottom + LayoutTokens.gr4,
+                ? BlurredBottomAction.height(context, aboveShellDock: true)
+                : LayoutTokens.shellBottomInset(context),
       ),
       children: [
         _DeckAlbumHeader(
@@ -1021,10 +1081,6 @@ class _AlbumBody extends StatelessWidget {
                   entries: entries,
                   onSideboard: deck.isCommanderDeck ? null : onRevealSideboard,
                 ),
-              if (loadingCards) ...[
-                SizedBox(height: LayoutTokens.gr2),
-                const LinearProgressIndicator(),
-              ],
               if (showStats)
                 DeckStatsView(deck: deck, entries: entries, cards: cards)
               else if (deck.isCommanderDeck)
@@ -1157,6 +1213,34 @@ class _AlbumBody extends StatelessWidget {
   }
 }
 
+/// Last time this deck profile was saved. Hidden when [updatedAtMillis] is 0.
+class DeckProfileUpdatedStamp extends StatelessWidget {
+  const DeckProfileUpdatedStamp({super.key, required this.updatedAtMillis});
+
+  final int updatedAtMillis;
+
+  static String formatWhen(BuildContext context, int millis) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMd(
+      locale,
+    ).add_jm().format(DateTime.fromMillisecondsSinceEpoch(millis));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (updatedAtMillis <= 0) return const SizedBox.shrink();
+    final colors = AppColorTokens.of(context);
+    final l10n = AppLocalizations.of(context);
+    return Text(
+      l10n.deckAlbumLastUpdated(formatWhen(context, updatedAtMillis)),
+      key: const ValueKey('deck-profile-updated'),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: colors.textMuted, fontSize: FontTokens.caption),
+    );
+  }
+}
+
 class _DeckAlbumHeader extends StatelessWidget {
   const _DeckAlbumHeader({
     required this.deck,
@@ -1206,12 +1290,7 @@ class _DeckAlbumHeader extends StatelessWidget {
             : deck.commanderName;
 
     final shown = _shownBracket(deck, bracket);
-    final badge =
-        bracket == null
-            ? '…'
-            : shown == null
-            ? '1–2'
-            : '$shown';
+    final badge = shown == null ? '…' : '$shown';
     final winRatio =
         deck.gamesPlayed == 0 ? '—' : '${(deck.winRate * 100).round()}%';
 
@@ -1317,6 +1396,18 @@ class _DeckAlbumHeader extends StatelessWidget {
             ],
           ),
         ),
+        if (deck.updatedAtMillis > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              LayoutTokens.gr4,
+              LayoutTokens.gr2,
+              LayoutTokens.gr4,
+              0,
+            ),
+            child: DeckProfileUpdatedStamp(
+              updatedAtMillis: deck.updatedAtMillis,
+            ),
+          ),
         if (themeTags.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -1355,8 +1446,8 @@ String? _portraitUrl({
   required String? saved,
 }) {
   if (fetched != null && fetched.isNotEmpty) return fetched;
-  if (loading) return null;
   if (saved != null && saved.isNotEmpty) return saved;
+  if (loading) return null;
   return null;
 }
 
@@ -1407,13 +1498,10 @@ class _DeckCover extends StatelessWidget {
 }
 
 int? _shownBracket(PlayerDeck deck, BracketAssessment? assessment) {
+  if (assessment == null) return null;
   final chosen = deck.chosenBracket;
-  final floor = assessment?.floor;
-  if (floor == null) return null;
-  if (chosen == null) {
-    return assessment!.choosesOneOrTwo ? null : floor;
-  }
-  if (chosen < assessment!.minimumChoice) return assessment.minimumChoice;
+  if (chosen == null) return assessment.recommended;
+  if (chosen < assessment.minimumChoice) return assessment.minimumChoice;
   return chosen;
 }
 
@@ -2038,7 +2126,7 @@ class _BracketPickerDialogState extends State<_BracketPickerDialog> {
     HapticFeedback.selectionClick();
     setState(() {
       _analyzed = true;
-      _preview = _minimum;
+      _preview = widget.assessment.recommended;
     });
   }
 
@@ -2046,10 +2134,9 @@ class _BracketPickerDialogState extends State<_BracketPickerDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = AppColorTokens.of(context);
-    final analyzedLabel =
-        widget.assessment.choosesOneOrTwo
-            ? l10n.deckBracketAnalyzedRange
-            : l10n.deckBracketAnalyzed(widget.assessment.floor);
+    final analyzedLabel = l10n.deckBracketAnalyzed(
+      widget.assessment.recommended,
+    );
     return AlertDialog(
       backgroundColor: colors.surface,
       title: Text(l10n.deckAlbumCardBracket),

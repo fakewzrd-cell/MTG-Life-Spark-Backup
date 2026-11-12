@@ -208,6 +208,7 @@ class _CollectionSearchPageState extends ConsumerState<CollectionSearchPage> {
           count: _cart[card.name]?.count ?? 0,
           group: deckCardGroupForTypeLine(card.typeLine),
           imageUrl: scryfallDisplayCardUrl(card),
+          backImageUrl: scryfallDisplayBackUrl(card),
           manaCost: card.manaCost,
           canAddCopy: (_cart[card.name]?.count ?? 0) < 99,
         ),

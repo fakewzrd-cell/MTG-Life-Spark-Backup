@@ -10,8 +10,9 @@ import '../support/test_l10n.dart';
 import '../support/test_settings_repository.dart';
 
 void main() {
-  testWidgets('hub guide body is fully readable at 200% text scale',
-      (tester) async {
+  testWidgets('hub guide body is fully readable at 200% text scale', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360 * 3, 640 * 3);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);
@@ -27,11 +28,13 @@ void main() {
           theme: AppTheme.dark(),
           localizationsDelegates: testLocalizationDelegates,
           supportedLocales: testSupportedLocales,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: const TextScaler.linear(2.0)),
-            child: child!,
-          ),
+          builder:
+              (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(2.0)),
+                child: child!,
+              ),
           home: Builder(
             builder: (context) {
               return ElevatedButton(
@@ -64,8 +67,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('hub guide slide content is vertically centered in page area',
-      (tester) async {
+  testWidgets('hub guide slide content is vertically centered in page area', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);
@@ -98,8 +102,9 @@ void main() {
 
     final pageRect = tester.getRect(find.byType(PageView));
     final titleCenter = tester.getCenter(find.text('Play'));
-    final bodyRect =
-        tester.getRect(find.textContaining('Track life and counters here'));
+    final bodyRect = tester.getRect(
+      find.textContaining('Track life and counters here'),
+    );
 
     // Content block midpoint should sit near the PageView vertical center,
     // not pinned under the Quick tour header with empty space below.
@@ -120,23 +125,18 @@ void main() {
   test('theme mode follows useDarkTheme setting', () {
     final container = ProviderContainer(
       overrides: [
-        settingsRepositoryProvider.overrideWithValue(
-          TestSettingsRepository(),
-        ),
+        settingsRepositoryProvider.overrideWithValue(TestSettingsRepository()),
       ],
     );
     addTearDown(container.dispose);
 
-    expect(container.read(themeModeProvider), ThemeMode.dark);
+    expect(container.read(themeModeProvider), ThemeMode.light);
 
     final repo = container.read(settingsRepositoryProvider);
-    repo.settings.useDarkTheme = false;
+    repo.settings.useDarkTheme = true;
     container.read(settingsRevisionProvider.notifier).state++;
 
-    expect(container.read(themeModeProvider), ThemeMode.light);
-    expect(
-      container.read(effectiveThemeProvider).brightness,
-      Brightness.light,
-    );
+    expect(container.read(themeModeProvider), ThemeMode.dark);
+    expect(container.read(effectiveThemeProvider).brightness, Brightness.dark);
   });
 }

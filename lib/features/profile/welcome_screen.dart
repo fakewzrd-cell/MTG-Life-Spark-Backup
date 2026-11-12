@@ -9,8 +9,8 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
 import '../../shared/widgets/block_system_app_exit.dart';
 import '../../shared/widgets/brand_logo.dart';
+import '../../shared/widgets/founder_note.dart';
 import '../../ui/components/ui_button.dart';
-import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 
 /// Calm brand-first first launch screen before profile setup.
@@ -37,7 +37,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
 
     return BlockSystemAppExit(
@@ -47,22 +46,16 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(
                     horizontal: LayoutTokens.ctaHorizontal,
+                    vertical: LayoutTokens.gr3,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: const Column(
                     children: [
-                      BrandLogo(layout: BrandLogoLayout.vertical, height: 96),
+                      BrandLogo(layout: BrandLogoLayout.vertical, height: 72),
                       SizedBox(height: LayoutTokens.gr4),
-                      Text(
-                        l10n.welcomeTagline,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      FounderNote(),
                     ],
                   ),
                 ),

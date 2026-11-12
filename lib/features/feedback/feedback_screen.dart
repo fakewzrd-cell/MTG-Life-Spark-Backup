@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/play/play_review.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/components/ui_app_bar.dart';
 import '../../ui/components/ui_button.dart';
-import '../../ui/components/ui_snack_bar.dart';
 import '../../ui/components/ui_text_field.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
-
-const _kFeedbackEmail = 'federickvidot@gmail.com';
+import 'life_spark_help_mail.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key, this.review});
@@ -33,43 +29,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     super.dispose();
   }
 
-  Future<void> _copyFeedbackFallback(String msg) async {
-    final l10n = AppLocalizations.of(context);
-    final text = l10n.feedbackClipboardFallback(_kFeedbackEmail, msg);
-    await Clipboard.setData(ClipboardData(text: text));
-    if (!mounted) return;
-    showUiSnackBar(context, l10n.feedbackNoMailAppCopied(_kFeedbackEmail));
-  }
-
   Future<void> _sendFeedback() async {
     final msg = _messageController.text.trim();
     if (msg.isEmpty) return;
 
     final l10n = AppLocalizations.of(context);
     setState(() => _sending = true);
-
-    final subject = Uri.encodeComponent(l10n.feedbackMailSubject);
-    final body = Uri.encodeComponent(msg);
-    final uri = Uri.parse(
-      'mailto:$_kFeedbackEmail?subject=$subject&body=$body',
+    await openLifeSparkHelpMail(
+      context: context,
+      subject: l10n.feedbackMailSubject,
+      body: msg,
     );
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        final launched = await launchUrl(uri);
-        if (!mounted) return;
-        if (launched) {
-          showUiSnackBar(context, l10n.feedbackOpeningMail);
-        } else {
-          await _copyFeedbackFallback(msg);
-        }
-      } else {
-        await _copyFeedbackFallback(msg);
-      }
-    } catch (_) {
-      await _copyFeedbackFallback(msg);
-    }
-
     if (mounted) setState(() => _sending = false);
   }
 

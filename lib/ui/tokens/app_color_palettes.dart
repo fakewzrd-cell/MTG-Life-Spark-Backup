@@ -103,7 +103,7 @@ class AppColorPalette {
 }
 
 abstract final class AppColorPalettes {
-  static const List<AppColorPalette> all = [violet, slate, crimson];
+  static const List<AppColorPalette> all = [slate, violet, crimson];
 
   static const AppColorPalette violet = AppColorPalette(
     id: AppColorSchemeId.violet,
@@ -249,12 +249,12 @@ abstract final class AppColorPalettes {
     AppColorSchemeId.slate => slate,
   };
 
-  /// Unknown and retired ids (`forest`, `obsidian`, `fog`) open as Violet.
+  /// Unknown and retired ids (`forest`, `obsidian`, `fog`) open as Slate.
   static AppColorSchemeId parse(String? raw) {
     return switch (raw) {
       'crimson' => AppColorSchemeId.crimson,
-      'slate' => AppColorSchemeId.slate,
-      _ => AppColorSchemeId.violet,
+      'violet' => AppColorSchemeId.violet,
+      _ => AppColorSchemeId.slate,
     };
   }
 

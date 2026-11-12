@@ -29,7 +29,15 @@ class DeckRepository {
   PlayerDeck? getById(String id) => _box.get(id);
 
   Future<void> save(PlayerDeck deck) async {
+    deck.updatedAtMillis = DateTime.now().millisecondsSinceEpoch;
     await _box.put(deck.id, deck);
+  }
+
+  /// Stamp [updatedAtMillis] after list-only edits that skip [save].
+  Future<void> markUpdated(String id) async {
+    final deck = getById(id);
+    if (deck == null) return;
+    await save(deck);
   }
 
   Future<void> delete(String id) async {

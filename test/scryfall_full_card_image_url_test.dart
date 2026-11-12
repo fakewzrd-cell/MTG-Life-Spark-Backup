@@ -18,6 +18,22 @@ void main() {
     expect(scryfallFullCardImageUrl(other), other);
   });
 
+  test('front name strips the back face of a DFC', () {
+    expect(
+      scryfallFrontName('Soundwave, Sonic Spy // Soundwave, Superior Captain'),
+      'Soundwave, Sonic Spy',
+    );
+    expect(scryfallFrontName('Sol Ring'), 'Sol Ring');
+  });
+
+  test('back name is the other printed face of a DFC', () {
+    expect(
+      scryfallBackName('Soundwave, Sonic Spy // Soundwave, Superior Captain'),
+      'Soundwave, Superior Captain',
+    );
+    expect(scryfallBackName('Sol Ring'), 'Sol Ring');
+  });
+
   test('passes through empty values', () {
     expect(scryfallFullCardImageUrl(null), isNull);
     expect(scryfallFullCardImageUrl(''), '');
@@ -39,6 +55,23 @@ void main() {
         ),
       ),
       'https://cards.scryfall.io/normal/front/a/b/bolt.jpg',
+    );
+  });
+
+  test('back URL is only set when Scryfall sent a second face', () {
+    expect(
+      scryfallDisplayBackUrl(
+        const ScryfallCard(
+          name: 'Soundwave, Sonic Spy // Soundwave, Superior Captain',
+          cardFaceUrl: 'https://img/front.jpg',
+          cardBackUrl: 'https://img/back.jpg',
+        ),
+      ),
+      'https://img/back.jpg',
+    );
+    expect(
+      scryfallDisplayBackUrl(const ScryfallCard(name: 'Sol Ring')),
+      isNull,
     );
   });
 }

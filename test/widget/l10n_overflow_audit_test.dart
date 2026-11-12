@@ -382,7 +382,7 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
-  testWidgets('profile deck card keeps bracket fully visible', (tester) async {
+  testWidgets('profile deck format line does not overflow', (tester) async {
     final failures = <String>[];
     final deck = PlayerDeck(
       id: 'd1',
@@ -392,13 +392,11 @@ void main() {
       deckStyleId: DeckStyle.stealTheft.id,
       chosenBracket: 5,
     );
-    // Inner width of a 240 carousel card after carousel card padding.
     const lineWidth =
         LayoutTokens.profileCarouselCardWidth -
         2 * kProfileCarouselCardPaddingPx;
 
     for (final locale in _allLocales) {
-      late String bracketLabel;
       await pumpAt(
         tester,
         locale: locale,
@@ -406,8 +404,6 @@ void main() {
         textScale: 1.35,
         home: Builder(
           builder: (context) {
-            final l10n = AppLocalizations.of(context);
-            bracketLabel = profileDeckBracketLabel(l10n, deck)!;
             return Scaffold(
               body: Center(
                 child: SizedBox(
@@ -426,26 +422,24 @@ void main() {
       failures.addAll(
         takeOverflowExceptions(
           tester,
-        ).map((e) => '$locale profile-deck-bracket: $e'),
-      );
-
-      final labelFinder = find.text(bracketLabel);
-      expect(
-        labelFinder,
-        findsOneWidget,
-        reason: '$locale missing $bracketLabel',
-      );
-      final row = tester.getRect(find.byType(ProfileDeckFormatStyleLine));
-      final badge = tester.getRect(labelFinder);
-      expect(
-        row.inflate(1).contains(badge.topLeft) &&
-            row.inflate(1).contains(badge.bottomRight),
-        isTrue,
-        reason: '$locale bracket $badge clipped by line $row',
+        ).map((e) => '$locale profile-deck-format: $e'),
       );
     }
 
     expect(failures, isEmpty, reason: failures.join('\n'));
+  });
+
+  test('profile deck bracket label uses the chosen number', () {
+    final deck = PlayerDeck(
+      id: 'd1',
+      displayName: 'Casually Competitive',
+      commanderName: 'The Ur-Dragon',
+      format: GameFormat.commander.name,
+      deckStyleId: DeckStyle.control.id,
+      chosenBracket: 5,
+    );
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    expect(profileDeckBracketLabel(l10n, deck), 'Bracket 5');
   });
 
   test('deck style names fit two lines at narrow width in all locales', () {

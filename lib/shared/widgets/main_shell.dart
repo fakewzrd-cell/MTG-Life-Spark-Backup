@@ -6,6 +6,7 @@ import '../../core/network/session_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/components/app_bottom_nav_bar.dart';
 import '../../ui/theme/app_system_ui.dart';
+import '../../ui/tokens/layout_tokens.dart';
 import 'block_system_app_exit.dart';
 import 'session_leave_dialog.dart';
 
@@ -69,21 +70,23 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    return BlockSystemAppExit(
-      child: AppSystemUiScope(
-        matchBottomNav: true,
-        child: Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          extendBody: true,
-          // Search fields live at the top of decks/collection. Don't lift
-          // Add deck / New album / Add cards / the cart bar with the keyboard.
-          resizeToAvoidBottomInset: false,
-          body: navigationShell,
-          bottomNavigationBar: AppBottomNavBar(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected:
-                (index) => _onDestinationSelected(context, ref, index),
-            destinations: AppBottomNavBar.shellDestinations(l10n),
+    return ShellDockScope(
+      child: BlockSystemAppExit(
+        child: AppSystemUiScope(
+          matchBottomNav: true,
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            extendBody: true,
+            // Search fields live at the top of decks/collection. Don't lift
+            // Add deck / New album / Add cards / the cart bar with the keyboard.
+            resizeToAvoidBottomInset: false,
+            body: navigationShell,
+            bottomNavigationBar: AppBottomNavBar(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected:
+                  (index) => _onDestinationSelected(context, ref, index),
+              destinations: AppBottomNavBar.shellDestinations(l10n),
+            ),
           ),
         ),
       ),

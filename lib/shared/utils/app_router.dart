@@ -15,6 +15,7 @@ import '../../features/profile/collection_album_screen.dart';
 import '../../features/profile/deck_album_screen.dart';
 import '../../features/profile/decks_manage_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/settings/about_screen.dart';
 import '../../features/feedback/feedback_screen.dart';
 import '../../features/lobby/lobby_screen.dart';
 import '../../features/lobby/join_scan_screen.dart';
@@ -40,6 +41,7 @@ class AppRoutes {
   static String deckAlbum(String deckId) =>
       '$decks/${Uri.encodeComponent(deckId)}';
   static const profileAvatar = '/home/avatar';
+  static const about = '/settings/about';
   static const feedback = '/settings/feedback';
   static const commanderSelect = '/commander-select';
   static const game = '/game';
@@ -189,6 +191,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.settings,
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'about',
+                    builder: (context, state) => const AboutScreen(),
+                  ),
                   GoRoute(
                     path: 'feedback',
                     builder: (context, state) => const FeedbackScreen(),

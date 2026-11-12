@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mgt_life_spark/core/game/game_format.dart';
 import 'package:mgt_life_spark/core/models/deck_style.dart';
 import 'package:mgt_life_spark/core/models/player_deck.dart';
+import 'package:mgt_life_spark/features/profile/deck_bracket_filter_sheet.dart';
 import 'package:mgt_life_spark/features/profile/decks_manage_screen.dart';
 import 'package:mgt_life_spark/l10n/app_localizations.dart';
 
@@ -99,6 +100,40 @@ void main() {
         bracket: kLibraryBracketUnset,
       ),
       isFalse,
+    );
+  });
+
+  test('style and bracket filters both have to match', () {
+    final staxB3 = _deck(name: 'Stax', styleId: DeckStyle.stax.id, bracket: 3);
+    expect(
+      deckMatchesLibraryBrowse(
+        deck: staxB3,
+        query: '',
+        l10n: l10n,
+        style: DeckStyle.stax,
+        bracket: 2,
+      ),
+      isFalse,
+    );
+    expect(
+      deckMatchesLibraryBrowse(
+        deck: staxB3,
+        query: '',
+        l10n: l10n,
+        style: DeckStyle.battlecruiser,
+        bracket: 3,
+      ),
+      isFalse,
+    );
+    expect(
+      deckMatchesLibraryBrowse(
+        deck: staxB3,
+        query: '',
+        l10n: l10n,
+        style: DeckStyle.stax,
+        bracket: 3,
+      ),
+      isTrue,
     );
   });
 

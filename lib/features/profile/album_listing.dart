@@ -12,6 +12,7 @@ import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import 'card_viewer.dart';
+import 'deck_picker_sheet_scaffold.dart';
 
 enum AlbumListing { types, grid, alpha }
 
@@ -39,6 +40,7 @@ class AlbumListCard {
     required this.count,
     required this.group,
     this.imageUrl,
+    this.backImageUrl,
     this.manaCost,
     this.inclusion,
     this.canAddCopy = true,
@@ -51,6 +53,9 @@ class AlbumListCard {
   final int count;
   final DeckCardGroup group;
   final String? imageUrl;
+
+  /// Other printed face for the 3D preview. Null on single-faced cards.
+  final String? backImageUrl;
   final String? manaCost;
   final double? inclusion;
   final bool canAddCopy;
@@ -211,6 +216,44 @@ class _AlbumCardBrowserState extends State<AlbumCardBrowser> {
     super.dispose();
   }
 
+  Future<void> _pickType() async {
+    final l10n = AppLocalizations.of(context);
+    final picked = await showDeckPickerChoiceSheet<AlbumTypeFilter>(
+      context,
+      title: l10n.albumFilter,
+      selected: _type,
+      choices: [
+        for (final filter in AlbumTypeFilter.values)
+          DeckPickerChoice(
+            value: filter,
+            title: _filterLabel(l10n, filter),
+            key: ValueKey('album-type-${filter.name}'),
+          ),
+      ],
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _type = picked);
+  }
+
+  Future<void> _pickSort() async {
+    final l10n = AppLocalizations.of(context);
+    final picked = await showDeckPickerChoiceSheet<AlbumSort>(
+      context,
+      title: l10n.albumSortBy,
+      selected: _sort,
+      choices: [
+        for (final sort in AlbumSort.values)
+          DeckPickerChoice(
+            value: sort,
+            title: _sortLabel(l10n, sort),
+            key: ValueKey('album-sort-${sort.name}'),
+          ),
+      ],
+    );
+    if (!mounted || picked == null) return;
+    setState(() => _sort = picked);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -252,34 +295,20 @@ class _AlbumCardBrowserState extends State<AlbumCardBrowser> {
         Row(
           children: [
             Expanded(
-              child: AlbumBrowseMenu<AlbumTypeFilter>(
+              child: AlbumBrowseChip(
+                key: const ValueKey('album-type-filter'),
                 icon: Icons.filter_list_rounded,
                 label: typeLabel,
-                value: _type,
-                onSelected: (value) => setState(() => _type = value),
-                items: [
-                  for (final filter in AlbumTypeFilter.values)
-                    PopupMenuItem(
-                      value: filter,
-                      child: Text(_filterLabel(l10n, filter)),
-                    ),
-                ],
+                onTap: _pickType,
               ),
             ),
             SizedBox(width: LayoutTokens.gr2),
             Expanded(
-              child: AlbumBrowseMenu<AlbumSort>(
+              child: AlbumBrowseChip(
+                key: const ValueKey('album-sort'),
                 icon: Icons.swap_vert_rounded,
                 label: '${l10n.albumSortBy}: ${_sortLabel(l10n, _sort)}',
-                value: _sort,
-                onSelected: (value) => setState(() => _sort = value),
-                items: [
-                  for (final sort in AlbumSort.values)
-                    PopupMenuItem(
-                      value: sort,
-                      child: Text(_sortLabel(l10n, sort)),
-                    ),
-                ],
+                onTap: _pickSort,
               ),
             ),
           ],
@@ -342,62 +371,75 @@ class _AlbumCardBrowserState extends State<AlbumCardBrowser> {
   }
 }
 
-class AlbumBrowseMenu<T> extends StatelessWidget {
-  const AlbumBrowseMenu({
+/// Shared filter-chip face for album / library browse menus.
+class AlbumBrowseChip extends StatelessWidget {
+  const AlbumBrowseChip({
     super.key,
     required this.icon,
     required this.label,
-    required this.value,
-    required this.onSelected,
-    required this.items,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
-  final T value;
-  final ValueChanged<T> onSelected;
-  final List<PopupMenuEntry<T>> items;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final radius = BorderRadius.circular(RadiusTokens.lg);
+    final face = _AlbumBrowseChipFace(icon: icon, label: label, colors: colors);
     return Material(
       color: colors.surface,
       borderRadius: radius,
-      child: PopupMenuButton<T>(
-        initialValue: value,
-        onSelected: onSelected,
-        itemBuilder: (_) => items,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: LayoutTokens.gr2,
-            vertical: 10,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: colors.primaryAccent),
-              SizedBox(width: LayoutTokens.gr1),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: FontTokens.sm,
-                  ),
-                ),
+      child:
+          onTap == null
+              ? face
+              : InkWell(onTap: onTap, borderRadius: radius, child: face),
+    );
+  }
+}
+
+class _AlbumBrowseChipFace extends StatelessWidget {
+  const _AlbumBrowseChipFace({
+    required this.icon,
+    required this.label,
+    required this.colors,
+  });
+
+  final IconData icon;
+  final String label;
+  final AppColorTokens colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: LayoutTokens.gr2,
+        vertical: 10,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: colors.primaryAccent),
+          SizedBox(width: LayoutTokens.gr1),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: FontTokens.sm,
               ),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 18,
-                color: colors.textSecondary,
-              ),
-            ],
+            ),
           ),
-        ),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 18,
+            color: colors.textSecondary,
+          ),
+        ],
       ),
     );
   }
@@ -643,6 +685,7 @@ void _showAlbumCard(
     context,
     name: card.name,
     imageUrl: card.imageUrl,
+    backImageUrl: card.backImageUrl,
     actionLabel: onMove == null ? null : actionLabel,
     onAction: onMove == null ? null : () => onMove(card),
   );
@@ -1329,17 +1372,30 @@ class _ArtImage extends StatelessWidget {
 
 /// Frosted strip so a list can scroll behind a bottom action.
 class BlurredBottomAction extends StatelessWidget {
-  const BlurredBottomAction({super.key, required this.child});
+  const BlurredBottomAction({
+    super.key,
+    required this.child,
+    this.aboveShellDock = false,
+  });
 
   final Widget child;
 
+  /// When true, lift the button above [MainShell]'s floating nav.
+  final bool aboveShellDock;
+
   static const double buttonHeight = 52;
 
-  static double height(BuildContext context) {
+  static double _bottomPad(BuildContext context, bool aboveShellDock) {
+    if (aboveShellDock) {
+      return LayoutTokens.shellDockInset(context) + LayoutTokens.gr2;
+    }
+    return MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2;
+  }
+
+  static double height(BuildContext context, {bool aboveShellDock = false}) {
     return LayoutTokens.gr2 +
         buttonHeight +
-        MediaQuery.viewPaddingOf(context).bottom +
-        LayoutTokens.gr2;
+        _bottomPad(context, aboveShellDock);
   }
 
   @override
@@ -1366,7 +1422,7 @@ class BlurredBottomAction extends StatelessWidget {
               LayoutTokens.gr4,
               LayoutTokens.gr2,
               LayoutTokens.gr4,
-              MediaQuery.viewPaddingOf(context).bottom + LayoutTokens.gr2,
+              _bottomPad(context, aboveShellDock),
             ),
             child: child,
           ),

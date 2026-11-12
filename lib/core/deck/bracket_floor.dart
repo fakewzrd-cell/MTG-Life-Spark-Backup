@@ -31,6 +31,9 @@ class BracketAssessment {
 
   /// Lowest bracket the player may select. Bracket 5 stays available above it.
   int get minimumChoice => floor <= 1 ? 1 : floor;
+
+  /// Single recommended table. Core (2) when the list only separates 1 vs 2.
+  int get recommended => floor <= 2 ? 2 : floor;
 }
 
 /// One card the floor checks can see. [oracleText] may be null offline.

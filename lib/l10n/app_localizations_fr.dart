@@ -154,11 +154,37 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsSectionHelp => 'Aide';
 
   @override
+  String get settingsAbout => 'À propos';
+
+  @override
+  String get settingsAboutSubtitle => 'Un mot du créateur de Life Spark';
+
+  @override
   String get settingsFeedback => 'Commentaires';
 
   @override
   String get settingsFeedbackSubtitle =>
       'Envoyez-nous vos idées et suggestions';
+
+  @override
+  String get settingsReportBug => 'Signaler un bug';
+
+  @override
+  String settingsReportBugSubtitle(String email) {
+    return 'Envoyer un problème à $email';
+  }
+
+  @override
+  String get reportBugMailSubject => 'Rapport de bug Life Spark';
+
+  @override
+  String reportBugClipboardFallback(
+    String email,
+    String subject,
+    String message,
+  ) {
+    return 'À : $email\\nObjet : $subject\\n\\n$message';
+  }
 
   @override
   String get settingsViewHubGuide => 'Voir le guide du hub';
@@ -191,6 +217,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get commonClose => 'Fermer';
+
+  @override
+  String get cardViewerFlip => 'Retourner';
 
   @override
   String get commonTryAgain => 'Réessayer';
@@ -529,6 +558,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get welcomeSkip => 'Passer';
+
+  @override
+  String get founderNoteTitle => 'Un mot de Federick';
+
+  @override
+  String get founderNoteP1 =>
+      'Life Spark a commencé comme un projet personnel : porter le compteur de vies de Magic: The Gathering au niveau supérieur — plus dynamique, plus intuitif, et plus proche de la façon dont nous jouons vraiment à table.';
+
+  @override
+  String get founderNoteP2 =>
+      'Je voulais un endroit où partager son profil et s’asseoir avec des joueurs venus pour le plaisir du jeu. Pas des tables faites seulement pour gagner, mais des tables où le combat est amusant, où chacun a de la place pour jouer, et où chacun a une vraie chance.';
+
+  @override
+  String get founderNoteP3 =>
+      'Si Life Spark trouve une place dans vos parties, une note et un court commentaire sur la boutique m’aideraient énormément. C’est ainsi que je continue d’améliorer cette application pour celles et ceux qui veulent profiter de Magic et le partager.';
+
+  @override
+  String get founderNoteSignoff => 'Merci d’être là.\n— Federick';
 
   @override
   String get onboardingSlide1Title => 'Bienvenue sur Life Spark';
@@ -914,6 +961,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get decksNoFilterMatches => 'Aucun deck ne correspond à ces filtres.';
+
+  @override
+  String get decksClearFilters => 'Effacer les filtres';
 
   @override
   String get decksFilterFormat => 'Format';
@@ -2781,7 +2831,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get paletteCrimson => 'Cramoisi';
 
   @override
-  String get paletteSlate => 'Ardoise';
+  String get paletteSlate => 'Bleu';
 
   @override
   String networkCannotReachHost(String error) {
@@ -3015,6 +3065,14 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String glanceChipOut(String name) {
     return '$name, éliminé';
+  }
+
+  @override
+  String get deckAlbumShuffling => 'Mélange des cartes…';
+
+  @override
+  String deckAlbumLastUpdated(String when) {
+    return 'Mis à jour $when';
   }
 
   @override
@@ -3300,13 +3358,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get collectionAlbumNoMatches => 'Aucun album ne correspond.';
 
   @override
-  String get collectionAlbumSortCards => 'Cartes';
+  String get collectionAlbumFilterRecent => 'Récents';
 
   @override
-  String get collectionAlbumFilterWithCards => 'Avec cartes';
+  String get collectionAlbumFilterFavorite => 'Favoris';
 
   @override
-  String get collectionAlbumFilterEmpty => 'Vide';
+  String get collectionAlbumFavorite => 'Favori';
+
+  @override
+  String get collectionAlbumUnfavorite => 'Retirer des favoris';
+
+  @override
+  String get collectionAlbumOptions => 'Options de l’album';
 
   @override
   String get collectionAlbumsEmpty =>

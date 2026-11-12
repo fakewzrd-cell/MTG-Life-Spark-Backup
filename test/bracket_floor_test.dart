@@ -9,6 +9,7 @@ void main() {
     ]);
     expect(result.choosesOneOrTwo, isTrue);
     expect(result.floor, 1);
+    expect(result.recommended, 2);
   });
 
   test('one to three Game Changers set the floor at 3', () {

@@ -68,81 +68,91 @@ class _NewDeckSheetState extends State<_NewDeckSheet> {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    // Hug content under Next. Keyboard inset lifts the sheet; do not use a
-    // full-height SingleChildScrollView (that left empty space under Next).
-    return Padding(
-      padding: EdgeInsets.only(bottom: keyboardInset),
-      child: GameSheetBody(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GameSheetHeader(
-              title: l10n.newDeckTitle,
-              subtitle: l10n.newDeckSubtitle,
-            ),
-            SizedBox(height: LayoutTokens.gr2),
-            Text(
-              l10n.newDeckIntro,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.textSecondary,
-                fontSize: FontTokens.sm,
-                height: 1.45,
+    // Hug content under Next. [showGameBottomSheet] lifts for the keyboard;
+    // cap height and scroll so format/style/name cannot overflow.
+    return GameSheetBody(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxH =
+              constraints.maxHeight.isFinite
+                  ? constraints.maxHeight
+                  : MediaQuery.sizeOf(context).height * 0.7;
+          return ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxH > 120 ? maxH : 120),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GameSheetHeader(
+                    title: l10n.newDeckTitle,
+                    subtitle: l10n.newDeckSubtitle,
+                  ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  Text(
+                    l10n.newDeckIntro,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.textSecondary,
+                      fontSize: FontTokens.sm,
+                      height: 1.45,
+                    ),
+                  ),
+                  SizedBox(height: LayoutTokens.gr3),
+                  TextField(
+                    controller: _nameCtrl,
+                    scrollPadding: const EdgeInsets.only(
+                      bottom: LayoutTokens.gr5 + LayoutTokens.gr6,
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: l10n.newDeckNameLabel,
+                      hintText: l10n.newDeckNameHint,
+                      hintStyle: TextStyle(color: colors.textSecondary),
+                    ),
+                    style: TextStyle(color: colors.textPrimary),
+                  ),
+                  SizedBox(height: LayoutTokens.gr3),
+                  GameFormatPickerField(
+                    selected: _format,
+                    onPick: () async {
+                      final picked = await showGameFormatPickerSheet(
+                        context,
+                        selected: _format,
+                      );
+                      if (picked == null || !mounted) return;
+                      setState(() => _format = picked);
+                    },
+                  ),
+                  SizedBox(height: LayoutTokens.gr3),
+                  DeckStylePickerField(
+                    selected: _style,
+                    errorText: _styleError(l10n),
+                    onPick: () async {
+                      final picked = await showDeckStylePickerSheet(
+                        context,
+                        selected: _style,
+                      );
+                      if (picked == null || !mounted) return;
+                      setState(() {
+                        _style = picked;
+                        _attemptedSubmit = false;
+                      });
+                    },
+                  ),
+                  SizedBox(height: LayoutTokens.gr3),
+                  UiButton(
+                    label: l10n.newDeckNext,
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 22),
+                    enabled: _nameCtrl.text.trim().isNotEmpty,
+                    onPressed:
+                        _nameCtrl.text.trim().isNotEmpty ? _submit : null,
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: LayoutTokens.gr3),
-            TextField(
-              controller: _nameCtrl,
-              scrollPadding: const EdgeInsets.only(
-                bottom: LayoutTokens.gr5 + LayoutTokens.gr6,
-              ),
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: l10n.newDeckNameLabel,
-                hintText: l10n.newDeckNameHint,
-                hintStyle: TextStyle(color: colors.textSecondary),
-              ),
-              style: TextStyle(color: colors.textPrimary),
-            ),
-            SizedBox(height: LayoutTokens.gr3),
-            GameFormatPickerField(
-              selected: _format,
-              onPick: () async {
-                final picked = await showGameFormatPickerSheet(
-                  context,
-                  selected: _format,
-                );
-                if (picked == null || !mounted) return;
-                setState(() => _format = picked);
-              },
-            ),
-            SizedBox(height: LayoutTokens.gr3),
-            DeckStylePickerField(
-              selected: _style,
-              errorText: _styleError(l10n),
-              onPick: () async {
-                final picked = await showDeckStylePickerSheet(
-                  context,
-                  selected: _style,
-                );
-                if (picked == null || !mounted) return;
-                setState(() {
-                  _style = picked;
-                  _attemptedSubmit = false;
-                });
-              },
-            ),
-            SizedBox(height: LayoutTokens.gr3),
-            UiButton(
-              label: l10n.newDeckNext,
-              icon: const Icon(Icons.arrow_forward_rounded, size: 22),
-              enabled: _nameCtrl.text.trim().isNotEmpty,
-              onPressed: _nameCtrl.text.trim().isNotEmpty ? _submit : null,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

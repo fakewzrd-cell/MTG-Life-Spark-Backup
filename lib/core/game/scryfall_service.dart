@@ -15,6 +15,9 @@ class ScryfallCard {
 
   /// Full card face (`normal`), distinct from the art crop in [imageUrl].
   final String? cardFaceUrl;
+
+  /// Second printed face on a DFC / MDFC (`normal`). Null when the card is single-faced.
+  final String? cardBackUrl;
   final String? oracleText;
 
   /// Scryfall `mana_cost`, e.g. `{2}{W}{U}`; may be null on some card layouts.
@@ -38,6 +41,7 @@ class ScryfallCard {
     required this.name,
     this.imageUrl,
     this.cardFaceUrl,
+    this.cardBackUrl,
     this.oracleText,
     this.manaCost,
     this.typeLine,
@@ -52,6 +56,7 @@ class ScryfallCard {
     'name': name,
     'imageUrl': imageUrl,
     'cardFaceUrl': cardFaceUrl,
+    'cardBackUrl': cardBackUrl,
     'oracleText': oracleText,
     'manaCost': manaCost,
     'typeLine': typeLine,
@@ -76,6 +81,7 @@ class ScryfallCard {
       name: json['name'] as String? ?? '',
       imageUrl: json['imageUrl'] as String?,
       cardFaceUrl: json['cardFaceUrl'] as String?,
+      cardBackUrl: json['cardBackUrl'] as String?,
       oracleText: json['oracleText'] as String?,
       manaCost: json['manaCost'] as String?,
       typeLine: json['typeLine'] as String?,
@@ -255,11 +261,13 @@ class ScryfallService {
 
   /// Fetches a single card by exact name (for loading saved commanders).
   Future<ScryfallCard?> fetchCardByName(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return null;
     await _cache?.init();
-    final cached = _cache?.read(name);
+    final cached = _cachedCard(trimmed);
     if (cached != null) return cached;
     try {
-      final encoded = Uri.encodeComponent(name);
+      final encoded = Uri.encodeComponent(scryfallFrontName(trimmed));
       final uri = Uri.parse('$_base/cards/named?exact=$encoded');
       final response = await _client
           .get(uri, headers: _headers)
@@ -276,11 +284,8 @@ class ScryfallService {
     }
   }
 
-  /// Exact-name lookup for a deck list. Scryfall accepts 75 names per request.
-  ///
-  /// Cards that are not found are omitted. A failed request returns the cards
-  /// collected so far so a partial album can still render.
-  Future<List<ScryfallCard>> fetchCardsByNames(List<String> names) async {
+  /// Unique trimmed names, first spelling kept.
+  List<String> uniqueCardNames(List<String> names) {
     final unique = <String>[];
     final seen = <String>{};
     for (final raw in names) {
@@ -289,17 +294,51 @@ class ScryfallService {
       if (name.isEmpty || !seen.add(key)) continue;
       unique.add(name);
     }
+    return unique;
+  }
+
+  ScryfallCard? _cachedCard(String name) {
+    return _cache?.read(name) ?? _cache?.read(scryfallFrontName(name));
+  }
+
+  /// Local cache only — no network. Empty when the cache is cold.
+  Future<List<ScryfallCard>> cachedCardsByNames(List<String> names) async {
+    final unique = uniqueCardNames(names);
+    if (unique.isEmpty) return const [];
+    await _cache?.init();
+    final found = <ScryfallCard>[];
+    final seen = <String>{};
+    for (final name in unique) {
+      final card = _cachedCard(name);
+      if (card == null) continue;
+      if (!seen.add(card.name.toLowerCase())) continue;
+      found.add(card);
+    }
+    return found;
+  }
+
+  /// Exact-name lookup for a deck list. Scryfall accepts 75 names per request.
+  ///
+  /// Cards that are not found are omitted. A failed request returns the cards
+  /// collected so far so a partial album can still render.
+  Future<List<ScryfallCard>> fetchCardsByNames(List<String> names) async {
+    final unique = uniqueCardNames(names);
     if (unique.isEmpty) return const [];
 
     await _cache?.init();
     final found = <ScryfallCard>[];
+    final seenFound = <String>{};
     final missing = <String>[];
+    final seenMissing = <String>{};
     for (final name in unique) {
-      final cached = _cache?.read(name);
+      final cached = _cachedCard(name);
       if (cached != null) {
-        found.add(cached);
-      } else {
-        missing.add(name);
+        if (seenFound.add(cached.name.toLowerCase())) found.add(cached);
+        continue;
+      }
+      final front = scryfallFrontName(name);
+      if (front.isNotEmpty && seenMissing.add(front.toLowerCase())) {
+        missing.add(front);
       }
     }
     if (missing.isEmpty) return found;
@@ -402,15 +441,17 @@ class ScryfallService {
     }
     final uris = imageUris ?? faceUris;
     final imageUrl = _imageUri(uris, const ['art_crop', 'normal']);
-    final cardFaceUrl = _imageUri(uris, const [
-      'normal',
-      'large',
-      'png',
-      'border_crop',
-      'art_crop',
-    ]);
+    const faceKeys = ['normal', 'large', 'png', 'border_crop', 'art_crop'];
+    final cardFaceUrl = _imageUri(uris, faceKeys);
 
     final faces = card['card_faces'] as List<dynamic>?;
+    String? cardBackUrl;
+    if (faces != null && faces.length > 1) {
+      final backUris =
+          (faces[1] as Map<String, dynamic>)['image_uris']
+              as Map<String, dynamic>?;
+      cardBackUrl = _imageUri(backUris, faceKeys);
+    }
     final firstFace =
         faces != null && faces.isNotEmpty
             ? faces[0] as Map<String, dynamic>
@@ -471,6 +512,7 @@ class ScryfallService {
       name: name,
       imageUrl: imageUrl,
       cardFaceUrl: cardFaceUrl,
+      cardBackUrl: cardBackUrl,
       oracleText: oracleText,
       manaCost: manaCost,
       typeLine: typeLine,
@@ -480,6 +522,37 @@ class ScryfallService {
       tokenNames: tokenNames,
     );
   }
+}
+
+/// Front face for Scryfall `name` lookups (DFC, split, adventure, aftermath).
+String scryfallFrontName(String name) {
+  final trimmed = name.trim();
+  final cut = trimmed.indexOf(' // ');
+  if (cut <= 0) return trimmed;
+  return trimmed.substring(0, cut).trim();
+}
+
+/// Back face name on a DFC (`Front // Back`), otherwise the printed name.
+String scryfallBackName(String name) {
+  final trimmed = name.trim();
+  final cut = trimmed.indexOf(' // ');
+  if (cut <= 0) return trimmed;
+  return trimmed.substring(cut + 4).trim();
+}
+
+/// Index a Scryfall list by full name and front face so album rows can match.
+Map<String, ScryfallCard> indexScryfallCards(Iterable<ScryfallCard> cards) {
+  final out = <String, ScryfallCard>{};
+  void put(String name, ScryfallCard card) {
+    final key = name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    if (key.isNotEmpty) out[key] = card;
+  }
+
+  for (final card in cards) {
+    put(card.name, card);
+    put(scryfallFrontName(card.name), card);
+  }
+  return out;
 }
 
 /// Scryfall CDN path for a full card face (`normal`) instead of illustration crop.
@@ -494,6 +567,13 @@ String? scryfallDisplayCardUrl(ScryfallCard card) {
   final face = card.cardFaceUrl?.trim();
   if (face != null && face.isNotEmpty) return face;
   return scryfallFullCardImageUrl(card.imageUrl);
+}
+
+/// Other printed face for the 3D preview. Null when the card is single-faced.
+String? scryfallDisplayBackUrl(ScryfallCard card) {
+  final back = card.cardBackUrl?.trim();
+  if (back == null || back.isEmpty) return null;
+  return back;
 }
 
 // ── Provider ───────────────────────────────────────────────────────────────

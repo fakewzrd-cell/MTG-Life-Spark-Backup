@@ -200,7 +200,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 padding: LayoutTokens.shellScrollPadding(context).copyWith(
                   bottom: _startFooterHeight(
                     context,
-                    showHint: lobby.players.isEmpty,
+                    showHint: !lobby.canStart,
                   ),
                 ),
                 children: [
@@ -229,7 +229,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
                 bottom: _startGameDockClearance(context),
                 child: _StartGameButton(
                   canStart: lobby.canStart,
-                  hint: lobby.players.isEmpty ? l10n.hostNeedOnePlayer : null,
+                  hint:
+                      lobby.players.isEmpty
+                          ? l10n.hostNeedOnePlayer
+                          : (lobby.canStart ? null : l10n.hostMarkReady),
                 ),
               ),
             ],
@@ -706,7 +709,10 @@ class _SlotReadyButton extends ConsumerWidget {
         final notifier = ref.read(lobbyProvider.notifier);
         notifier.setReady(slot.playerId, ready: !slot.isReady);
       },
-      icon: const Icon(Icons.check_rounded, size: 24),
+      icon: Icon(
+        slot.isReady ? Icons.check_rounded : Icons.touch_app_rounded,
+        size: 24,
+      ),
     );
   }
 }
@@ -1192,11 +1198,11 @@ class _GameplaySwitchTile extends StatelessWidget {
 
 /// Distance from the screen bottom to the top of the tab bar.
 ///
-/// With [Scaffold.extendBody], [MediaQuery.padding.bottom] already includes
-/// the dock. Adding [LayoutTokens.bottomNavHeight] again lifts Start Game
-/// a full bar above the nav.
+/// With [Scaffold.extendBody], [MediaQuery.padding.bottom] often already
+/// includes the dock — unless an ancestor consumed it (then it is 0). Use
+/// [LayoutTokens.shellDockInset] so Start Game never sits on the nav.
 double _startGameDockClearance(BuildContext context) {
-  return MediaQuery.paddingOf(context).bottom;
+  return LayoutTokens.shellDockInset(context);
 }
 
 /// Glass strip height so the last lobby row can scroll clear of Start Game.

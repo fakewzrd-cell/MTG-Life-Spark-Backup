@@ -67,8 +67,34 @@
   "settingsRestoreBackup": "Restore backup",
   "settingsRestoreBackupSubtitle": "Replace all local data from a .lifespark file",
   "settingsSectionHelp": "Help",
+  "settingsAbout": "About",
+  "settingsAboutSubtitle": "A note from the maker of Life Spark",
   "settingsFeedback": "Feedback",
   "settingsFeedbackSubtitle": "Send us your thoughts and suggestions",
+  "settingsReportBug": "Report a bug",
+  "settingsReportBugSubtitle": "Email a problem to {email}",
+  "@settingsReportBugSubtitle": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "reportBugMailSubject": "Life Spark bug report",
+  "reportBugClipboardFallback": "To: {email}\\nSubject: {subject}\\n\\n{message}",
+  "@reportBugClipboardFallback": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      },
+      "subject": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "settingsViewHubGuide": "View hub guide",
   "settingsViewHubGuideSubtitle": "How Play, Stack, Lookup, and Table work in a match",
   "settingsViewTutorialAgain": "View Tutorial Again",
@@ -79,6 +105,7 @@
   "commonAdd": "Add",
   "commonRemove": "Remove",
   "commonClose": "Close",
+  "cardViewerFlip": "Flip",
   "commonTryAgain": "Try again",
   "backupSaved": "Backup saved.",
   "backupSaveFailed": "Could not save backup.",
@@ -230,6 +257,11 @@
   "welcomeTagline": "Your MTG companion.",
   "welcomeReadyToPlay": "Ready to play",
   "welcomeSkip": "Skip",
+  "founderNoteTitle": "A note from Federick",
+  "founderNoteP1": "Life Spark began as a personal project: to bring the Magic: The Gathering life counter to the next level — more dynamic, more intuitive, and closer to how we actually play at the table.",
+  "founderNoteP2": "I wanted a place where you can share your profile and sit with people who are here to enjoy the game. Not tables built only to win, but tables where combat is fun, everyone has room to play, and everyone has a real chance.",
+  "founderNoteP3": "If Life Spark earns a place in your games, a rating and a short comment on the store would mean a great deal. That is how I keep making this app better for players who want to enjoy Magic and share it.",
+  "founderNoteSignoff": "Thank you for being here.\n— Federick",
   "onboardingSlide1Title": "Welcome to Life Spark",
   "onboardingSlide1Body": "Your Commander battlefield companion — life, counters, politics, and the stack, synced at the table.",
   "onboardingSlide2Title": "Host or Join",
@@ -415,6 +447,7 @@
     }
   },
   "decksNoFilterMatches": "No decks match these filters.",
+  "decksClearFilters": "Clear filters",
   "decksFilterFormat": "Format",
   "decksFilterStyle": "Style",
   "decksFilterBracket": "Bracket",
@@ -1520,7 +1553,7 @@
   "startupStackTrace": "Stack trace:",
   "paletteViolet": "Violet",
   "paletteCrimson": "Crimson",
-  "paletteSlate": "Slate",
+  "paletteSlate": "Blue",
   "networkCannotReachHost": "Cannot reach host: {error}",
   "@networkCannotReachHost": {
     "placeholders": {
@@ -1796,6 +1829,13 @@
   "@glanceChipLife": {"placeholders": {"name": {"type": "String"}, "life": {"type": "int"}}},
   "glanceChipOut": "{name}, out",
   "@glanceChipOut": {"placeholders": {"name": {"type": "String"}}},
+  "deckAlbumShuffling": "Shuffling cards…",
+  "deckAlbumLastUpdated": "Updated {when}",
+  "@deckAlbumLastUpdated": {
+    "placeholders": {
+      "when": {"type": "String"}
+    }
+  },
   "deckAlbumTitle": "Deck",
   "deckAlbumOptions": "Deck options",
   "deckAlbumMissing": "This deck is no longer in your library.",
@@ -1900,9 +1940,11 @@
   "deckBracketAnalyzedRange": "This list is Bracket 1–2.",
   "collectionAlbumSearchHint": "Search albums…",
   "collectionAlbumNoMatches": "No albums match.",
-  "collectionAlbumSortCards": "Cards",
-  "collectionAlbumFilterWithCards": "With cards",
-  "collectionAlbumFilterEmpty": "Empty",
+  "collectionAlbumFilterRecent": "Recent",
+  "collectionAlbumFilterFavorite": "Favorite",
+  "collectionAlbumFavorite": "Favorite",
+  "collectionAlbumUnfavorite": "Remove favorite",
+  "collectionAlbumOptions": "Album options",
   "collectionAlbumsEmpty": "Create an album, then add the cards you own.",
   "collectionNewAlbum": "New album",
   "collectionAlbumNameTitle": "Album name",

@@ -153,10 +153,36 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSectionHelp => 'Ayuda';
 
   @override
+  String get settingsAbout => 'Acerca de';
+
+  @override
+  String get settingsAboutSubtitle => 'Una nota del creador de Life Spark';
+
+  @override
   String get settingsFeedback => 'Comentarios';
 
   @override
   String get settingsFeedbackSubtitle => 'Envíanos tus ideas y sugerencias';
+
+  @override
+  String get settingsReportBug => 'Informar de un error';
+
+  @override
+  String settingsReportBugSubtitle(String email) {
+    return 'Envía un problema a $email';
+  }
+
+  @override
+  String get reportBugMailSubject => 'Informe de error de Life Spark';
+
+  @override
+  String reportBugClipboardFallback(
+    String email,
+    String subject,
+    String message,
+  ) {
+    return 'Para: $email\\nAsunto: $subject\\n\\n$message';
+  }
 
   @override
   String get settingsViewHubGuide => 'Ver guía del hub';
@@ -189,6 +215,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonClose => 'Cerrar';
+
+  @override
+  String get cardViewerFlip => 'Voltear';
 
   @override
   String get commonTryAgain => 'Reintentar';
@@ -524,6 +553,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get welcomeSkip => 'Omitir';
+
+  @override
+  String get founderNoteTitle => 'Una nota de Federick';
+
+  @override
+  String get founderNoteP1 =>
+      'Life Spark nació como un proyecto personal: llevar el contador de vidas de Magic: The Gathering al siguiente nivel — más dinámico, más intuitivo y más cercano a cómo realmente jugamos en la mesa.';
+
+  @override
+  String get founderNoteP2 =>
+      'Quería un lugar donde puedas compartir tu perfil y sentarte con personas que están aquí para disfrutar el juego. No mesas pensadas solo para ganar, sino mesas donde el combate es divertido, todos tienen espacio para jugar y todos tienen una oportunidad real.';
+
+  @override
+  String get founderNoteP3 =>
+      'Si Life Spark se gana un lugar en tus partidas, una valoración y un comentario breve en la tienda significarían muchísimo. Así sigo mejorando esta app para quienes quieren disfrutar Magic y compartirlo.';
+
+  @override
+  String get founderNoteSignoff => 'Gracias por estar aquí.\n— Federick';
 
   @override
   String get onboardingSlide1Title => 'Bienvenido a Life Spark';
@@ -909,6 +956,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get decksNoFilterMatches => 'Ningún mazo coincide con estos filtros.';
+
+  @override
+  String get decksClearFilters => 'Borrar filtros';
 
   @override
   String get decksFilterFormat => 'Formato';
@@ -2774,7 +2824,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get paletteCrimson => 'Carmesí';
 
   @override
-  String get paletteSlate => 'Pizarra';
+  String get paletteSlate => 'Azul';
 
   @override
   String networkCannotReachHost(String error) {
@@ -3007,6 +3057,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String glanceChipOut(String name) {
     return '$name, eliminado';
+  }
+
+  @override
+  String get deckAlbumShuffling => 'Barajando…';
+
+  @override
+  String deckAlbumLastUpdated(String when) {
+    return 'Actualizado $when';
   }
 
   @override
@@ -3293,13 +3351,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get collectionAlbumNoMatches => 'Ningún álbum coincide.';
 
   @override
-  String get collectionAlbumSortCards => 'Cartas';
+  String get collectionAlbumFilterRecent => 'Recientes';
 
   @override
-  String get collectionAlbumFilterWithCards => 'Con cartas';
+  String get collectionAlbumFilterFavorite => 'Favoritos';
 
   @override
-  String get collectionAlbumFilterEmpty => 'Vacío';
+  String get collectionAlbumFavorite => 'Favorito';
+
+  @override
+  String get collectionAlbumUnfavorite => 'Quitar de favoritos';
+
+  @override
+  String get collectionAlbumOptions => 'Opciones del álbum';
 
   @override
   String get collectionAlbumsEmpty =>

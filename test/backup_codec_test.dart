@@ -47,6 +47,7 @@ void main() {
             commanderColorIdentity: const ['W', 'U', 'B', 'G'],
             format: 'commander',
             isPinned: true,
+            updatedAtMillis: 1731360000000,
           ),
         ],
         commanderStats: [
@@ -111,6 +112,7 @@ void main() {
       expect(restored.decks, hasLength(1));
       expect(restored.decks.first.displayName, 'Atraxa Infect');
       expect(restored.decks.first.isPinned, isTrue);
+      expect(restored.decks.first.updatedAtMillis, 1731360000000);
       expect(restored.commanderStats.single.wins, 3);
       expect(restored.matches, hasLength(1));
       expect(restored.matches.single.matchId, 'm-1');
@@ -155,6 +157,20 @@ void main() {
       expect(restored.matches, isEmpty);
       expect(restored.feedbackByKey, isEmpty);
       expect(restored.deckEntries, isEmpty);
+    });
+
+    test('legacy decks omit last-updated until the profile is saved', () {
+      final restored = LifeSparkBackup.fromJson({
+        'format': kLifeSparkBackupFormat,
+        'version': 1,
+        'exportedAt': '2026-07-31T12:00:00.000Z',
+        'profile': {'username': 'Federick', 'playerId': 'pid-123'},
+        'settings': {},
+        'decks': [
+          {'id': 'deck-1', 'displayName': 'Legacy', 'commanderName': 'Atraxa'},
+        ],
+      });
+      expect(restored.decks.single.updatedAtMillis, 0);
     });
 
     test('rejects unknown format marker', () {

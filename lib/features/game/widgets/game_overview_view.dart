@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -860,7 +859,7 @@ class _LifeStepButtonState extends State<_LifeStepButton> {
 }
 
 class _GameOverviewCommanderTaxChip extends StatelessWidget {
-  const _GameOverviewCommanderTaxChip({required this.tax});
+  const _GameOverviewCommanderTaxChip({super.key, required this.tax});
 
   final int tax;
 
@@ -901,6 +900,7 @@ class _GameOverviewCommanderTaxChip extends StatelessWidget {
 /// Compact monarch / initiative markers on a player card.
 class _PlayerPoliticsBadges extends StatelessWidget {
   const _PlayerPoliticsBadges({
+    super.key,
     required this.isMonarch,
     required this.hasInitiative,
   });
@@ -1000,7 +1000,7 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
     final showMenu =
         !p.isEliminated &&
         local != null &&
-        (isLocal || hasAllianceMenu || canAssignTeam || canWhisper);
+        (hasAllianceMenu || canAssignTeam || canWhisper);
     final canEditLife = !p.isEliminated && game.isHost;
     final showAsActive = isActive && !p.isEliminated;
 
@@ -1039,83 +1039,52 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (showAsActive) ...[
-                          Row(
-                            children: [
-                              Text(
-                                AppLocalizations.of(context).overviewNowPlaying,
-                                style: TextStyle(
-                                  color: borderColor,
-                                  fontSize: FontTokens.hudXs,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.6,
-                                ),
-                              ),
-                              if (isMonarch) ...[
-                                SizedBox(width: LayoutTokens.gr1),
-                                GameIcon.monarch(
-                                  size: 14,
-                                  color: politicsIconTone(context),
-                                ),
-                              ],
-                              if (hasInit) ...[
-                                SizedBox(width: LayoutTokens.gr0),
-                                GameIcon.initiative(
-                                  size: 14,
-                                  color: politicsIconTone(context),
-                                ),
-                              ],
-                            ],
+                          Text(
+                            AppLocalizations.of(context).overviewNowPlaying,
+                            style: TextStyle(
+                              color: borderColor,
+                              fontSize: FontTokens.hudXs,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.6,
+                            ),
                           ),
                           SizedBox(height: LayoutTokens.gr0),
                         ],
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Tooltip(
-                                message: p.username,
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: p.username,
-                                        style: TextStyle(
-                                          color:
-                                              p.isEliminated
-                                                  ? colors.textSecondary
-                                                  : colors.textPrimary,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize:
-                                              showAsActive
-                                                  ? FontTokens.title
-                                                  : FontTokens.hudSm,
-                                          height: 1.2,
-                                        ),
-                                      ),
-                                      if (isLocal)
-                                        TextSpan(
-                                          text: ' · you',
-                                          style: TextStyle(
-                                            color: colors.textSecondary,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: FontTokens.hudXs,
-                                            height: 1.2,
-                                          ),
-                                        ),
-                                    ],
+                        Tooltip(
+                          message: p.username,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: p.username,
+                                  style: TextStyle(
+                                    color:
+                                        p.isEliminated
+                                            ? colors.textSecondary
+                                            : colors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize:
+                                        showAsActive
+                                            ? FontTokens.title
+                                            : FontTokens.hudSm,
+                                    height: 1.2,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
+                                if (isLocal)
+                                  TextSpan(
+                                    text: ' · you',
+                                    style: TextStyle(
+                                      color: colors.textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: FontTokens.hudXs,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                              ],
                             ),
-                            if (!showAsActive && (isMonarch || hasInit)) ...[
-                              SizedBox(width: LayoutTokens.gr1),
-                              _PlayerPoliticsBadges(
-                                isMonarch: isMonarch,
-                                hasInitiative: hasInit,
-                              ),
-                            ],
-                          ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         if (showAsActive && game.phasesEnabled) ...[
                           SizedBox(height: LayoutTokens.gr0),
@@ -1126,6 +1095,14 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                               fontSize: FontTokens.hudSm,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                        ],
+                        if (isMonarch || hasInit) ...[
+                          SizedBox(height: LayoutTokens.gr0),
+                          _PlayerPoliticsBadges(
+                            key: ValueKey('overview-politics-${p.playerId}'),
+                            isMonarch: isMonarch,
+                            hasInitiative: hasInit,
                           ),
                         ],
                         OverviewPlayerMarkerBadges(
@@ -1151,11 +1128,15 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                   ),
                   SizedBox(width: LayoutTokens.gr2),
                   Row(
+                    key: ValueKey('overview-trailing-${p.playerId}'),
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       if (p.commanderCastCount > 0) ...[
-                        _GameOverviewCommanderTaxChip(tax: p.commanderTax),
+                        _GameOverviewCommanderTaxChip(
+                          key: ValueKey('overview-tax-${p.playerId}'),
+                          tax: p.commanderTax,
+                        ),
                         SizedBox(width: LayoutTokens.gr1),
                       ],
                       if (p.isEliminated || !canEditLife)
@@ -1195,10 +1176,19 @@ class _GameOverviewPlayerCard extends ConsumerWidget {
                       if (showMenu) ...[
                         SizedBox(width: LayoutTokens.gr0),
                         PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert,
-                            color: colors.textSecondary,
-                            size: 20,
+                          icon: Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              color: Color(0x99000000),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(

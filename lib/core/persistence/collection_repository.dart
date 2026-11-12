@@ -28,6 +28,8 @@ class CollectionRepository {
     return list;
   }
 
+  OwnedAlbum? getAlbum(String id) => _albums.get(id);
+
   List<CollectionEntry> getAll() {
     final list = _box.values.toList();
     list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -57,13 +59,32 @@ class CollectionRepository {
 
   Future<OwnedAlbum> createAlbum(String name) async {
     await init();
+    final now = DateTime.now().millisecondsSinceEpoch;
     final album = OwnedAlbum(
       id: const Uuid().v4(),
       name: name.trim(),
-      createdAtMillis: DateTime.now().millisecondsSinceEpoch,
+      createdAtMillis: now,
+      lastOpenedMillis: now,
     );
     await _albums.put(album.id, album);
     return album;
+  }
+
+  Future<void> setAlbumFavorited(String id, bool favorited) async {
+    await init();
+    final album = _albums.get(id);
+    if (album == null || album.favorited == favorited) return;
+    await _albums.put(id, album.copyWith(favorited: favorited));
+  }
+
+  Future<void> touchAlbumOpened(String id) async {
+    await init();
+    final album = _albums.get(id);
+    if (album == null) return;
+    await _albums.put(
+      id,
+      album.copyWith(lastOpenedMillis: DateTime.now().millisecondsSinceEpoch),
+    );
   }
 
   Future<void> renameAlbum(String id, String name) async {

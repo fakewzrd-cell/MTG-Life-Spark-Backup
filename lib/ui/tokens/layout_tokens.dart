@@ -87,9 +87,21 @@ class LayoutTokens {
   /// Vertical gap between major sections on shell pages.
   static const double shellSectionGap = gr5;
 
+  /// Height of the floating shell dock: nav bar plus home indicator.
+  ///
+  /// [MainShell] uses [Scaffold.extendBody], so [MediaQuery.padding] often
+  /// already includes the dock. Nested routes may consume that padding — take
+  /// the larger of padding vs nav + [viewPadding] so we never double-count
+  /// and never sit under the bar.
+  static double shellDockInset(BuildContext context) {
+    final paddingBottom = MediaQuery.paddingOf(context).bottom;
+    final minDock = bottomNavHeight + MediaQuery.viewPaddingOf(context).bottom;
+    return paddingBottom > minDock ? paddingBottom : minDock;
+  }
+
   /// Bottom clearance for content under [MainShell]'s floating nav + home indicator.
   static double shellBottomInset(BuildContext context) {
-    return bottomNavHeight + MediaQuery.paddingOf(context).bottom + gr2;
+    return shellDockInset(context) + gr2;
   }
 
   /// Standard [ListView] padding inside shell tabs.
@@ -115,6 +127,21 @@ class LayoutTokens {
   }) {
     return EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom);
   }
+}
+
+/// Marks UI that sits under [MainShell]'s floating dock.
+///
+/// Root-navigator sheets cannot see the shell as an ancestor. Callers under
+/// this scope pass dock clearance into those sheets so the last row is not
+/// hidden by the nav.
+class ShellDockScope extends InheritedWidget {
+  const ShellDockScope({super.key, required super.child});
+
+  static bool isPresent(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<ShellDockScope>() != null;
+
+  @override
+  bool updateShouldNotify(covariant ShellDockScope oldWidget) => false;
 }
 
 /// Width / height hints for **in-game** layouts (personal view, HUD rows).

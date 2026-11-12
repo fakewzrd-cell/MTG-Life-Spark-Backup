@@ -32,11 +32,11 @@ class AppSettings extends HiveObject {
   @HiveField(8)
   bool hideSystemBars;
 
-  @HiveField(9, defaultValue: true)
+  @HiveField(9, defaultValue: false)
   bool useDarkTheme;
 
   /// Persisted color scheme id: `violet` | `slate` | `crimson`.
-  @HiveField(10, defaultValue: 'violet')
+  @HiveField(10, defaultValue: 'slate')
   String colorSchemeId;
 
   /// User dismissed the in-match life gesture tip.
@@ -61,8 +61,8 @@ class AppSettings extends HiveObject {
     this.onboardingCompleted = false,
     this.keepDisplayAwake = true,
     this.hideSystemBars = false,
-    this.useDarkTheme = true,
-    this.colorSchemeId = 'violet',
+    this.useDarkTheme = false,
+    this.colorSchemeId = 'slate',
     this.lifeGestureHintDismissed = false,
     this.hubGuideCompleted = false,
     this.localeCode = 'system',

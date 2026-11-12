@@ -49,9 +49,12 @@ class ScryfallCardCache {
     final now = DateTime.now().toUtc().toIso8601String();
     final entries = <String, String>{};
     for (final card in cards) {
-      final key = bracketNameKey(card.name);
-      if (key.isEmpty) continue;
-      entries[key] = jsonEncode({'fetchedAt': now, 'card': card.toJson()});
+      final payload = jsonEncode({'fetchedAt': now, 'card': card.toJson()});
+      for (final name in [card.name, scryfallFrontName(card.name)]) {
+        final key = bracketNameKey(name);
+        if (key.isEmpty) continue;
+        entries[key] = payload;
+      }
     }
     if (entries.isEmpty) return;
     if (_memory != null) {

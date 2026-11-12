@@ -159,7 +159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         bottom: false,
         child: CustomScrollView(
           key: ValueKey('${profileWatch.revision}-$_editing'),
-          clipBehavior: Clip.none,
+          clipBehavior: Clip.hardEdge,
           slivers: [
             SliverToBoxAdapter(
               child: _ProfileHeroCard(

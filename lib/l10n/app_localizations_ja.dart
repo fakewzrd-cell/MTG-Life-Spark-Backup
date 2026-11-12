@@ -146,10 +146,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsSectionHelp => 'ヘルプ';
 
   @override
+  String get settingsAbout => 'このアプリについて';
+
+  @override
+  String get settingsAboutSubtitle => 'Life Spark 作者からのメッセージ';
+
+  @override
   String get settingsFeedback => 'フィードバック';
 
   @override
   String get settingsFeedbackSubtitle => 'ご意見・ご要望をお送りください';
+
+  @override
+  String get settingsReportBug => '不具合を報告';
+
+  @override
+  String settingsReportBugSubtitle(String email) {
+    return '$email に問題を送る';
+  }
+
+  @override
+  String get reportBugMailSubject => 'Life Spark 不具合報告';
+
+  @override
+  String reportBugClipboardFallback(
+    String email,
+    String subject,
+    String message,
+  ) {
+    return '宛先: $email\\n件名: $subject\\n\\n$message';
+  }
 
   @override
   String get settingsViewHubGuide => 'ハブガイドを見る';
@@ -180,6 +206,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get commonClose => '閉じる';
+
+  @override
+  String get cardViewerFlip => '裏返す';
 
   @override
   String get commonTryAgain => '再試行';
@@ -497,6 +526,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get welcomeSkip => 'スキップ';
+
+  @override
+  String get founderNoteTitle => 'Federick より';
+
+  @override
+  String get founderNoteP1 =>
+      'Life Spark は個人プロジェクトとして始まりました。Magic: The Gathering のライフカウンターを、もっとダイナミックで直感的に、実際の卓での遊びに近い形へ進めるためです。';
+
+  @override
+  String get founderNoteP2 =>
+      'プロフィールを共有し、勝ちだけを目指す卓ではなく、対戦を楽しみ、誰もがプレイする余地と勝つチャンスを持てる人たちと座りたい、そう思って作りました。';
+
+  @override
+  String get founderNoteP3 =>
+      'Life Spark が皆さんの卓に居場所を得られたなら、ストアでの評価と短いコメントは大きな力になります。Magic を楽しみ、共有したい人のために、アプリを良くし続ける手がかりになります。';
+
+  @override
+  String get founderNoteSignoff => 'ここにいてくださり、ありがとうございます。\n— Federick';
 
   @override
   String get onboardingSlide1Title => 'Life Sparkへようこそ';
@@ -873,6 +920,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get decksNoFilterMatches => 'これらのフィルターに一致するデッキはありません。';
+
+  @override
+  String get decksClearFilters => 'フィルターをクリア';
 
   @override
   String get decksFilterFormat => 'フォーマット';
@@ -2674,7 +2724,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get paletteCrimson => 'クリムゾン';
 
   @override
-  String get paletteSlate => 'スレート';
+  String get paletteSlate => 'ブルー';
 
   @override
   String networkCannotReachHost(String error) {
@@ -2904,6 +2954,14 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String glanceChipOut(String name) {
     return '$name、脱落';
+  }
+
+  @override
+  String get deckAlbumShuffling => 'カードをシャッフルしています…';
+
+  @override
+  String deckAlbumLastUpdated(String when) {
+    return '最終更新 $when';
   }
 
   @override
@@ -3184,13 +3242,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get collectionAlbumNoMatches => '一致するアルバムはありません。';
 
   @override
-  String get collectionAlbumSortCards => 'カード';
+  String get collectionAlbumFilterRecent => '最近';
 
   @override
-  String get collectionAlbumFilterWithCards => 'カードあり';
+  String get collectionAlbumFilterFavorite => 'お気に入り';
 
   @override
-  String get collectionAlbumFilterEmpty => '空';
+  String get collectionAlbumFavorite => 'お気に入り';
+
+  @override
+  String get collectionAlbumUnfavorite => 'お気に入りを解除';
+
+  @override
+  String get collectionAlbumOptions => 'アルバムのオプション';
 
   @override
   String get collectionAlbumsEmpty => 'アルバムを作り、持っているカードを追加してください。';

@@ -183,8 +183,16 @@ void main() {
     expect(copy.name, card.name);
     expect(copy.imageUrl, card.imageUrl);
     expect(copy.cardFaceUrl, card.cardFaceUrl);
+    expect(copy.cardBackUrl, isNull);
     expect(copy.typeLine, card.typeLine);
     expect(copy.colorIdentity, ['R']);
+
+    const dfc = ScryfallCard(
+      name: 'Soundwave, Sonic Spy // Soundwave, Superior Captain',
+      cardFaceUrl: 'https://img/front.jpg',
+      cardBackUrl: 'https://img/back.jpg',
+    );
+    expect(ScryfallCard.fromJson(dfc.toJson()).cardBackUrl, dfc.cardBackUrl);
   });
 
   test('collection lookup skips the network when the card is cached', () async {
@@ -208,7 +216,58 @@ void main() {
     final cards = await service.fetchCardsByNames(['Lightning Bolt']);
     expect(posts, 0);
     expect(cards.single.cardFaceUrl, 'https://img/normal.jpg');
+
+    final cached = await service.cachedCardsByNames([
+      'Lightning Bolt',
+      'Forest',
+    ]);
+    expect(cached.single.name, 'Lightning Bolt');
+    expect(posts, 0);
   });
+
+  test(
+    'collection lookup uses the front face for double-faced names',
+    () async {
+      late String posted;
+      final service = ScryfallService(
+        cache: ScryfallCardCache(memory: {}),
+        client: MockClient((request) async {
+          posted = request.body;
+          return _json({
+            'data': [
+              {
+                'id': 'sw',
+                'name': 'Soundwave, Sonic Spy // Soundwave, Superior Captain',
+                'card_faces': [
+                  {
+                    'mana_cost': '{4}{U}',
+                    'type_line': 'Legendary Artifact Creature - Robot',
+                    'image_uris': {
+                      'normal': 'https://img/soundwave.jpg',
+                      'art_crop': 'https://img/soundwave-crop.jpg',
+                    },
+                  },
+                  {
+                    'type_line': 'Legendary Artifact',
+                    'image_uris': {'normal': 'https://img/soundwave-back.jpg'},
+                  },
+                ],
+              },
+            ],
+          });
+        }),
+      );
+
+      const printed = 'Soundwave, Sonic Spy // Soundwave, Superior Captain';
+      final cards = await service.fetchCardsByNames([printed]);
+      expect(posted, contains('"name":"Soundwave, Sonic Spy"'));
+      expect(posted, isNot(contains('Superior Captain')));
+      expect(cards.single.cardFaceUrl, 'https://img/soundwave.jpg');
+      expect(cards.single.cardBackUrl, 'https://img/soundwave-back.jpg');
+      expect(indexScryfallCards(cards)[printed.toLowerCase()], isNotNull);
+      expect(indexScryfallCards(cards)['soundwave, sonic spy'], isNotNull);
+    },
+  );
 
   test('expired cache rows are deleted and skipped', () async {
     final memory = <String, String>{};
