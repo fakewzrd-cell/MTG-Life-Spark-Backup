@@ -12,20 +12,22 @@ import '../support/game_widget_harness.dart';
 import '../support/test_l10n.dart';
 
 void main() {
-  testWidgets('game lobby shows Host Game and Join Game', (tester) async {
+  testWidgets('game lobby shows One View and Own View', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark(),
-        localizationsDelegates: testLocalizationDelegates,
-        supportedLocales: testSupportedLocales,
-        home: const GameLobbyScreen(),
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          localizationsDelegates: testLocalizationDelegates,
+          supportedLocales: testSupportedLocales,
+          home: const GameLobbyScreen(),
+        ),
       ),
     );
 
     expect(find.text('Lobby'), findsOneWidget);
     expect(find.byType(BrandLogo), findsNothing);
-    expect(find.text('Host Game'), findsOneWidget);
-    expect(find.text('Join Game'), findsOneWidget);
+    expect(find.text('One View'), findsOneWidget);
+    expect(find.text('Own View'), findsOneWidget);
   });
 
   testWidgets('forfeit dialog shows like/dislike and star of the game', (

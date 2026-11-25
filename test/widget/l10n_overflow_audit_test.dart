@@ -184,8 +184,8 @@ void main() {
       failures.addAll(
         takeOverflowExceptions(tester).map((e) => '$locale lobby: $e'),
       );
-      expect(find.text(l10n.lobbyHostGame), findsOneWidget);
-      expect(find.text(l10n.lobbyJoinGame), findsOneWidget);
+      expect(find.text(l10n.oneViewTitle), findsOneWidget);
+      expect(find.text(l10n.ownViewTitle), findsOneWidget);
     }
 
     expect(failures, isEmpty, reason: failures.join('\n'));
