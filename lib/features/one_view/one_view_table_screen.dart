@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../core/game/game_format.dart';
 import '../../core/game/game_session_events.dart';
 import '../../core/game/progression_service.dart';
 import '../../core/one_view/one_view_match_recording.dart';
