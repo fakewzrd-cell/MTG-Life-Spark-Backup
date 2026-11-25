@@ -147,14 +147,14 @@
   "oneViewSetupTitle": "One View setup",
   "oneViewPlayersLabel": "Players",
   "oneViewStartTable": "Start table",
-  "oneViewEmptySeat": "Empty seat — tap to sit",
+  "oneViewEmptySeat": "Tap to join",
   "oneViewClaimSeatTitle": "Claim seat",
-  "oneViewSitAsMe": "Sit as me",
-  "oneViewSitAsMeSubtitle": "Use this phone’s profile, then pick a deck",
-  "oneViewLoadViaQr": "Load profile via QR",
-  "oneViewLoadViaQrSubtitle": "Scan a friend’s sit code — no Wi‑Fi game",
+  "oneViewSitAsMe": "My profile",
+  "oneViewSitAsMeSubtitle": "Use this phone’s profile",
+  "oneViewLoadViaQr": "Scan profile",
+  "oneViewLoadViaQrSubtitle": "Scan a friend’s QR",
   "oneViewSitAsGuest": "Guest",
-  "oneViewSitAsGuestSubtitle": "Name only — no deck or stats",
+  "oneViewSitAsGuestSubtitle": "Enter a name",
   "oneViewGuestNameTitle": "Guest name",
   "oneViewGuestNameHint": "Optional name",
   "oneViewSitBlocked": "That profile is already seated, or the seat is taken.",
@@ -170,6 +170,8 @@
   "oneViewCardArtRemove": "Remove art",
   "oneViewCardArtUseDeck": "Use a deck",
   "oneViewClearSeat": "Clear seat",
+  "oneViewRename": "Rename",
+  "oneViewRenameHint": "Player name",
   "oneViewPoisonMinus": "Poison −",
   "oneViewPoisonPlus": "Poison +",
   "oneViewPoisonCount": "Poison {count}",
@@ -243,7 +245,7 @@
   "oneViewMenuSeat": "Seat",
   "oneViewCommanderDamageLabel": "Commander damage",
   "oneViewAttackSwipe": "Drag to deal damage",
-  "oneViewAttackSwipeSubtitle": "Drag from your card onto a player, then tap their card once per point.",
+  "oneViewAttackSwipeSubtitle": "Drag from your card across one or more players, then tap each card once per point.",
   "oneViewAttackDamage": "Damage",
   "oneViewAttackTap": "Tap",
   "oneViewCommanderDamageCount": "Commander {count}",
@@ -1985,20 +1987,49 @@
   "gameBarStopTimeout": "Stop",
   "gameSkipTurn": "Skip turn",
   "gameSkipPlayer": "Skip {name}",
-  "@gameSkipPlayer": {"placeholders": {"name": {"type": "String"}}},
+  "@gameSkipPlayer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "gameTabLookup": "Rules",
   "lookupRulingsError": "Could not load rulings. Check your connection.",
   "lookupFirstMatches": "Showing the first {count} matches.",
-  "@lookupFirstMatches": {"placeholders": {"count": {"type": "int"}}},
+  "@lookupFirstMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "glanceChipLife": "{name}, {life} life",
-  "@glanceChipLife": {"placeholders": {"name": {"type": "String"}, "life": {"type": "int"}}},
+  "@glanceChipLife": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "life": {
+        "type": "int"
+      }
+    }
+  },
   "glanceChipOut": "{name}, out",
-  "@glanceChipOut": {"placeholders": {"name": {"type": "String"}}},
+  "@glanceChipOut": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deckAlbumShuffling": "Shuffling cards…",
   "deckAlbumLastUpdated": "Updated {when}",
   "@deckAlbumLastUpdated": {
     "placeholders": {
-      "when": {"type": "String"}
+      "when": {
+        "type": "String"
+      }
     }
   },
   "deckAlbumTitle": "Deck",
@@ -2013,9 +2044,21 @@
   "deckAlbumPasteAction": "Save list",
   "deckAlbumPasteEmpty": "No cards found in that list.",
   "deckAlbumPasteSaved": "Saved {count} cards.",
-  "@deckAlbumPasteSaved": {"placeholders": {"count": {"type": "int"}}},
+  "@deckAlbumPasteSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deckAlbumPasteSkipped": "Saved the list. Skipped {count} lines.",
-  "@deckAlbumPasteSkipped": {"placeholders": {"count": {"type": "int"}}},
+  "@deckAlbumPasteSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deckAlbumReplaceTitle": "Replace this list?",
   "deckAlbumReplaceBody": "The cards in this deck will be replaced by the pasted list.",
   "deckAlbumReplaceConfirm": "Replace",
@@ -2041,9 +2084,21 @@
   "deckStatsAverageManaValue": "Average mana value",
   "deckStatsLands": "Lands",
   "deckAlbumOffColor": "{name} is outside this commander's colors.",
-  "@deckAlbumOffColor": {"placeholders": {"name": {"type": "String"}}},
+  "@deckAlbumOffColor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deckAlbumPlayedIn": "Played in {percent}% of decks with this commander.",
-  "@deckAlbumPlayedIn": {"placeholders": {"percent": {"type": "int"}}},
+  "@deckAlbumPlayedIn": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "deckStatsShowRest": "Show the rest",
   "deckStatsShowLess": "Show less",
   "deckStatsManaValuePlus": "7+",
@@ -2057,14 +2112,20 @@
   "deckAlbumPasteTooBig": "A {format} deck can only have {count} cards.",
   "@deckAlbumPasteTooBig": {
     "placeholders": {
-      "format": {"type": "String"},
-      "count": {"type": "int"}
+      "format": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "deckAlbumSideboardLimit": "The sideboard can only have {count} cards.",
   "@deckAlbumSideboardLimit": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "deckAlbumCopyLimit": "A card in this list is over the copy limit for this format.",
@@ -2094,14 +2155,32 @@
   "deckBracketCombos": "Combos",
   "deckBracketEarlyCombos": "Early combos",
   "deckBracketCombo": "Combo: {cards}",
-  "@deckBracketCombo": {"placeholders": {"cards": {"type": "String"}}},
+  "@deckBracketCombo": {
+    "placeholders": {
+      "cards": {
+        "type": "String"
+      }
+    }
+  },
   "deckBracketEarlyCombo": "Early combo: {cards}",
-  "@deckBracketEarlyCombo": {"placeholders": {"cards": {"type": "String"}}},
+  "@deckBracketEarlyCombo": {
+    "placeholders": {
+      "cards": {
+        "type": "String"
+      }
+    }
+  },
   "deckBracketCombosUnavailable": "Two-card combos could not be checked.",
   "deckBracketChoose": "Choose a bracket. It can't sit below this deck's floor.",
   "deckBracketAnalyze": "Analyze",
   "deckBracketAnalyzed": "This list is Bracket {n}.",
-  "@deckBracketAnalyzed": {"placeholders": {"n": {"type": "int"}}},
+  "@deckBracketAnalyzed": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "deckBracketAnalyzedRange": "This list is Bracket 1–2.",
   "collectionAlbumSearchHint": "Search albums…",
   "collectionAlbumNoMatches": "No albums match.",
@@ -2117,7 +2196,9 @@
   "collectionAlbumCount": "{count, plural, =1{1 card} other{{count} cards}}",
   "@collectionAlbumCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionAlbumEmpty": "Add the cards you own in this album.",
@@ -2127,7 +2208,9 @@
   "collectionDeleteAlbumBody": "{name} and the cards in it will be removed.",
   "@collectionDeleteAlbumBody": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "collectionAddCards": "Add cards",
@@ -2142,14 +2225,20 @@
   "collectionAddSaved": "Added {count} {name}",
   "@collectionAddSaved": {
     "placeholders": {
-      "count": {"type": "int"},
-      "name": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "collectionCartLabel": "List · {count}",
   "@collectionCartLabel": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionCartTitle": "List",
@@ -2158,13 +2247,17 @@
   "collectionCartSaved": "Added {count} cards",
   "@collectionCartSaved": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionCartPartial": "Added {count}. Some cards could not be added.",
   "@collectionCartPartial": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collectionCartDiscardTitle": "Leave without adding?",
@@ -2179,9 +2272,50 @@
   "collectionSuggestionCount": "{name}, {owned} of {total}",
   "@collectionSuggestionCount": {
     "placeholders": {
-      "name": {"type": "String"},
-      "owned": {"type": "int"},
-      "total": {"type": "int"}
+      "name": {
+        "type": "String"
+      },
+      "owned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-  }
+  },
+  "oneViewExtraModes": "Extra modes",
+  "oneViewUseProfile": "Use {name}",
+  "@oneViewUseProfile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "oneViewDeckStyleMissing": "Some decks need a style. Set it in Decks to use them here.",
+  "oneViewResetLifeBody": "Reset life totals to {life} and clear poison and commander damage?",
+  "@oneViewResetLifeBody": {
+    "placeholders": {
+      "life": {
+        "type": "int"
+      }
+    }
+  },
+  "oneViewAttackHint": "Choose damage type, then tap a player.",
+  "oneViewDone": "Done",
+  "oneViewRollAgain": "Roll again",
+  "oneViewScanProfileHint": "Place your friend’s profile QR inside the frame.",
+  "oneViewScanXpHint": "Place the XP claim QR inside the frame.",
+  "oneViewInvalidProfileQr": "This is not a profile QR. Ask your friend to show their sit code.",
+  "oneViewCurrentArt": "Current art",
+  "oneViewCameraUnavailable": "Camera unavailable. Allow camera access in your phone settings, then reopen the scanner.",
+  "oneViewPlayerMenu": "Options for {name}",
+  "@oneViewPlayerMenu": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "oneViewAttackNeedsPlayer": "Add a player to that seat before attacking."
 }

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/one_view/one_view_layout.dart';
 import '../../core/one_view/one_view_state.dart';
-import '../../features/game/widgets/game_modal_chrome.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
-import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
+import 'one_view_chrome.dart';
 
 /// Centered picker. Options are only the arrangements for the current count.
 Future<void> showOneViewLayoutPicker(
@@ -17,11 +17,9 @@ Future<void> showOneViewLayoutPicker(
   WidgetRef ref,
 ) async {
   final l10n = AppLocalizations.of(context);
-  final colors = AppColorTokens.of(context);
-  await showDialog<void>(
+  await showOneViewDialog<void>(
     context: context,
     builder: (ctx) {
-      final maxH = MediaQuery.sizeOf(ctx).height * 0.72;
       return Consumer(
         builder: (context, ref, _) {
           final count = ref.watch(
@@ -29,43 +27,14 @@ Future<void> showOneViewLayoutPicker(
           );
           final selected = ref.watch(oneViewProvider.select((s) => s.layout));
           final options = OneViewSeatLayout.optionsFor(count);
-          return AlertDialog(
-            backgroundColor: colors.surface,
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: LayoutTokens.gr4,
-              vertical: LayoutTokens.gr4,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: RadiusTokens.radiusXl,
-              side: BorderSide(color: colors.borderSubtle),
-            ),
-            titlePadding: const EdgeInsets.fromLTRB(
-              LayoutTokens.gr3,
-              LayoutTokens.gr3,
-              LayoutTokens.gr2,
-              0,
-            ),
-            title: GameDialogTitleRow(
-              titleWidget: Text(
-                l10n.oneViewLayoutTitle,
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: FontTokens.headline,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              onClose: () => Navigator.pop(ctx),
-            ),
-            contentPadding: const EdgeInsets.fromLTRB(
-              LayoutTokens.gr3,
-              LayoutTokens.gr3,
-              LayoutTokens.gr3,
-              LayoutTokens.gr4,
-            ),
-            content: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxH),
-              child: SingleChildScrollView(
-                child: Wrap(
+          return OneViewMenuDialog(
+            title: l10n.oneViewLayoutTitle,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 240 ? 2 : 1;
+                final choiceWidth =
+                    (constraints.maxWidth - 16 * (columns - 1)) / columns;
+                return Wrap(
                   spacing: LayoutTokens.gr3,
                   runSpacing: LayoutTokens.gr3,
                   alignment: WrapAlignment.center,
@@ -73,6 +42,7 @@ Future<void> showOneViewLayoutPicker(
                     for (final option in options)
                       _LayoutChoice(
                         layout: option,
+                        width: choiceWidth,
                         label: oneViewLayoutLabel(l10n, option),
                         selected: option == selected,
                         onTap: () {
@@ -81,8 +51,8 @@ Future<void> showOneViewLayoutPicker(
                         },
                       ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
           );
         },
@@ -113,12 +83,14 @@ String oneViewLayoutLabel(AppLocalizations l10n, OneViewSeatLayout layout) {
 class _LayoutChoice extends StatelessWidget {
   const _LayoutChoice({
     required this.layout,
+    required this.width,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
   final OneViewSeatLayout layout;
+  final double width;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -127,52 +99,68 @@ class _LayoutChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final border = selected ? colors.primaryAccent : colors.borderSubtle;
-    return SizedBox(
-      width: 148,
-      child: Material(
-        color: colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: RadiusTokens.radiusLg,
-          side: BorderSide(color: border, width: selected ? 2 : 1),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              LayoutTokens.gr2,
-              LayoutTokens.gr2,
-              LayoutTokens.gr2,
-              LayoutTokens.gr2,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  height: 112,
-                  child: buildOneViewSeatSplit(
-                    split: layout.split,
-                    tile:
-                        (_, upsideDown) => _LayoutBlock(
-                          selected: selected,
-                          upsideDown: upsideDown,
+    return Semantics(
+      selected: selected,
+      child: SizedBox(
+        width: width,
+        child: Material(
+          color: colors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: RadiusTokens.radiusLg,
+            side: BorderSide(color: border, width: selected ? 2 : 1),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                LayoutTokens.gr2,
+                LayoutTokens.gr2,
+                LayoutTokens.gr2,
+                LayoutTokens.gr2,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    children: [
+                      SizedBox(
+                        height: width < 150 ? 80 : 100,
+                        child: buildOneViewSeatSplit(
+                          split: layout.split,
+                          tile:
+                              (_, upsideDown) => _LayoutBlock(
+                                selected: selected,
+                                upsideDown: upsideDown,
+                              ),
                         ),
+                      ),
+                      if (selected)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Icon(
+                            Icons.check_circle_rounded,
+                            size: 20,
+                            color: colors.primaryAccent,
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: LayoutTokens.gr2),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontSize: FontTokens.body,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
+                  const SizedBox(height: LayoutTokens.gr1),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

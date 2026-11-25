@@ -1,10 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../ui/tokens/font_tokens.dart';
 import '../../../ui/tokens/layout_tokens.dart';
 import '../../../ui/tokens/motion_tokens.dart';
-import '../../../ui/tokens/opacity_tokens.dart';
 import '../../../ui/tokens/radius_tokens.dart';
 import 'game_colors.dart';
 import 'game_ui_tokens.dart';
@@ -14,21 +15,65 @@ abstract final class GameModalChrome {
   static double horizontalInset(BuildContext context) =>
       LayoutTokens.shellPageInset;
 
-  static TextStyle dialogTitleStyle(BuildContext context) {
-    final colors = context.gameColors;
-    return TextStyle(
-      color: colors.textPrimary,
-      fontSize: FontTokens.title,
-      fontWeight: FontWeight.w700,
+  /// Dialog margin that stays outside the notch and the gesture edge.
+  ///
+  /// [Dialog] already adds [MediaQuery.viewInsets] for the keyboard. This
+  /// adds [MediaQuery.viewPadding] so a landscape menu does not slide under
+  /// the camera cutout.
+  static EdgeInsets dialogInset(
+    BuildContext context, {
+    double minHorizontal = LayoutTokens.gr4,
+    double minVertical = LayoutTokens.gr3,
+  }) {
+    final safe = MediaQuery.viewPaddingOf(context);
+    return EdgeInsets.fromLTRB(
+      math.max(minHorizontal, safe.left),
+      math.max(minVertical, safe.top),
+      math.max(minHorizontal, safe.right),
+      math.max(minVertical, safe.bottom),
     );
   }
 
+  /// Matches [DialogThemeData.titleTextStyle]: Lato 24, heavy.
+  static TextStyle dialogTitleStyle(BuildContext context) {
+    final colors = context.gameColors;
+    final base = Theme.of(context).textTheme.headlineMedium;
+    return (base ?? const TextStyle(fontSize: 24)).copyWith(
+      color: colors.textPrimary,
+      fontWeight: FontWeight.w700,
+      height: 1.15,
+    );
+  }
+
+  /// Matches dialog content: Lato 16.
   static TextStyle dialogBodyStyle(BuildContext context) {
     final colors = context.gameColors;
-    return TextStyle(
-      color: colors.textSecondary.withValues(alpha: OpacityTokens.strong),
-      fontSize: FontTokens.hudSm,
-      height: 1.4,
+    final base = Theme.of(context).textTheme.bodyLarge;
+    return (base ?? const TextStyle(fontSize: FontTokens.body)).copyWith(
+      color: colors.textSecondary,
+      height: 1.5,
+    );
+  }
+
+  /// Menu row label. Lato 20, the app's headlineSmall.
+  static TextStyle menuLabelStyle(BuildContext context, {Color? color}) {
+    final colors = context.gameColors;
+    final base = Theme.of(context).textTheme.headlineSmall;
+    return (base ?? const TextStyle(fontSize: FontTokens.headline)).copyWith(
+      color: color ?? colors.textPrimary,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
+    );
+  }
+
+  /// Quiet label above a group of menu rows.
+  static TextStyle menuSectionStyle(BuildContext context) {
+    final colors = context.gameColors;
+    final base = Theme.of(context).textTheme.titleMedium;
+    return (base ?? const TextStyle(fontSize: FontTokens.body)).copyWith(
+      color: colors.textSecondary,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
     );
   }
 
@@ -514,50 +559,236 @@ class GameFormDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
-    final mq = MediaQuery.of(context);
-    // Leave room for the IME in landscape; Dialog already insets via MediaQuery.
-    final maxBodyH = (mq.size.height - mq.viewInsets.bottom) * 0.45;
-    return AlertDialog(
+    // The whole form scrolls in the space [Dialog] leaves above the keyboard.
+    // A fixed content height plus a separate action button overflows that
+    // space when the phone is horizontal.
+    return Dialog(
       backgroundColor: colors.surface,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      insetPadding: GameModalChrome.dialogInset(context, minVertical: 12),
       shape: RoundedRectangleBorder(
         borderRadius: RadiusTokens.radiusXl,
         side: BorderSide(color: colors.backgroundSecondary),
       ),
-      contentPadding: const EdgeInsets.fromLTRB(
-        LayoutTokens.gr3,
-        LayoutTokens.gr2,
-        LayoutTokens.gr3,
-        LayoutTokens.gr2,
-      ),
-      title: GameDialogTitleRow(
-        title: title,
-        onClose: () => Navigator.pop(context),
-      ),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxBodyH.clamp(80, 320)),
-        child: SingleChildScrollView(child: content),
-      ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            LayoutTokens.gr3,
-            0,
-            LayoutTokens.gr3,
-            LayoutTokens.gr3,
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          LayoutTokens.gr3,
+          LayoutTokens.gr2,
+          LayoutTokens.gr3,
+          LayoutTokens.gr3,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GameDialogTitleRow(
+              title: title,
+              onClose: () => Navigator.pop(context),
+            ),
+            const SizedBox(height: LayoutTokens.gr2),
+            content,
+            const SizedBox(height: LayoutTokens.gr3),
+            FilledButton(
               onPressed: enabled ? onSubmit : null,
               style: FilledButton.styleFrom(
                 backgroundColor: colors.primaryAccent,
               ),
               child: Text(submitLabel),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Centered table menu. Same shell as the table hub: radius 28, Lato title,
+/// and a scroll body that hugs its content instead of a bottom sheet.
+class GameMenuDialog extends StatelessWidget {
+  const GameMenuDialog({
+    super.key,
+    this.title,
+    this.titleWidget,
+    required this.child,
+    this.maxWidth,
+    this.expandBody = false,
+    this.headerLeadingInset,
+  }) : assert(title != null || titleWidget != null);
+
+  final String? title;
+  final Widget? titleWidget;
+  final Widget child;
+
+  /// Caps the dialog. Landscape defaults to 600, portrait to 480.
+  final double? maxWidth;
+
+  /// Gives [child] the leftover height so an inner list can scroll.
+  final bool expandBody;
+
+  /// Optional alignment override for flows with unindented menu actions.
+  final double? headerLeadingInset;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.gameColors;
+    final size = MediaQuery.sizeOf(context);
+    final landscape = size.width > size.height;
+    final inset = GameModalChrome.dialogInset(context);
+    final available = math.max(0.0, size.width - inset.horizontal);
+    final cap = maxWidth ?? (landscape ? 600.0 : 480.0);
+    final boardW = math.min(available, cap);
+    final safeH = math.max(0.0, size.height - inset.vertical);
+    final maxH = landscape ? safeH : math.min(safeH, size.height * 0.88);
+    const bodyPad = EdgeInsets.fromLTRB(
+      LayoutTokens.gr3,
+      LayoutTokens.gr2,
+      LayoutTokens.gr3,
+      LayoutTokens.gr3,
+    );
+
+    return Dialog(
+      backgroundColor: colors.surface,
+      insetPadding: inset,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: RadiusTokens.radiusXl,
+        side: BorderSide(color: colors.borderSubtle),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.min(boardW, constraints.maxWidth);
+          final height = math.min(maxH, constraints.maxHeight);
+          final body =
+              expandBody
+                  ? Expanded(child: Padding(padding: bodyPad, child: child))
+                  : Flexible(
+                    fit: FlexFit.loose,
+                    child: SingleChildScrollView(
+                      padding: bodyPad,
+                      child: child,
+                    ),
+                  );
+          return SizedBox(
+            width: width,
+            height: expandBody ? height : null,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: height),
+              child: Column(
+                mainAxisSize: expandBody ? MainAxisSize.max : MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      headerLeadingInset ??
+                          (landscape ? LayoutTokens.gr5 : LayoutTokens.gr3),
+                      LayoutTokens.gr3,
+                      LayoutTokens.gr3,
+                      0,
+                    ),
+                    child: GameDialogTitleRow(
+                      title: titleWidget == null ? title : null,
+                      titleWidget: titleWidget,
+                      onClose: () => Navigator.pop(context),
+                    ),
+                  ),
+                  body,
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// One row in a [GameMenuDialog]. Icon 24, Lato 20, 56px tall.
+class GameMenuAction extends StatelessWidget {
+  const GameMenuAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+    this.detail,
+    this.color,
+    this.enabled = true,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? subtitle;
+  final String? detail;
+  final Color? color;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.gameColors;
+    final landscape =
+        MediaQuery.sizeOf(context).width > MediaQuery.sizeOf(context).height;
+    final ink = color ?? colors.textPrimary;
+    final iconColor = color ?? colors.primaryAccent;
+    final muted = !enabled;
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding:
+              landscape
+                  ? const EdgeInsets.symmetric(
+                    horizontal: LayoutTokens.gr2,
+                    vertical: LayoutTokens.gr1,
+                  )
+                  : const EdgeInsets.symmetric(vertical: LayoutTokens.gr2),
+          child: Row(
+            children: [
+              Icon(icon, size: 24, color: muted ? colors.textMuted : iconColor),
+              const SizedBox(width: LayoutTokens.gr2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GameModalChrome.menuLabelStyle(
+                        context,
+                        color: muted ? colors.textMuted : ink,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: LayoutTokens.gr0 / 2),
+                      Text(
+                        subtitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GameModalChrome.dialogBodyStyle(context),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (detail != null) ...[
+                const SizedBox(width: LayoutTokens.gr2),
+                Flexible(
+                  child: Text(
+                    detail!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: GameModalChrome.dialogBodyStyle(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

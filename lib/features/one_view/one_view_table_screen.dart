@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -14,6 +13,7 @@ import '../../core/game/game_constants.dart';
 import '../../core/game/game_format.dart';
 import '../../core/game/game_session_events.dart';
 import '../../core/game/progression_service.dart';
+import '../../core/one_view/one_view_keyboard.dart';
 import '../../core/one_view/one_view_layout.dart';
 import '../../core/one_view/one_view_match_recording.dart';
 import '../../core/one_view/one_view_orientation.dart';
@@ -39,6 +39,8 @@ import 'one_view_deck_picker.dart';
 import 'one_view_layout_picker.dart';
 import 'one_view_table_tools.dart';
 import 'one_view_xp_claim_ui.dart';
+import 'one_view_qr_scanner.dart';
+import 'one_view_chrome.dart';
 
 /// Shared-phone tabletop: life +/- , claim, center tools.
 /// Far-side seats turn 180° so the player across the table can read them.
@@ -53,15 +55,21 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
     with WidgetsBindingObserver {
   TableToolAnnouncement? _diceAnnouncement;
   final List<GlobalKey> _seatCardKeys = [];
-  ({int from, int to, bool faceDown})? _attack;
+  ({int from, List<int> targets, bool faceDown})? _attack;
+  int? _dragPointer;
   int? _dragFrom;
   Offset? _dragOrigin;
+  final List<int?> _dragSamples = [];
+  int? _dragHover;
+  final Set<int> _dragReached = <int>{};
+  Size? _displaySize;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WakelockPlus.enable();
+    unawaited(OneViewKeyboardLayout.hold());
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _applyTableOrientation(),
     );
@@ -71,12 +79,24 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     WakelockPlus.disable();
+    unawaited(OneViewKeyboardLayout.release());
     OneViewOrientation.restoreAppDefault();
     super.dispose();
   }
 
   @override
   void didChangeMetrics() {
+    if (!mounted) return;
+    // The keyboard changes window insets, not the physical display.
+    // Re-locking orientation on that callback shifts the seats.
+    final display = View.of(context).display.size;
+    final previous = _displaySize;
+    _displaySize = display;
+    if (previous != null &&
+        previous.width == display.width &&
+        previous.height == display.height) {
+      return;
+    }
     _applyTableOrientation();
   }
 
@@ -97,12 +117,12 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
   double _hubSize(int seatCount) {
     if (seatCount <= 2) return 64;
     if (seatCount <= 4) return 56;
-    return 44;
+    return 48;
   }
 
   Future<void> _leave() async {
     final l10n = AppLocalizations.of(context);
-    final leave = await showDialog<bool>(
+    final leave = await showOneViewDialog<bool>(
       context: context,
       builder:
           (ctx) => AlertDialog(
@@ -214,39 +234,41 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
     List<OneViewSeat> claimed,
   ) async {
     final l10n = AppLocalizations.of(context);
-    return showDialog<({String? winnerPlayerId})>(
+    return showOneViewDialog<({String? winnerPlayerId})>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
-        return AlertDialog(
-          title: Text(l10n.oneViewPickWinnerTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(l10n.oneViewPickWinnerBody),
-                const SizedBox(height: 12),
-                for (final seat in claimed)
-                  ListTile(
-                    title: Text(seat.displayName),
-                    onTap:
-                        () =>
-                            Navigator.pop(ctx, (winnerPlayerId: seat.playerId)),
-                  ),
-              ],
-            ),
+        return OneViewMenuDialog(
+          title: l10n.oneViewPickWinnerTitle,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.oneViewPickWinnerBody,
+                style: OneViewChrome.dialogBodyStyle(ctx),
+              ),
+              const SizedBox(height: 12),
+              for (final seat in claimed)
+                OneViewMenuAction(
+                  icon: Icons.person_outline_rounded,
+                  leading: OneViewPortrait(url: seat.cardArtUrl, size: 36),
+                  label: seat.displayName,
+                  onTap:
+                      () => Navigator.pop(ctx, (winnerPlayerId: seat.playerId)),
+                ),
+              const Divider(height: 24),
+              OneViewMenuAction(
+                icon: Icons.remove_rounded,
+                label: l10n.oneViewPickWinnerSkip,
+                onTap: () => Navigator.pop(ctx, (winnerPlayerId: null)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, (winnerPlayerId: null)),
-              child: Text(l10n.oneViewPickWinnerSkip),
-            ),
-          ],
         );
       },
     );
@@ -262,33 +284,122 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
   }
 
   void _clearAttackDrag() {
+    _dragPointer = null;
     _dragFrom = null;
     _dragOrigin = null;
+    _dragSamples.clear();
+    _dragHover = null;
+    _dragReached.clear();
   }
 
   void _onTablePointerDown(PointerDownEvent event) {
+    // One finger owns the slide. A second finger on a shared phone must not
+    // steal it or start a second attack.
+    if (_dragPointer != null) return;
     final table = ref.read(oneViewProvider);
     if (!table.config.attackSwipeEnabled ||
         _attack != null ||
         _diceAnnouncement != null) {
-      _clearAttackDrag();
       return;
     }
+    _dragPointer = event.pointer;
     _dragOrigin = event.position;
     _dragFrom = _seatAt(event.position, centerOnly: true);
   }
 
-  void _onTablePointerUp(PointerUpEvent event) {
+  void _onTablePointerMove(PointerMoveEvent event) {
+    if (event.pointer != _dragPointer) return;
     final from = _dragFrom;
     final origin = _dragOrigin;
-    _clearAttackDrag();
     if (from == null || origin == null || _attack != null) return;
-    if ((event.position - origin).distance < oneViewAttackMinTravel) return;
+    final traveled =
+        (event.position - origin).distance >= oneViewAttackMinTravel;
+    if (!traveled && _dragSamples.isEmpty) return;
+    final seat = _seatAt(event.position, centerOnly: false);
+    if (traveled) _dragSamples.add(seat);
+    final hover = _opponentSeat(seat, from);
+    final entered = hover != null && !_dragReached.contains(hover);
+    if (hover == _dragHover && !entered) return;
+    setState(() {
+      _dragHover = hover;
+      if (hover != null) _dragReached.add(hover);
+    });
+    if (entered) context.gameHapticSelection();
+  }
+
+  /// A claimed opponent. The attacker's own card and empty seats stay plain.
+  int? _opponentSeat(int? seat, int from) {
+    if (seat == null || seat == from) return null;
+    final seats = ref.read(oneViewProvider).seats;
+    if (seat < 0 || seat >= seats.length || !seats[seat].isClaimed) {
+      return null;
+    }
+    return seat;
+  }
+
+  void _onTablePointerUp(PointerUpEvent event) {
+    if (event.pointer != _dragPointer) return;
+    final from = _dragFrom;
+    final origin = _dragOrigin;
+    final samples = List<int?>.of(_dragSamples);
+    final marked = _dragHover != null || _dragReached.isNotEmpty;
+    _clearAttackDrag();
+    void settle() {
+      if (marked && mounted) setState(() {});
+    }
+
+    if (from == null || origin == null || _attack != null) {
+      settle();
+      return;
+    }
     final table = ref.read(oneViewProvider);
     final seats = table.seats;
-    if (from >= seats.length || !seats[from].isClaimed) return;
-    final to = _seatAt(event.position, centerOnly: false);
-    if (to == null || to == from || !seats[to].isClaimed) return;
+    if (from >= seats.length || !seats[from].isClaimed) {
+      settle();
+      return;
+    }
+    final traveled =
+        (event.position - origin).distance >= oneViewAttackMinTravel;
+    final release = _seatAt(
+      event.position,
+      centerOnly: false,
+      includeEmpty: true,
+    );
+    bool claimed(int index) => seats[index].isClaimed;
+    // Samples exist only after the finger has already traveled far enough.
+    // Ending back on your own card must still count the players you crossed.
+    final alongThePath = oneViewAttackTargets(
+      from: from,
+      samples: samples,
+      seatCount: seats.length,
+      isClaimed: claimed,
+    );
+    if (!traveled && alongThePath.isEmpty) {
+      settle();
+      return;
+    }
+    final targets = oneViewAttackTargets(
+      from: from,
+      samples: [...samples, release],
+      seatCount: seats.length,
+      isClaimed: claimed,
+    );
+    if (targets.isEmpty) {
+      if (release != null && seats[release].isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context).oneViewAttackNeedsPlayer,
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+      }
+      settle();
+      return;
+    }
     final layout =
         table.layout.fits(seats.length)
             ? table.layout
@@ -297,23 +408,30 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
       () =>
           _attack = (
             from: from,
-            to: to,
+            targets: targets,
             faceDown: oneViewSeatUpsideDown(layout.split, from),
           ),
     );
   }
 
   void _onTablePointerCancel(PointerCancelEvent event) {
+    if (event.pointer != _dragPointer) return;
+    final marked = _dragHover != null || _dragReached.isNotEmpty;
     _clearAttackDrag();
+    if (marked && mounted) setState(() {});
   }
 
   /// [centerOnly] keeps the drag off the − / + bands. The release can land
   /// anywhere on the other card.
-  int? _seatAt(Offset global, {required bool centerOnly}) {
+  int? _seatAt(
+    Offset global, {
+    required bool centerOnly,
+    bool includeEmpty = false,
+  }) {
     final seats = ref.read(oneViewProvider).seats;
     final count = math.min(seats.length, _seatCardKeys.length);
     for (var i = 0; i < count; i++) {
-      if (!seats[i].isClaimed) continue;
+      if (!includeEmpty && !seats[i].isClaimed) continue;
       final render = _seatCardKeys[i].currentContext?.findRenderObject();
       if (render is! RenderBox || !render.attached || !render.hasSize) {
         continue;
@@ -349,57 +467,65 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
 
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
-      // Sheets lift themselves. Resizing the table under the keyboard
-      // overflowed the seats and closed the field the player had just tapped.
+      // The activity keeps its size while this route is open. Menus lift
+      // themselves. The table must not reflow when the keyboard appears.
       resizeToAvoidBottomInset: false,
       // Inset seats from status / nav / cutout so +/- and life never sit
       // under system chrome. No reserved tool bar — only system SafeArea.
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Listener(
-              onPointerDown: _onTablePointerDown,
-              onPointerUp: _onTablePointerUp,
-              onPointerCancel: _onTablePointerCancel,
-              child: _SeatLayout(
-                seats: state.seats,
-                layout: state.layout,
-                teamsEnabled: state.config.teamsEnabled,
-                cardKeys: _seatCardKeys,
-                onSeatTap: (i) => _onSeatTap(i, state.seats[i]),
-                onLifeDelta: (i, d) {
-                  ref.read(oneViewProvider.notifier).adjustLife(i, d);
-                },
-              ),
-            ),
-            Align(
-              alignment: _hubAlignment(state.seats.length),
-              child: _CenterHub(
-                size: _hubSize(state.seats.length),
-                onOpen: () => _showHubMenu(l10n),
-              ),
-            ),
-            if (_diceAnnouncement != null)
-              Positioned.fill(
-                child: OneViewDiceOverlay(
-                  announcement: _diceAnnouncement!,
-                  onDismiss: () => setState(() => _diceAnnouncement = null),
-                ),
-              ),
-            if (_attack != null)
-              Positioned.fill(
-                child: OneViewAttackOverlay(
-                  attackerIndex: _attack!.from,
-                  defenderIndex: _attack!.to,
-                  faceAttackerUpsideDown: _attack!.faceDown,
-                  onDismiss: () {
-                    if (!mounted) return;
-                    setState(() => _attack = null);
+      body: MediaQuery.removeViewInsets(
+        context: context,
+        removeBottom: true,
+        child: SafeArea(
+          maintainBottomViewPadding: true,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Listener(
+                onPointerDown: _onTablePointerDown,
+                onPointerMove: _onTablePointerMove,
+                onPointerUp: _onTablePointerUp,
+                onPointerCancel: _onTablePointerCancel,
+                child: _SeatLayout(
+                  seats: state.seats,
+                  layout: state.layout,
+                  teamsEnabled: state.config.teamsEnabled,
+                  cardKeys: _seatCardKeys,
+                  attackHover: _dragHover,
+                  attackReached: _dragReached,
+                  onSeatTap: (i) => _onSeatTap(i, state.seats[i]),
+                  onLifeDelta: (i, d) {
+                    ref.read(oneViewProvider.notifier).adjustLife(i, d);
                   },
                 ),
               ),
-          ],
+              Align(
+                alignment: _hubAlignment(state.seats.length),
+                child: _CenterHub(
+                  size: _hubSize(state.seats.length),
+                  onOpen: () => _showHubMenu(l10n),
+                ),
+              ),
+              if (_diceAnnouncement != null)
+                Positioned.fill(
+                  child: OneViewDiceOverlay(
+                    announcement: _diceAnnouncement!,
+                    onDismiss: () => setState(() => _diceAnnouncement = null),
+                  ),
+                ),
+              if (_attack != null)
+                Positioned.fill(
+                  child: OneViewAttackOverlay(
+                    attackerIndex: _attack!.from,
+                    defenderIndexes: _attack!.targets,
+                    faceAttackerUpsideDown: _attack!.faceDown,
+                    onDismiss: () {
+                      if (!mounted) return;
+                      setState(() => _attack = null);
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -415,25 +541,27 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
 
   Future<void> _showClaimSheet(int seatIndex) async {
     final l10n = AppLocalizations.of(context);
-    final colors = AppColorTokens.of(context);
-    await showGameBottomSheet<void>(
+    await showOneViewDialog<void>(
       context: context,
-      enableDrag: false,
       builder: (ctx) {
-        return GameSheetBody(
+        return OneViewMenuDialog(
+          title: l10n.oneViewClaimSeatTitle,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GameSheetHeader(title: l10n.oneViewClaimSeatTitle),
-              SizedBox(height: LayoutTokens.gr2),
-              ListTile(
-                leading: Icon(
-                  Icons.person_rounded,
-                  color: colors.primaryAccent,
-                ),
-                title: Text(l10n.oneViewSitAsMe),
-                subtitle: Text(l10n.oneViewSitAsMeSubtitle),
+              OneViewMenuAction(
+                icon: Icons.person_rounded,
+                label: l10n.oneViewSitAsMe,
+                subtitle:
+                    ref.read(profileRepositoryProvider).getProfile() == null
+                        ? l10n.oneViewSitAsMeSubtitle
+                        : l10n.oneViewUseProfile(
+                          ref
+                              .read(profileRepositoryProvider)
+                              .getProfile()!
+                              .username,
+                        ),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final ok = ref
@@ -447,28 +575,21 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
                   }
                   if (!mounted) return;
                   await showOneViewDeckPicker(context, ref, seatIndex);
-                  await _promptSeatArt(seatIndex);
                 },
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.qr_code_scanner_rounded,
-                  color: colors.primaryAccent,
-                ),
-                title: Text(l10n.oneViewLoadViaQr),
-                subtitle: Text(l10n.oneViewLoadViaQrSubtitle),
+              OneViewMenuAction(
+                icon: Icons.qr_code_scanner_rounded,
+                label: l10n.oneViewLoadViaQr,
+                subtitle: l10n.oneViewLoadViaQrSubtitle,
                 onTap: () async {
                   Navigator.pop(ctx);
                   await _scanSitCode(seatIndex);
                 },
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.person_outline_rounded,
-                  color: colors.textSecondary,
-                ),
-                title: Text(l10n.oneViewSitAsGuest),
-                subtitle: Text(l10n.oneViewSitAsGuestSubtitle),
+              OneViewMenuAction(
+                icon: Icons.person_outline_rounded,
+                label: l10n.oneViewSitAsGuest,
+                subtitle: l10n.oneViewSitAsGuestSubtitle,
                 onTap: () async {
                   Navigator.pop(ctx);
                   await _guestNameThenClaim(seatIndex);
@@ -484,10 +605,10 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
   Future<void> _guestNameThenClaim(int seatIndex) async {
     final l10n = AppLocalizations.of(context);
     final controller = TextEditingController();
-    final name = await showDialog<String>(
+    final name = await showOneViewDialog<String>(
       context: context,
       builder: (ctx) {
-        return GameFormDialog(
+        return OneViewFormDialog(
           title: l10n.oneViewGuestNameTitle,
           submitLabel: l10n.oneViewSitAsGuest,
           onSubmit: () => Navigator.pop(ctx, controller.text),
@@ -509,17 +630,39 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
     // Cancel / dismiss must not claim a seat.
     if (!mounted || name == null) return;
     ref.read(oneViewProvider.notifier).claimAsGuest(seatIndex, name: name);
-    await _promptSeatArt(seatIndex);
   }
 
-  /// A new player is asked for a picture when the seat does not have one yet.
-  Future<void> _promptSeatArt(int seatIndex) async {
-    if (!mounted) return;
-    final seats = ref.read(oneViewProvider).seats;
-    if (seatIndex < 0 || seatIndex >= seats.length) return;
-    final url = seats[seatIndex].commanderImageUrl?.trim();
-    if (url != null && url.isNotEmpty) return;
-    await showOneViewArtPicker(context, ref, seatIndex);
+  Future<void> _renameSeat(int seatIndex, {required bool faceDown}) async {
+    final l10n = AppLocalizations.of(context);
+    final seat = ref.read(oneViewProvider).seats[seatIndex];
+    if (seat.isEmpty) return;
+    final controller = TextEditingController(text: seat.displayName);
+    final name = await showOneViewDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return RotatedBox(
+          quarterTurns: faceDown ? 2 : 0,
+          child: OneViewFormDialog(
+            title: l10n.oneViewRename,
+            submitLabel: l10n.commonSave,
+            onSubmit: () => Navigator.pop(ctx, controller.text),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(hintText: l10n.oneViewRenameHint),
+              onSubmitted: (value) => Navigator.pop(ctx, value),
+            ),
+          ),
+        );
+      },
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.dispose();
+    });
+    if (!mounted || name == null) return;
+    await ref.read(oneViewProvider.notifier).renameSeat(seatIndex, name);
   }
 
   Future<void> _scanSitCode(int seatIndex) async {
@@ -529,7 +672,15 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
     ).push<({String playerId, String username, String? avatarUrl})>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const _SitCodeScannerPage(),
+        builder:
+            (_) => OneViewQrScanner<
+              ({String playerId, String username, String? avatarUrl})
+            >(
+              title: l10n.oneViewScanSitCode,
+              hint: l10n.oneViewScanProfileHint,
+              invalidMessage: l10n.oneViewInvalidProfileQr,
+              parse: OneViewSitCode.parse,
+            ),
       ),
     );
     if (parsed == null || !mounted) return;
@@ -547,133 +698,174 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
       ).showSnackBar(SnackBar(content: Text(l10n.oneViewSitBlocked)));
       return;
     }
-    await showOneViewDeckPicker(context, ref, seatIndex);
-    await _promptSeatArt(seatIndex);
+    // Local decks belong to this phone's profile. Another player's code
+    // already brought their photo.
+    final localId = ref.read(profileRepositoryProvider).getProfile()?.playerId;
+    final seatedId = ref.read(oneViewProvider).seats[seatIndex].playerId;
+    if (localId != null && seatedId == localId && mounted) {
+      await showOneViewDeckPicker(context, ref, seatIndex);
+    }
   }
 
   Future<void> _showSeatTools(int index, OneViewSeat seat) async {
     final l10n = AppLocalizations.of(context);
-    await showGameBottomSheet<void>(
+    final table = ref.read(oneViewProvider);
+    final layout =
+        table.layout.fits(table.seats.length)
+            ? table.layout
+            : OneViewSeatLayout.defaultFor(table.seats.length);
+    final faceDown = oneViewSeatUpsideDown(layout.split, index);
+    await showOneViewDialog<void>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: false,
       builder: (ctx) {
-        return Consumer(
-          builder: (context, ref, _) {
-            final live = ref.watch(
-              oneViewProvider.select(
-                (s) => s.seats.firstWhere((x) => x.index == index),
-              ),
-            );
-            final allSeats = ref.watch(oneViewProvider.select((s) => s.seats));
-            final colors = AppColorTokens.of(context);
-            final notifier = ref.read(oneViewProvider.notifier);
-            final others = allSeats.where(
-              (s) => s.index != index && s.isClaimed,
-            );
-            return GameSheetBody(
-              scrollable: true,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GameSheetHeader(title: live.displayName),
-                  const SizedBox(height: LayoutTokens.gr2),
-                  _SeatMenuLabel(l10n.oneViewMenuCounters),
-                  _SeatCounterRow(
-                    label: l10n.oneViewPoisonLabel,
-                    value: live.poison,
-                    lethal: live.poison >= GameConstants.poisonKo,
-                    minusLabel: l10n.oneViewPoisonMinus,
-                    plusLabel: l10n.oneViewPoisonPlus,
-                    onMinus: () => notifier.adjustPoison(index, -1),
-                    onPlus: () => notifier.adjustPoison(index, 1),
-                  ),
-                  const SizedBox(height: LayoutTokens.gr2),
-                  _SeatMenuLabel(l10n.oneViewCommanderDamageLabel),
-                  if (others.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: LayoutTokens.gr2,
-                        top: 4,
-                      ),
-                      child: Text(
-                        l10n.oneViewCommanderDamageEmpty,
-                        style: GoogleFonts.lato(
-                          color: colors.textSecondary,
-                          fontSize: FontTokens.hudSm,
-                          height: 1.3,
-                        ),
-                      ),
-                    )
-                  else
-                    for (final from in others)
+        return RotatedBox(
+          quarterTurns: faceDown ? 2 : 0,
+          child: Consumer(
+            builder: (context, ref, _) {
+              final live = ref.watch(
+                oneViewProvider.select(
+                  (s) => s.seats.firstWhere((x) => x.index == index),
+                ),
+              );
+              final allSeats = ref.watch(
+                oneViewProvider.select((s) => s.seats),
+              );
+              final colors = AppColorTokens.of(context);
+              final notifier = ref.read(oneViewProvider.notifier);
+              final others = allSeats.where(
+                (s) => s.index != index && s.isClaimed,
+              );
+              return OneViewMenuDialog(
+                maxWidth: 560,
+                titleWidget: Text(
+                  live.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: OneViewChrome.dialogTitleStyle(context),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _SeatMenuLabel(l10n.oneViewMenuCounters),
+                    _SeatCounterRow(
+                      label: l10n.oneViewPoisonLabel,
+                      value: live.poison,
+                      lethal: live.poison >= GameConstants.poisonKo,
+                      minusLabel: l10n.oneViewPoisonMinus,
+                      plusLabel: l10n.oneViewPoisonPlus,
+                      onMinus: () => notifier.adjustPoison(index, -1),
+                      onPlus: () => notifier.adjustPoison(index, 1),
+                    ),
+                    const SizedBox(height: LayoutTokens.gr4),
+                    _SeatMenuLabel(l10n.oneViewCommanderDamageLabel),
+                    if (others.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(left: LayoutTokens.gr2),
-                        child: _SeatCounterRow(
-                          label: from.displayName,
-                          value: live.commanderDamageFrom[from.index] ?? 0,
-                          lethal:
-                              (live.commanderDamageFrom[from.index] ?? 0) >=
-                              GameConstants.commanderDamageKo,
-                          minusLabel: l10n.lifeA11yDecrease,
-                          plusLabel: l10n.lifeA11yIncrease,
-                          onMinus:
-                              () => notifier.adjustCommanderDamage(
-                                targetSeatIndex: index,
-                                fromSeatIndex: from.index,
-                                delta: -1,
-                              ),
-                          onPlus:
-                              () => notifier.adjustCommanderDamage(
-                                targetSeatIndex: index,
-                                fromSeatIndex: from.index,
-                                delta: 1,
-                              ),
+                        padding: const EdgeInsets.only(
+                          top: LayoutTokens.gr1,
+                          bottom: LayoutTokens.gr2,
+                        ),
+                        child: Text(
+                          l10n.oneViewCommanderDamageEmpty,
+                          style: OneViewChrome.dialogBodyStyle(context),
+                        ),
+                      )
+                    else
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight:
+                              allSeats.length >= 5
+                                  ? math.min(
+                                    216,
+                                    MediaQuery.sizeOf(context).height * 0.3,
+                                  )
+                                  : double.infinity,
+                        ),
+                        child: SingleChildScrollView(
+                          primary: false,
+                          child: Column(
+                            children: [
+                              for (final from in others)
+                                _SeatCounterRow(
+                                  label: from.displayName,
+                                  portraitUrl: from.cardArtUrl,
+                                  showPortrait: true,
+                                  value:
+                                      live.commanderDamageFrom[from.index] ?? 0,
+                                  lethal:
+                                      (live.commanderDamageFrom[from.index] ??
+                                          0) >=
+                                      GameConstants.commanderDamageKo,
+                                  minusLabel: l10n.lifeA11yDecrease,
+                                  plusLabel: l10n.lifeA11yIncrease,
+                                  onMinus:
+                                      () => notifier.adjustCommanderDamage(
+                                        targetSeatIndex: index,
+                                        fromSeatIndex: from.index,
+                                        delta: -1,
+                                      ),
+                                  onPlus:
+                                      () => notifier.adjustCommanderDamage(
+                                        targetSeatIndex: index,
+                                        fromSeatIndex: from.index,
+                                        delta: 1,
+                                      ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                  const SizedBox(height: LayoutTokens.gr3),
-                  _SeatMenuLabel(l10n.oneViewMenuSeat),
-                  _SeatActionRow(
-                    icon: Icons.image_outlined,
-                    label: l10n.oneViewCardArt,
-                    detail:
-                        live.commanderName?.trim().isNotEmpty == true
-                            ? live.commanderName!.trim()
-                            : null,
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await showOneViewArtPicker(context, ref, index);
-                    },
-                  ),
-                  if (!live.isGuest)
-                    _SeatActionRow(
-                      icon: Icons.style_outlined,
-                      label: l10n.oneViewChangeDeck,
+                    const SizedBox(height: LayoutTokens.gr3),
+                    _SeatMenuLabel(l10n.oneViewMenuSeat),
+                    OneViewMenuAction(
+                      icon: Icons.edit_outlined,
+                      label: l10n.oneViewRename,
                       onTap: () async {
                         Navigator.pop(ctx);
-                        await showOneViewDeckPicker(context, ref, index);
+                        await _renameSeat(index, faceDown: faceDown);
                       },
                     ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: LayoutTokens.gr1,
+                    OneViewMenuAction(
+                      icon: Icons.image_outlined,
+                      label: l10n.oneViewCardArt,
+                      detail:
+                          live.commanderName?.trim().isNotEmpty == true
+                              ? live.commanderName!.trim()
+                              : null,
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        await showOneViewArtPicker(context, ref, index);
+                      },
                     ),
-                    child: Divider(height: 1, color: colors.borderSubtle),
-                  ),
-                  _SeatActionRow(
-                    icon: Icons.logout_rounded,
-                    label: l10n.oneViewClearSeat,
-                    color: colors.error,
-                    onTap: () {
-                      notifier.clearSeat(index);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
+                    if (!live.isGuest)
+                      OneViewMenuAction(
+                        icon: Icons.style_outlined,
+                        label: l10n.oneViewChangeDeck,
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          await showOneViewDeckPicker(context, ref, index);
+                        },
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: LayoutTokens.gr2,
+                      ),
+                      child: Divider(height: 1, color: colors.borderSubtle),
+                    ),
+                    OneViewMenuAction(
+                      icon: Icons.logout_rounded,
+                      label: l10n.oneViewClearSeat,
+                      color: colors.error,
+                      onTap: () {
+                        notifier.clearSeat(index);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -681,155 +873,148 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
 
   Future<void> _showHubMenu(AppLocalizations l10n) async {
     final colors = AppColorTokens.of(context);
-    await showDialog<void>(
+    await showOneViewDialog<void>(
       context: context,
       builder: (ctx) {
-        final maxH = MediaQuery.sizeOf(ctx).height * 0.72;
-        Widget row({
+        final landscape =
+            MediaQuery.sizeOf(ctx).width > MediaQuery.sizeOf(ctx).height;
+        Widget action({
           required IconData icon,
           required String label,
           required VoidCallback onTap,
           Color? color,
         }) {
-          final ink = color ?? colors.textPrimary;
-          return InkWell(
+          return OneViewMenuAction(
+            icon: icon,
+            label: label,
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: LayoutTokens.gr2,
-                vertical: LayoutTokens.gr3,
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, color: ink, size: 28),
-                  const SizedBox(width: LayoutTokens.gr2),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: ink,
-                        fontSize: FontTokens.headline,
-                        fontWeight: FontWeight.w600,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            color: color,
           );
         }
 
-        return AlertDialog(
-          backgroundColor: colors.surface,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: LayoutTokens.gr4,
-            vertical: LayoutTokens.gr4,
+        final entries = <Widget>[
+          action(
+            icon: Icons.casino_rounded,
+            label: l10n.tableToolsTitle,
+            onTap: () async {
+              Navigator.pop(ctx);
+              final profile = ref.read(profileRepositoryProvider).getProfile();
+              final roll = await showOneViewDiceSheet(
+                context,
+                rollerName: profile?.username ?? 'Table',
+              );
+              if (roll != null && mounted) {
+                setState(() => _diceAnnouncement = roll);
+              }
+            },
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: RadiusTokens.radiusXl,
-            side: BorderSide(color: colors.borderSubtle),
-          ),
-          titlePadding: const EdgeInsets.fromLTRB(
-            LayoutTokens.gr3,
-            LayoutTokens.gr3,
-            LayoutTokens.gr2,
-            0,
-          ),
-          title: GameDialogTitleRow(
-            titleWidget: Text(
-              l10n.oneViewTableMenu,
-              style: TextStyle(
-                color: colors.textPrimary,
-                fontSize: FontTokens.headline,
-                fontWeight: FontWeight.w700,
-              ),
+          if (ref.read(oneViewProvider).config.teamsEnabled)
+            action(
+              icon: Icons.palette_rounded,
+              label: l10n.oneViewColorsTitle,
+              onTap: () async {
+                Navigator.pop(ctx);
+                await showOneViewColorsSheet(context, ref);
+              },
             ),
-            onClose: () => Navigator.pop(ctx),
+          action(
+            icon: Icons.tune_rounded,
+            label: l10n.oneViewMidGameSettings,
+            onTap: () async {
+              Navigator.pop(ctx);
+              await showOneViewSettingsSheet(context, ref);
+            },
           ),
-          contentPadding: const EdgeInsets.fromLTRB(
-            LayoutTokens.gr1,
-            LayoutTokens.gr2,
-            LayoutTokens.gr1,
-            LayoutTokens.gr2,
+          action(
+            icon: Icons.groups_rounded,
+            label: l10n.oneViewPlayerCountTitle,
+            onTap: () async {
+              Navigator.pop(ctx);
+              await showOneViewPlayerCountSheet(context, ref);
+            },
           ),
-          content: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxH),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  row(
-                    icon: Icons.casino_rounded,
-                    label: l10n.tableToolsTitle,
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      final profile =
-                          ref.read(profileRepositoryProvider).getProfile();
-                      final roll = await showOneViewDiceSheet(
-                        context,
-                        rollerName: profile?.username ?? 'Table',
-                      );
-                      if (roll != null && mounted) {
-                        setState(() => _diceAnnouncement = roll);
-                      }
-                    },
-                  ),
-                  if (ref.read(oneViewProvider).config.teamsEnabled)
-                    row(
-                      icon: Icons.palette_rounded,
-                      label: l10n.oneViewColorsTitle,
-                      onTap: () async {
-                        Navigator.pop(ctx);
-                        await showOneViewColorsSheet(context, ref);
-                      },
+          action(
+            icon: Icons.grid_view_rounded,
+            label: l10n.oneViewLayoutTitle,
+            onTap: () async {
+              Navigator.pop(ctx);
+              await showOneViewLayoutPicker(context, ref);
+            },
+          ),
+        ];
+        final resetLife = action(
+          icon: Icons.restart_alt_rounded,
+          label: l10n.oneViewResetLife,
+          onTap: () async {
+            Navigator.pop(ctx);
+            final confirmed = await showOneViewDialog<bool>(
+              context: context,
+              builder:
+                  (dialogContext) => OneViewFormDialog(
+                    title: l10n.oneViewResetLife,
+                    submitLabel: l10n.oneViewResetLife,
+                    onSubmit: () => Navigator.pop(dialogContext, true),
+                    content: Text(
+                      l10n.oneViewResetLifeBody(
+                        ref.read(oneViewProvider).config.startingLife,
+                      ),
+                      style: OneViewChrome.dialogBodyStyle(dialogContext),
                     ),
-                  row(
-                    icon: Icons.tune_rounded,
-                    label: l10n.oneViewMidGameSettings,
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await showOneViewSettingsSheet(context, ref);
-                    },
                   ),
-                  row(
-                    icon: Icons.restart_alt_rounded,
-                    label: l10n.oneViewResetLife,
-                    onTap: () {
-                      ref.read(oneViewProvider.notifier).resetLifeTotals();
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                  row(
-                    icon: Icons.groups_rounded,
-                    label: l10n.oneViewPlayerCountTitle,
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await showOneViewPlayerCountSheet(context, ref);
-                    },
-                  ),
-                  row(
-                    icon: Icons.grid_view_rounded,
-                    label: l10n.oneViewLayoutTitle,
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await showOneViewLayoutPicker(context, ref);
-                    },
-                  ),
-                  row(
-                    icon: Icons.exit_to_app_rounded,
-                    label: l10n.oneViewEndTableConfirm,
-                    color: colors.error,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _leave();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
+            );
+            if (confirmed == true && mounted) {
+              ref.read(oneViewProvider.notifier).resetLifeTotals();
+            }
+          },
         );
+        final endTable = action(
+          icon: Icons.exit_to_app_rounded,
+          label: l10n.oneViewEndTableConfirm,
+          color: colors.error,
+          onTap: () {
+            Navigator.pop(ctx);
+            _leave();
+          },
+        );
+
+        const columnGap = SizedBox(width: LayoutTokens.gr3);
+        const rowGap = SizedBox(height: LayoutTokens.gr2);
+        final rule = Padding(
+          padding: const EdgeInsets.symmetric(vertical: LayoutTokens.gr2),
+          child: Divider(height: 1, color: colors.borderSubtle),
+        );
+
+        Widget body;
+        if (landscape) {
+          final rows = <Widget>[];
+          for (var i = 0; i < entries.length; i += 2) {
+            if (rows.isNotEmpty) rows.add(rowGap);
+            final right = i + 1 < entries.length ? entries[i + 1] : null;
+            rows.add(
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: entries[i]),
+                    columnGap,
+                    Expanded(child: right ?? const SizedBox.shrink()),
+                  ],
+                ),
+              ),
+            );
+          }
+          body = Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [...rows, rule, resetLife, endTable],
+          );
+        } else {
+          body = Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [...entries, rule, resetLife, endTable],
+          );
+        }
+
+        return OneViewMenuDialog(title: l10n.oneViewTableMenu, child: body);
       },
     );
   }
@@ -843,19 +1028,9 @@ class _SeatMenuLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: LayoutTokens.gr0),
-      child: Text(
-        text,
-        style: GoogleFonts.lato(
-          color: colors.textSecondary,
-          fontSize: FontTokens.caption,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.4,
-          height: 1.2,
-        ),
-      ),
+      padding: const EdgeInsets.only(bottom: LayoutTokens.gr1),
+      child: Text(text, style: OneViewChrome.menuSectionStyle(context)),
     );
   }
 }
@@ -870,8 +1045,12 @@ class _SeatCounterRow extends StatelessWidget {
     required this.plusLabel,
     required this.onMinus,
     required this.onPlus,
+    this.portraitUrl,
+    this.showPortrait = false,
   });
 
+  final String? portraitUrl;
+  final bool showPortrait;
   final String label;
   final int value;
   final bool lethal;
@@ -883,42 +1062,44 @@ class _SeatCounterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
-    return SizedBox(
-      height: LayoutTokens.minTapTarget,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 64),
       child: Row(
         children: [
+          if (showPortrait) ...[
+            OneViewPortrait(url: portraitUrl, size: 28),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: Text(
               label,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.lato(
-                color: colors.textPrimary,
-                fontSize: FontTokens.body,
-                fontWeight: FontWeight.w600,
-                height: 1.2,
-              ),
+              style: OneViewChrome.menuLabelStyle(context),
             ),
           ),
+          const SizedBox(width: 8),
           _SeatStepButton(
             icon: Icons.remove_rounded,
             tooltip: minusLabel,
             onPressed: onMinus,
           ),
+          const SizedBox(width: LayoutTokens.gr1),
           SizedBox(
-            width: LayoutTokens.gr5,
+            width: 48,
             child: Text(
               '$value',
               textAlign: TextAlign.center,
               style: GoogleFonts.barlowCondensed(
                 color: lethal ? colors.error : colors.textPrimary,
-                fontSize: FontTokens.headline,
+                fontSize: 32,
                 fontWeight: FontWeight.w600,
                 height: 1,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
           ),
+          const SizedBox(width: LayoutTokens.gr1),
           _SeatStepButton(
             icon: Icons.add_rounded,
             tooltip: plusLabel,
@@ -946,81 +1127,20 @@ class _SeatStepButton extends StatelessWidget {
     final colors = AppColorTokens.of(context);
     return IconButton(
       tooltip: tooltip,
-      visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(
-        width: LayoutTokens.minTapTarget,
-        height: LayoutTokens.minTapTarget,
+      style: IconButton.styleFrom(
+        backgroundColor: colors.primaryAccent.withValues(
+          alpha: OpacityTokens.subtle,
+        ),
+        foregroundColor: colors.primaryAccent,
+        fixedSize: const Size(48, 48),
+        shape: const CircleBorder(),
       ),
       onPressed: () {
         context.gameHapticLight();
         onPressed();
       },
-      icon: Icon(icon, size: 22, color: colors.primaryAccent),
-    );
-  }
-}
-
-class _SeatActionRow extends StatelessWidget {
-  const _SeatActionRow({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.detail,
-    this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final String? detail;
-  final Color? color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
-    final ink = color ?? colors.textPrimary;
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        height: LayoutTokens.minTapTarget,
-        child: Row(
-          children: [
-            Icon(icon, size: 22, color: color ?? colors.primaryAccent),
-            const SizedBox(width: LayoutTokens.gr2),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.lato(
-                  color: ink,
-                  fontSize: FontTokens.body,
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
-                ),
-              ),
-            ),
-            if (detail != null) ...[
-              const SizedBox(width: LayoutTokens.gr2),
-              Flexible(
-                child: Text(
-                  detail!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
-                  style: GoogleFonts.lato(
-                    color: colors.textSecondary,
-                    fontSize: FontTokens.hudSm,
-                    fontWeight: FontWeight.w500,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+      icon: Icon(icon, size: 28, color: colors.primaryAccent),
     );
   }
 }
@@ -1060,7 +1180,7 @@ class _CenterHub extends StatelessWidget {
             width: size,
             height: size,
             child: Icon(
-              Icons.auto_awesome_rounded,
+              Icons.tune_rounded,
               color: colors.primaryAccent,
               size: size * 0.44,
             ),
@@ -1077,6 +1197,8 @@ class _SeatLayout extends StatelessWidget {
     required this.layout,
     required this.teamsEnabled,
     required this.cardKeys,
+    required this.attackHover,
+    required this.attackReached,
     required this.onSeatTap,
     required this.onLifeDelta,
   });
@@ -1085,6 +1207,8 @@ class _SeatLayout extends StatelessWidget {
   final OneViewSeatLayout layout;
   final bool teamsEnabled;
   final List<GlobalKey> cardKeys;
+  final int? attackHover;
+  final Set<int> attackReached;
   final ValueChanged<int> onSeatTap;
   final void Function(int index, int delta) onLifeDelta;
 
@@ -1102,6 +1226,8 @@ class _SeatLayout extends StatelessWidget {
             cardKey: cardKeys[i],
             upsideDown: upsideDown,
             teamsEnabled: teamsEnabled,
+            attackHover: attackHover == i,
+            attackReached: attackReached.contains(i),
             onTap: () => onSeatTap(i),
             onLifeDelta: (d) => onLifeDelta(i, d),
           ),
@@ -1115,6 +1241,8 @@ class _SeatTile extends StatelessWidget {
     required this.cardKey,
     required this.upsideDown,
     required this.teamsEnabled,
+    required this.attackHover,
+    required this.attackReached,
     required this.onTap,
     required this.onLifeDelta,
   });
@@ -1123,6 +1251,8 @@ class _SeatTile extends StatelessWidget {
   final GlobalKey cardKey;
   final bool upsideDown;
   final bool teamsEnabled;
+  final bool attackHover;
+  final bool attackReached;
   final VoidCallback onTap;
   final ValueChanged<int> onLifeDelta;
 
@@ -1130,16 +1260,31 @@ class _SeatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    final hasArt =
-        seat.commanderImageUrl != null && seat.commanderImageUrl!.isNotEmpty;
-    final child = Padding(
+    final artUrl = seat.cardArtUrl;
+    final hover = attackHover && seat.isClaimed;
+    final reached = attackReached && seat.isClaimed;
+    final marked = hover || reached;
+    final card = Padding(
       padding: const EdgeInsets.all(LayoutTokens.gr0),
       child: Material(
         key: cardKey,
         color: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: RadiusTokens.radiusBento,
-          side: BorderSide(color: colors.borderSubtle),
+          side: BorderSide(
+            color:
+                hover
+                    ? colors.primaryAccent
+                    : reached
+                    ? colors.primaryAccent.withValues(alpha: 0.7)
+                    : colors.borderSubtle,
+            width:
+                hover
+                    ? 3
+                    : reached
+                    ? 2
+                    : 1,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: LayoutBuilder(
@@ -1147,7 +1292,18 @@ class _SeatTile extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
-                if (hasArt) _SeatArt(url: seat.commanderImageUrl!),
+                if (artUrl != null) _SeatArt(url: artUrl),
+                if (marked)
+                  IgnorePointer(
+                    child: ColoredBox(
+                      color: colors.primaryAccent.withValues(
+                        alpha:
+                            hover
+                                ? OpacityTokens.subtle
+                                : OpacityTokens.subtle * 0.45,
+                      ),
+                    ),
+                  ),
                 if (seat.isEmpty)
                   InkWell(
                     onTap: onTap,
@@ -1172,8 +1328,29 @@ class _SeatTile extends StatelessWidget {
         ),
       ),
     );
-    if (!upsideDown) return child;
-    return RotatedBox(quarterTurns: 2, child: child);
+    final facing = upsideDown ? RotatedBox(quarterTurns: 2, child: card) : card;
+    // Scale is paint-only. Hit testing stays on the card's real rect, so a
+    // lifted card does not steal the next player's + or −.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(
+        end: hover && !MediaQuery.disableAnimationsOf(context) ? 1.04 : 1,
+      ),
+      duration:
+          MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : MotionTokens.standard,
+      curve: Curves.easeOutCubic,
+      builder: (context, scale, child) {
+        return Transform.scale(
+          key: ValueKey('one-view-attack-scale-${seat.index}'),
+          scale: scale,
+          alignment: Alignment.center,
+          transformHitTests: false,
+          child: child,
+        );
+      },
+      child: facing,
+    );
   }
 }
 
@@ -1195,14 +1372,7 @@ class _SeatArt extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            alignment: Alignment.topCenter,
-            memCacheWidth: cacheW,
-            fadeInDuration: const Duration(milliseconds: 150),
-            errorWidget: (_, __, ___) => const SizedBox.shrink(),
-          ),
+          OneViewArtImage(url: url, cacheWidth: cacheW),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
@@ -1222,12 +1392,6 @@ class _SeatArt extends StatelessWidget {
   }
 }
 
-String _asSentence(String value) {
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) return trimmed;
-  return trimmed[0].toUpperCase() + trimmed.substring(1);
-}
-
 /// Quiet sit prompt: a small brand badge and a two-line label, centered.
 class _EmptySeat extends StatelessWidget {
   const _EmptySeat({
@@ -1244,20 +1408,12 @@ class _EmptySeat extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final compact = maxWidth < 150 || maxHeight < 150;
-    final badge = compact ? 48.0 : 72.0;
-    final parts = label.split(' — ');
-    final title = parts.first;
-    final hint = parts.length > 1 ? _asSentence(parts[1]) : null;
+    final badge = compact ? 36.0 : 48.0;
+    final title = label;
     final titleStyle = GoogleFonts.lato(
       color: colors.textSecondary,
-      fontSize: compact ? FontTokens.body : FontTokens.headline,
+      fontSize: compact ? 14 : 16,
       fontWeight: FontWeight.w600,
-      height: 1.2,
-    );
-    final hintStyle = GoogleFonts.lato(
-      color: colors.textSecondary,
-      fontSize: compact ? FontTokens.hudSm : FontTokens.body,
-      fontWeight: FontWeight.w500,
       height: 1.2,
     );
     return Center(
@@ -1291,16 +1447,6 @@ class _EmptySeat extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: titleStyle,
             ),
-            if (hint != null) ...[
-              const SizedBox(height: LayoutTokens.gr1),
-              Text(
-                hint,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: hintStyle,
-              ),
-            ],
           ],
         ),
       ),
@@ -1334,11 +1480,8 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
     with TickerProviderStateMixin {
   late final AnimationController _deltaAnim;
   late final Animation<double> _deltaFade;
-  late final Animation<Offset> _deltaSlide;
   late final AnimationController _bump;
   late final Animation<double> _bumpScale;
-  late final AnimationController _danger;
-  late final Animation<double> _dangerScale;
 
   int? _lastDelta;
   Timer? _holdTimer;
@@ -1353,10 +1496,6 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
     );
     const holdThenMove = Interval(0.5, 1.0, curve: Curves.easeOut);
     _deltaFade = CurvedAnimation(parent: _deltaAnim, curve: holdThenMove);
-    _deltaSlide = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, -1.4),
-    ).animate(CurvedAnimation(parent: _deltaAnim, curve: holdThenMove));
     _bump = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 180),
@@ -1377,18 +1516,6 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
         weight: 60,
       ),
     ]).animate(_bump);
-    _bump.addStatusListener((status) {
-      if (status == AnimationStatus.completed) _syncDanger();
-    });
-    _danger = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 760),
-    );
-    _dangerScale = Tween<double>(
-      begin: 1.0,
-      end: 1.045,
-    ).animate(CurvedAnimation(parent: _danger, curve: Curves.easeInOut));
-    _syncDanger();
   }
 
   @override
@@ -1398,8 +1525,6 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
     if (delta != 0) {
       _noteDelta(delta);
       _playBump();
-    } else {
-      _syncDanger();
     }
   }
 
@@ -1408,7 +1533,6 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
     _holdTimer?.cancel();
     _deltaAnim.dispose();
     _bump.dispose();
-    _danger.dispose();
     super.dispose();
   }
 
@@ -1429,20 +1553,8 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
   }
 
   void _playBump() {
-    _danger.stop();
-    _danger.value = 0;
+    if (MediaQuery.disableAnimationsOf(context)) return;
     _bump.forward(from: 0);
-  }
-
-  void _syncDanger() {
-    if (!mounted) return;
-    if (widget.seat.life > 10) {
-      _danger.stop();
-      _danger.value = 0;
-      return;
-    }
-    if (_bump.isAnimating) return;
-    if (!_danger.isAnimating) _danger.repeat(reverse: true);
   }
 
   void _startHold(int direction) {
@@ -1474,7 +1586,7 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
   }
 
   Future<void> _showNumberPad() async {
-    final result = await showDialog<int>(
+    final result = await showOneViewDialog<int>(
       context: context,
       builder: (_) => LifeInputDialog(currentLife: widget.seat.life),
     );
@@ -1501,9 +1613,11 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
       tall ? widget.maxWidth - LayoutTokens.gr3 : widget.maxWidth - band * 2,
     );
     final freeHeight = math.max(32.0, widget.maxHeight - (tall ? band * 2 : 0));
-    final lifeSize = (math.min(clusterWidth, freeHeight) * 0.52).clamp(
-      32.0,
-      120.0,
+    final lifeSize = math.min(
+      (clusterWidth * 0.65).clamp(32.0, 120.0),
+      // Header, status and padding have fixed space. The life total gets
+      // everything else, including the space formerly reserved for a delta.
+      math.max(24.0, (freeHeight - 88) / 0.9),
     );
     final lifeColor =
         seat.life <= 5
@@ -1564,80 +1678,100 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (showTeam) ...[
-                      Container(
-                        width: dot,
-                        height: dot,
-                        decoration: BoxDecoration(
-                          color: teamColor(seat.teamIndex),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: LayoutTokens.gr1),
-                    ],
-                    Flexible(
-                      child: Text(
-                        seat.displayName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.lato(
-                          color: colors.textPrimary,
-                          fontSize: nameSize,
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                        ),
+                Semantics(
+                  button: true,
+                  label: l10n.oneViewPlayerMenu(seat.displayName),
+                  child: InkWell(
+                    onTap: widget.onOpenTools,
+                    borderRadius: BorderRadius.circular(8),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (showTeam) ...[
+                            Container(
+                              width: dot,
+                              height: dot,
+                              decoration: BoxDecoration(
+                                color: teamColor(seat.teamIndex),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: LayoutTokens.gr1),
+                          ],
+                          Flexible(
+                            child: Text(
+                              seat.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lato(
+                                color: colors.textPrimary,
+                                fontSize: nameSize,
+                                fontWeight: FontWeight.w600,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.more_horiz_rounded,
+                            size: 18,
+                            color: colors.textSecondary,
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
                 SizedBox(height: shortSide < 150 ? 4 : LayoutTokens.gr1),
-                Semantics(
-                  label: l10n.lifeA11yLifeTotal('${seat.life}'),
+                Expanded(
                   child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
+                    fit: StackFit.expand,
                     children: [
-                      AnimatedBuilder(
-                        animation: Listenable.merge([_bump, _danger]),
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _bumpScale.value * _dangerScale.value,
-                            child: child,
-                          );
-                        },
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text('${seat.life}', style: lifeStyle),
+                      Center(
+                        child: Semantics(
+                          label: l10n.lifeA11yLifeTotal('${seat.life}'),
+                          child: AnimatedBuilder(
+                            animation: _bump,
+                            builder:
+                                (context, child) => Transform.scale(
+                                  scale:
+                                      MediaQuery.disableAnimationsOf(context)
+                                          ? 1
+                                          : _bumpScale.value,
+                                  child: child,
+                                ),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('${seat.life}', style: lifeStyle),
+                            ),
+                          ),
                         ),
                       ),
                       if (_lastDelta != null)
-                        IgnorePointer(
-                          child: FadeTransition(
-                            opacity: Tween(
-                              begin: 1.0,
-                              end: 0.0,
-                            ).animate(_deltaFade),
-                            child: SlideTransition(
-                              position: _deltaSlide,
-                              child: Transform.translate(
-                                offset: Offset(0, -(lifeSize * 0.55)),
-                                child: Text(
-                                  _lastDelta! > 0
-                                      ? '+$_lastDelta'
-                                      : '$_lastDelta',
-                                  style: GoogleFonts.barlowCondensed(
-                                    color:
-                                        _lastDelta! > 0
-                                            ? colors.success
-                                            : colors.error,
-                                    fontSize: deltaSize,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1,
-                                  ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: IgnorePointer(
+                            child: FadeTransition(
+                              opacity: Tween(
+                                begin: 1.0,
+                                end: 0.0,
+                              ).animate(_deltaFade),
+                              child: Text(
+                                _lastDelta! > 0
+                                    ? '+$_lastDelta'
+                                    : '$_lastDelta',
+                                style: GoogleFonts.barlowCondensed(
+                                  color:
+                                      _lastDelta! > 0
+                                          ? colors.success
+                                          : colors.error,
+                                  fontSize: deltaSize,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1,
                                 ),
                               ),
                             ),
@@ -1646,21 +1780,22 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
                     ],
                   ),
                 ),
-                if (statusParts.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 20,
+                  child: Text(
                     statusParts.join(' · '),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.lato(
                       color: colors.emphasis,
-                      fontSize: (nameSize - 2).clamp(11.0, FontTokens.hudSm),
-                      fontWeight: FontWeight.w600,
+                      fontSize: (nameSize - 2).clamp(12.0, 14.0),
+                      fontWeight: FontWeight.w500,
                       height: 1.2,
                     ),
                   ),
-                ],
+                ),
               ],
             ),
           ),
@@ -1679,8 +1814,8 @@ class _ClaimedSeatState extends State<_ClaimedSeat>
   }
 }
 
-/// Swipe toward + gains life. Swipe toward − loses it.
-/// Tall seats swipe vertically. Wide seats swipe horizontally.
+/// Swipe up/down to change life in either orientation. Sideways swipes
+/// remain available too. Crossing onto another seat is an attack.
 /// A long-press opens seat tools. A double-tap opens the keypad.
 class _LifeGesture extends StatefulWidget {
   const _LifeGesture({
@@ -1705,44 +1840,80 @@ class _LifeGestureState extends State<_LifeGesture> {
   static const double _stride = 36;
 
   double _accum = 0;
-  int _applied = 0;
   Offset? _lastGlobal;
+  var _leftCard = false;
+  Offset? _originLocal;
+  Offset? _lastLocal;
+  Axis? _axis;
 
-  void _start() {
+  void _start(Offset local) {
+    _cancel();
+    _originLocal = local;
+    _lastLocal = local;
+  }
+
+  void _cancel() {
     _accum = 0;
-    _applied = 0;
     _lastGlobal = null;
+    _leftCard = false;
+    _originLocal = null;
+    _lastLocal = null;
+    _axis = null;
   }
 
   void _drag(DragUpdateDetails details) {
     _lastGlobal = details.globalPosition;
-    final delta = widget.tall ? -details.delta.dy : details.delta.dx;
-    _accum += delta;
+    if (!_onCard(details.globalPosition)) _leftCard = true;
+    final travel =
+        details.localPosition - (_originLocal ?? details.localPosition);
+    _axis ??=
+        travel.dy.abs() >= travel.dx.abs() ? Axis.vertical : Axis.horizontal;
+    final delta = details.localPosition - (_lastLocal ?? details.localPosition);
+    _lastLocal = details.localPosition;
+    _accum += _axis == Axis.vertical ? -delta.dy : delta.dx;
+    // An attack slide crosses this card on the way out. Hold the steps until
+    // the finger lifts, so life does not tick and then jump back.
+    if (_attackSwipeEnabled()) return;
+    _applyStride();
+  }
+
+  void _applyStride() {
     while (_accum >= _stride) {
       _accum -= _stride;
-      _applied += 1;
       widget.onLifeDelta(1);
       context.gameHapticLight();
     }
     while (_accum <= -_stride) {
       _accum += _stride;
-      _applied -= 1;
       widget.onLifeDelta(-1);
       context.gameHapticLight();
     }
   }
 
-  /// A drag that leaves the card is an attack, not a life swipe.
-  /// Put back the life this gesture already changed.
+  /// A drag that leaves the card is an attack. The − / + edges only count
+  /// when the finger starts on them, so this center swipe changes life only
+  /// if it ends on the same card.
   void _end() {
-    final applied = _applied;
+    final accum = _accum;
     final global = _lastGlobal;
-    _accum = 0;
-    _applied = 0;
-    _lastGlobal = null;
-    if (!mounted || applied == 0 || global == null) return;
-    if (!_attackSwipeEnabled() || _onCard(global)) return;
-    widget.onLifeDelta(-applied);
+    final leftCard = _leftCard;
+    _cancel();
+    if (!mounted || global == null || !_attackSwipeEnabled()) return;
+    // Leaving the card, even if the finger comes back, is an attack slide.
+    if (leftCard || !_onCard(global)) return;
+    var steps = 0;
+    var left = accum;
+    while (left >= _stride) {
+      left -= _stride;
+      steps += 1;
+    }
+    while (left <= -_stride) {
+      left += _stride;
+      steps -= 1;
+    }
+    if (steps == 0) return;
+    widget.onLifeDelta(steps);
+    context.gameHapticLight();
   }
 
   bool _attackSwipeEnabled() {
@@ -1767,7 +1938,7 @@ class _LifeGestureState extends State<_LifeGesture> {
       return true;
     });
     final card = box;
-    if (card == null || !card.attached) return true;
+    if (card == null || !card.attached) return false;
     final local = card.globalToLocal(global);
     return (Offset.zero & card.size).inflate(LayoutTokens.gr0).contains(local);
   }
@@ -1781,14 +1952,10 @@ class _LifeGestureState extends State<_LifeGesture> {
         behavior: HitTestBehavior.opaque,
         onLongPress: widget.onOpenTools,
         onDoubleTap: widget.onDoubleTap,
-        onVerticalDragStart: widget.tall ? (_) => _start() : null,
-        onVerticalDragUpdate: widget.tall ? _drag : null,
-        onVerticalDragEnd: widget.tall ? (_) => _end() : null,
-        onVerticalDragCancel: widget.tall ? _end : null,
-        onHorizontalDragStart: widget.tall ? null : (_) => _start(),
-        onHorizontalDragUpdate: widget.tall ? null : _drag,
-        onHorizontalDragEnd: widget.tall ? null : (_) => _end(),
-        onHorizontalDragCancel: widget.tall ? null : _end,
+        onPanDown: (details) => _start(details.localPosition),
+        onPanUpdate: _drag,
+        onPanEnd: (_) => _end(),
+        onPanCancel: _cancel,
         child: widget.child,
       ),
     );
@@ -1873,44 +2040,6 @@ class _LifeStepStripState extends State<_LifeStepStrip> {
             color: colors.primaryAccent,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SitCodeScannerPage extends StatefulWidget {
-  const _SitCodeScannerPage();
-
-  @override
-  State<_SitCodeScannerPage> createState() => _SitCodeScannerPageState();
-}
-
-class _SitCodeScannerPageState extends State<_SitCodeScannerPage> {
-  bool _handled = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      backgroundColor: colors.backgroundPrimary,
-      appBar: AppBar(
-        title: Text(l10n.oneViewScanSitCode),
-        backgroundColor: colors.backgroundPrimary,
-      ),
-      body: MobileScanner(
-        onDetect: (capture) {
-          if (_handled) return;
-          for (final barcode in capture.barcodes) {
-            final raw = barcode.rawValue;
-            if (raw == null) continue;
-            final parsed = OneViewSitCode.parse(raw);
-            if (parsed == null) continue;
-            _handled = true;
-            Navigator.pop(context, parsed);
-            return;
-          }
-        },
       ),
     );
   }

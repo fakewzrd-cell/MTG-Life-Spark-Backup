@@ -648,7 +648,7 @@ abstract class AppLocalizations {
   /// No description provided for @oneViewEmptySeat.
   ///
   /// In en, this message translates to:
-  /// **'Empty seat — tap to sit'**
+  /// **'Tap to join'**
   String get oneViewEmptySeat;
 
   /// No description provided for @oneViewClaimSeatTitle.
@@ -660,25 +660,25 @@ abstract class AppLocalizations {
   /// No description provided for @oneViewSitAsMe.
   ///
   /// In en, this message translates to:
-  /// **'Sit as me'**
+  /// **'My profile'**
   String get oneViewSitAsMe;
 
   /// No description provided for @oneViewSitAsMeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Use this phone’s profile, then pick a deck'**
+  /// **'Use this phone’s profile'**
   String get oneViewSitAsMeSubtitle;
 
   /// No description provided for @oneViewLoadViaQr.
   ///
   /// In en, this message translates to:
-  /// **'Load profile via QR'**
+  /// **'Scan profile'**
   String get oneViewLoadViaQr;
 
   /// No description provided for @oneViewLoadViaQrSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Scan a friend’s sit code — no Wi‑Fi game'**
+  /// **'Scan a friend’s QR'**
   String get oneViewLoadViaQrSubtitle;
 
   /// No description provided for @oneViewSitAsGuest.
@@ -690,7 +690,7 @@ abstract class AppLocalizations {
   /// No description provided for @oneViewSitAsGuestSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Name only — no deck or stats'**
+  /// **'Enter a name'**
   String get oneViewSitAsGuestSubtitle;
 
   /// No description provided for @oneViewGuestNameTitle.
@@ -782,6 +782,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear seat'**
   String get oneViewClearSeat;
+
+  /// No description provided for @oneViewRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get oneViewRename;
+
+  /// No description provided for @oneViewRenameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Player name'**
+  String get oneViewRenameHint;
 
   /// No description provided for @oneViewPoisonMinus.
   ///
@@ -1038,7 +1050,7 @@ abstract class AppLocalizations {
   /// No description provided for @oneViewAttackSwipeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Drag from your card onto a player, then tap their card once per point.'**
+  /// **'Drag from your card across one or more players, then tap each card once per point.'**
   String get oneViewAttackSwipeSubtitle;
 
   /// No description provided for @oneViewAttackDamage.
@@ -6805,6 +6817,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name}, {owned} of {total}'**
   String collectionSuggestionCount(String name, int owned, int total);
+
+  /// No description provided for @oneViewExtraModes.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra modes'**
+  String get oneViewExtraModes;
+
+  /// No description provided for @oneViewUseProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {name}'**
+  String oneViewUseProfile(String name);
+
+  /// No description provided for @oneViewDeckStyleMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Some decks need a style. Set it in Decks to use them here.'**
+  String get oneViewDeckStyleMissing;
+
+  /// No description provided for @oneViewResetLifeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset life totals to {life} and clear poison and commander damage?'**
+  String oneViewResetLifeBody(int life);
+
+  /// No description provided for @oneViewAttackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose damage type, then tap a player.'**
+  String get oneViewAttackHint;
+
+  /// No description provided for @oneViewDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get oneViewDone;
+
+  /// No description provided for @oneViewRollAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Roll again'**
+  String get oneViewRollAgain;
+
+  /// No description provided for @oneViewScanProfileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Place your friend’s profile QR inside the frame.'**
+  String get oneViewScanProfileHint;
+
+  /// No description provided for @oneViewScanXpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the XP claim QR inside the frame.'**
+  String get oneViewScanXpHint;
+
+  /// No description provided for @oneViewInvalidProfileQr.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a profile QR. Ask your friend to show their sit code.'**
+  String get oneViewInvalidProfileQr;
+
+  /// No description provided for @oneViewCurrentArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Current art'**
+  String get oneViewCurrentArt;
+
+  /// No description provided for @oneViewCameraUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera unavailable. Allow camera access in your phone settings, then reopen the scanner.'**
+  String get oneViewCameraUnavailable;
+
+  /// No description provided for @oneViewPlayerMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Options for {name}'**
+  String oneViewPlayerMenu(String name);
+
+  /// No description provided for @oneViewAttackNeedsPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a player to that seat before attacking.'**
+  String get oneViewAttackNeedsPlayer;
 }
 
 class _AppLocalizationsDelegate

@@ -8,15 +8,41 @@ import 'package:mgt_life_spark/ui/theme/app_system_ui.dart';
 void main() {
   group('adaptive orientation policy', () {
     test('keeps compact phone displays portrait', () {
-      expect(
-        preferredOrientationsForLogicalWidth(599),
-        const [DeviceOrientation.portraitUp],
-      );
+      expect(preferredOrientationsForLogicalWidth(599), const [
+        DeviceOrientation.portraitUp,
+      ]);
     });
 
     test('leaves tablets and foldables unrestricted', () {
       expect(preferredOrientationsForLogicalWidth(600), isEmpty);
       expect(preferredOrientationsForLogicalWidth(1280), isEmpty);
+    });
+
+    test('a held table does not lock portrait on the way back', () {
+      expect(
+        shouldApplyAppOrientationLock(
+          orientationHeld: true,
+          wasLargeScreen: true,
+          isLargeScreen: false,
+        ),
+        isFalse,
+      );
+      expect(
+        shouldApplyAppOrientationLock(
+          orientationHeld: false,
+          wasLargeScreen: true,
+          isLargeScreen: false,
+        ),
+        isTrue,
+      );
+      expect(
+        shouldApplyAppOrientationLock(
+          orientationHeld: false,
+          wasLargeScreen: false,
+          isLargeScreen: false,
+        ),
+        isFalse,
+      );
     });
   });
 
@@ -34,10 +60,7 @@ void main() {
           builder: (context) {
             backgroundPrimary = AppColorTokens.of(context).backgroundPrimary;
             defaultStyle = AppSystemUi.overlayStyle(context);
-            dockStyle = AppSystemUi.overlayStyle(
-              context,
-              matchBottomNav: true,
-            );
+            dockStyle = AppSystemUi.overlayStyle(context, matchBottomNav: true);
             return const SizedBox.shrink();
           },
         ),

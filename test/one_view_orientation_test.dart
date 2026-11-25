@@ -26,4 +26,22 @@ void main() {
     await OneViewOrientation.lockForTable(const Size(390, 844));
     await OneViewOrientation.restoreAppDefault();
   });
+
+  test('the table keeps landscape available until it closes', () async {
+    addTearDown(OneViewOrientation.restoreAppDefault);
+    await OneViewOrientation.restoreAppDefault();
+    expect(OneViewOrientation.tableIsActive, isFalse);
+    expect(AppOrientationOverride.held, isFalse);
+
+    await OneViewOrientation.lockForTable(const Size(844, 390));
+    expect(OneViewOrientation.tableIsActive, isTrue);
+    expect(AppOrientationOverride.held, isTrue);
+
+    await OneViewOrientation.lockForTable(const Size(390, 844));
+    expect(AppOrientationOverride.held, isTrue);
+
+    await OneViewOrientation.restoreAppDefault();
+    expect(OneViewOrientation.tableIsActive, isFalse);
+    expect(AppOrientationOverride.held, isFalse);
+  });
 }

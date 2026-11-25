@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'one_view_qr_scanner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/one_view/one_view_state.dart';
@@ -12,6 +13,7 @@ import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
+import 'one_view_chrome.dart';
 
 /// Host phone: show claim QRs for each sit-code seat after end-table.
 Future<void> showOneViewXpClaimHandoffSheet({
@@ -56,31 +58,41 @@ class _XpClaimHandoffBodyState extends State<_XpClaimHandoffBody> {
             style: TextStyle(color: colors.textSecondary),
           ),
           SizedBox(height: LayoutTokens.gr2),
-          Text(
-            l10n.oneViewXpClaimFor(item.seat.displayName),
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (widget.claims.length > 1) ...[
-            SizedBox(height: LayoutTokens.gr1),
-            Text(
-              l10n.oneViewXpClaimStep(_index + 1, widget.claims.length),
-              style: TextStyle(color: colors.textSecondary),
-            ),
-          ],
-          SizedBox(height: LayoutTokens.gr3),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: RadiusTokens.radiusXl,
-            ),
-            child: QrImageView(
-              data: item.payload,
-              size: 220,
-              backgroundColor: Colors.white,
+          AnimatedSwitcher(
+            duration:
+                MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 200),
+            child: Column(
+              key: ValueKey(item.payload),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.oneViewXpClaimFor(item.seat.displayName),
+                  textAlign: TextAlign.center,
+                  style: OneViewChrome.dialogTitleStyle(context),
+                ),
+                if (widget.claims.length > 1) ...[
+                  SizedBox(height: LayoutTokens.gr1),
+                  Text(
+                    l10n.oneViewXpClaimStep(_index + 1, widget.claims.length),
+                    style: TextStyle(color: colors.textSecondary),
+                  ),
+                ],
+                SizedBox(height: LayoutTokens.gr3),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: RadiusTokens.radiusXl,
+                  ),
+                  child: QrImageView(
+                    data: item.payload,
+                    size: 220,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(height: LayoutTokens.gr3),
@@ -89,6 +101,8 @@ class _XpClaimHandoffBodyState extends State<_XpClaimHandoffBody> {
               if (_index > 0)
                 IconButton(
                   onPressed: () => setState(() => _index -= 1),
+                  tooltip:
+                      MaterialLocalizations.of(context).previousPageTooltip,
                   icon: const Icon(Icons.chevron_left_rounded),
                 )
               else
@@ -115,12 +129,21 @@ class _XpClaimHandoffBodyState extends State<_XpClaimHandoffBody> {
 }
 
 /// Profile → Claim One View XP: scan a handoff QR and apply XP.
-Future<void> showOneViewXpClaimScanner(BuildContext context, WidgetRef ref) async {
+Future<void> showOneViewXpClaimScanner(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final l10n = AppLocalizations.of(context);
   final raw = await Navigator.of(context).push<String>(
     MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) => const _XpClaimScannerPage(),
+      builder:
+          (_) => OneViewQrScanner<String>(
+            title: l10n.oneViewClaimXpScanTitle,
+            hint: l10n.oneViewScanXpHint,
+            invalidMessage: l10n.oneViewClaimXpInvalid,
+            parse: (raw) => OneViewXpClaim.parse(raw) == null ? null : raw,
+          ),
     ),
   );
   if (raw == null || !context.mounted) return;
@@ -145,41 +168,4 @@ Future<void> showOneViewXpClaimScanner(BuildContext context, WidgetRef ref) asyn
     OneViewXpClaimStatus.failed => l10n.oneViewClaimXpFailed,
   };
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-}
-
-class _XpClaimScannerPage extends StatefulWidget {
-  const _XpClaimScannerPage();
-
-  @override
-  State<_XpClaimScannerPage> createState() => _XpClaimScannerPageState();
-}
-
-class _XpClaimScannerPageState extends State<_XpClaimScannerPage> {
-  bool _handled = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColorTokens.of(context);
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      backgroundColor: colors.backgroundPrimary,
-      appBar: AppBar(
-        title: Text(l10n.oneViewClaimXpScanTitle),
-        backgroundColor: colors.backgroundPrimary,
-      ),
-      body: MobileScanner(
-        onDetect: (capture) {
-          if (_handled) return;
-          for (final barcode in capture.barcodes) {
-            final raw = barcode.rawValue;
-            if (raw == null) continue;
-            if (OneViewXpClaim.parse(raw) == null) continue;
-            _handled = true;
-            Navigator.pop(context, raw);
-            return;
-          }
-        },
-      ),
-    );
-  }
 }

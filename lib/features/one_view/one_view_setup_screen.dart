@@ -1,18 +1,24 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/game/lobby_state.dart';
 import '../../core/one_view/one_view_state.dart';
-import '../../features/game/widgets/game_modal_chrome.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
+import '../../ui/components/ui_button.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
+import 'one_view_chrome.dart';
+
+const _presetLives = [20, 25, 30, 40, 60];
 
 /// One View rules setup — players, life, gameplay toggles; then Start → table.
 class OneViewSetupScreen extends ConsumerWidget {
@@ -24,8 +30,6 @@ class OneViewSetupScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final config = ref.watch(oneViewProvider.select((s) => s.config));
     final notifier = ref.read(oneViewProvider.notifier);
-    final navClearance =
-        LayoutTokens.bottomNavHeight + MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
@@ -68,88 +72,97 @@ class OneViewSetupScreen extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                  LayoutTokens.shellPageInset,
-                  LayoutTokens.gr2,
-                  LayoutTokens.shellPageInset,
-                  navClearance + 88,
-                ),
+              child: Stack(
                 children: [
-                  Text(
-                    l10n.oneViewPlayersLabel,
-                    style: TypographyTokens.sectionTitle(colors.textPrimary),
-                  ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Wrap(
-                    spacing: LayoutTokens.gr2,
-                    runSpacing: LayoutTokens.gr2,
+                  ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      LayoutTokens.shellPageInset,
+                      LayoutTokens.gr2,
+                      LayoutTokens.shellPageInset,
+                      _oneViewStartFooterHeight(context),
+                    ),
                     children: [
-                      for (var n = 1; n <= 6; n++)
-                        ChoiceChip(
-                          label: Text('$n'),
-                          selected: config.maxPlayers == n,
-                          onSelected: (_) => notifier.setPlayerCount(n),
+                      Text(
+                        l10n.oneViewPlayersLabel,
+                        style: TypographyTokens.sectionTitle(
+                          colors.textPrimary,
                         ),
-                    ],
-                  ),
-                  SizedBox(height: LayoutTokens.gr4),
-                  Text(
-                    l10n.hostStartingLife,
-                    style: TypographyTokens.sectionTitle(colors.textPrimary),
-                  ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Wrap(
-                    spacing: LayoutTokens.gr2,
-                    runSpacing: LayoutTokens.gr2,
-                    children: [
-                      for (final life in const [20, 25, 30, 40, 60])
-                        ChoiceChip(
-                          label: Text('$life'),
-                          selected: config.startingLife == life,
-                          onSelected: (_) => notifier.setStartingLife(life),
-                        ),
-                      ActionChip(
-                        label: Text(l10n.hostCustomEllipsis),
-                        onPressed:
-                            () => _showCustomLifeDialog(
-                              context,
-                              current: config.startingLife,
-                              onChanged: notifier.setStartingLife,
-                            ),
                       ),
+                      SizedBox(height: LayoutTokens.gr2),
+                      _EqualChoiceRow(
+                        choices: [
+                          for (var n = 1; n <= 6; n++)
+                            _EqualChoice(
+                              label: '$n',
+                              selected: config.maxPlayers == n,
+                              onTap: () => notifier.setPlayerCount(n),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: LayoutTokens.gr4),
+                      Text(
+                        l10n.hostStartingLife,
+                        style: TypographyTokens.sectionTitle(
+                          colors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr2),
+                      _EqualChoiceRow(
+                        choices: [
+                          for (final life in _presetLives)
+                            _EqualChoice(
+                              label: '$life',
+                              selected: config.startingLife == life,
+                              onTap: () => notifier.setStartingLife(life),
+                            ),
+                          _EqualChoice(
+                            label:
+                                !_presetLives.contains(config.startingLife)
+                                    ? '${config.startingLife}'
+                                    : null,
+                            icon:
+                                _presetLives.contains(config.startingLife)
+                                    ? Icons.add_rounded
+                                    : null,
+                            semanticsLabel: l10n.hostCustomEllipsis,
+                            selected:
+                                !_presetLives.contains(config.startingLife),
+                            onTap:
+                                () => _showCustomLifeDialog(
+                                  context,
+                                  current: config.startingLife,
+                                  onChanged: notifier.setStartingLife,
+                                ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: LayoutTokens.gr4),
+                      Text(
+                        l10n.hostGameplay,
+                        style: TypographyTokens.sectionTitle(
+                          colors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: LayoutTokens.gr2),
+                      _GameplayToggles(config: config, notifier: notifier),
                     ],
                   ),
-                  SizedBox(height: LayoutTokens.gr4),
-                  Text(
-                    l10n.hostGameplay,
-                    style: TypographyTokens.sectionTitle(colors.textPrimary),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: LayoutTokens.shellDockInset(context),
+                    child: _OneViewStartBar(
+                      label: l10n.hostStartGame,
+                      onPressed: () {
+                        notifier.startTable();
+                        context.push(AppRoutes.oneViewTable);
+                      },
+                    ),
                   ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  _GameplayToggles(config: config, notifier: notifier),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.fromLTRB(
-          LayoutTokens.shellPageInset,
-          LayoutTokens.gr2,
-          LayoutTokens.shellPageInset,
-          LayoutTokens.gr2 + LayoutTokens.shellDockInset(context),
-        ),
-        child: FilledButton(
-          onPressed: () {
-            notifier.startTable();
-            context.push(AppRoutes.oneViewTable);
-          },
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
-          ),
-          child: Text(l10n.oneViewStartTable),
         ),
       ),
     );
@@ -162,7 +175,7 @@ class OneViewSetupScreen extends ConsumerWidget {
   }) {
     final controller = TextEditingController(text: current.toString());
     final l10n = AppLocalizations.of(context);
-    showDialog<void>(
+    showOneViewDialog<void>(
       context: context,
       builder: (dialogContext) {
         void submit() {
@@ -173,7 +186,7 @@ class OneViewSetupScreen extends ConsumerWidget {
           }
         }
 
-        return GameFormDialog(
+        return OneViewFormDialog(
           title: l10n.hostCustomStartingLifeTitle,
           submitLabel: 'OK',
           onSubmit: submit,
@@ -189,6 +202,145 @@ class OneViewSetupScreen extends ConsumerWidget {
         );
       },
     ).whenComplete(controller.dispose);
+  }
+}
+
+/// Matches the online lobby glass bar: button, its padding, and the tab dock.
+/// The setup list uses this as bottom padding so Turn timer can scroll clear.
+double _oneViewStartFooterHeight(BuildContext context) {
+  const buttonHeight = 52.0;
+  return LayoutTokens.gr2 +
+      buttonHeight +
+      LayoutTokens.gr2 +
+      LayoutTokens.shellDockInset(context);
+}
+
+class _OneViewStartBar extends StatelessWidget {
+  const _OneViewStartBar({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colors.backgroundPrimary.withValues(alpha: 0.02),
+                colors.backgroundPrimary.withValues(alpha: 0.55),
+                colors.backgroundPrimary.withValues(alpha: 0.78),
+              ],
+              stops: const [0.0, 0.22, 1.0],
+            ),
+            border: Border(
+              top: BorderSide(
+                color: colors.borderSubtle.withValues(alpha: 0.16),
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              LayoutTokens.shellPageInset,
+              LayoutTokens.gr2,
+              LayoutTokens.shellPageInset,
+              LayoutTokens.gr2,
+            ),
+            child: UiButton(label: label, onPressed: onPressed),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One row of equal choices. Each cell grows to share the line, so six
+/// player counts stay together and can be taller than a default chip.
+class _EqualChoiceRow extends StatelessWidget {
+  const _EqualChoiceRow({required this.choices});
+
+  final List<_EqualChoice> choices;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (var i = 0; i < choices.length; i++) ...[
+          if (i > 0) const SizedBox(width: LayoutTokens.gr1),
+          Expanded(child: choices[i]),
+        ],
+      ],
+    );
+  }
+}
+
+class _EqualChoice extends StatelessWidget {
+  const _EqualChoice({
+    required this.selected,
+    required this.onTap,
+    this.label,
+    this.icon,
+    this.semanticsLabel,
+  }) : assert(label != null || icon != null);
+
+  final String? label;
+  final IconData? icon;
+  final String? semanticsLabel;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    final ink =
+        selected ? Theme.of(context).colorScheme.onPrimary : colors.textPrimary;
+    final shownLabel = label;
+    final shownIcon = icon;
+    return Semantics(
+      button: true,
+      label: semanticsLabel ?? shownLabel,
+      child: Material(
+        color: selected ? colors.primaryAccent : colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: RadiusTokens.radiusLg,
+          side: BorderSide(
+            color: selected ? colors.primaryAccent : colors.borderSubtle,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child:
+                  shownIcon != null
+                      ? Icon(shownIcon, color: ink, size: 28)
+                      : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          shownLabel!,
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: ink,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -213,33 +365,6 @@ class _GameplayToggles extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          _tile(
-            context,
-            title: l10n.hostTogglePlanechase,
-            subtitle: l10n.hostTogglePlanechaseSubtitle,
-            value: config.planechaseEnabled,
-            onChanged:
-                (v) => notifier.updateConfig(
-                  config.copyWith(planechaseEnabled: v),
-                ),
-          ),
-          _tile(
-            context,
-            title: l10n.hostToggleArchenemy,
-            subtitle: l10n.hostToggleArchenemySubtitle,
-            value: config.archenemyEnabled,
-            onChanged:
-                (v) =>
-                    notifier.updateConfig(config.copyWith(archenemyEnabled: v)),
-          ),
-          _tile(
-            context,
-            title: l10n.hostToggleBounty,
-            subtitle: l10n.hostToggleBountySubtitle,
-            value: config.bountyEnabled,
-            onChanged:
-                (v) => notifier.updateConfig(config.copyWith(bountyEnabled: v)),
-          ),
           _tile(
             context,
             title: l10n.hostToggleAutoKo,
@@ -288,6 +413,65 @@ class _GameplayToggles extends StatelessWidget {
                   ),
                 ),
           ),
+          ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            title: Text(
+              l10n.oneViewExtraModes,
+              style: OneViewChrome.menuLabelStyle(context),
+            ),
+            subtitle:
+                [
+                      if (config.planechaseEnabled) l10n.hostTogglePlanechase,
+                      if (config.archenemyEnabled) l10n.hostToggleArchenemy,
+                      if (config.bountyEnabled) l10n.hostToggleBounty,
+                    ].isEmpty
+                    ? null
+                    : Text(
+                      [
+                        if (config.planechaseEnabled) l10n.hostTogglePlanechase,
+                        if (config.archenemyEnabled) l10n.hostToggleArchenemy,
+                        if (config.bountyEnabled) l10n.hostToggleBounty,
+                      ].join(' · '),
+                      style: OneViewChrome.dialogBodyStyle(context),
+                    ),
+            shape: const Border(),
+            collapsedShape: const Border(),
+            children: [
+              _tile(
+                context,
+                title: l10n.hostTogglePlanechase,
+                subtitle: l10n.hostTogglePlanechaseSubtitle,
+                value: config.planechaseEnabled,
+                onChanged:
+                    (v) => notifier.updateConfig(
+                      config.copyWith(planechaseEnabled: v),
+                    ),
+              ),
+              _tile(
+                context,
+                title: l10n.hostToggleArchenemy,
+                subtitle: l10n.hostToggleArchenemySubtitle,
+                value: config.archenemyEnabled,
+                onChanged:
+                    (v) => notifier.updateConfig(
+                      config.copyWith(archenemyEnabled: v),
+                    ),
+              ),
+              _tile(
+                context,
+                title: l10n.hostToggleBounty,
+                subtitle: l10n.hostToggleBountySubtitle,
+                value: config.bountyEnabled,
+                onChanged:
+                    (v) => notifier.updateConfig(
+                      config.copyWith(bountyEnabled: v),
+                    ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -310,17 +494,10 @@ class _GameplayToggles extends StatelessWidget {
           fontSize: compact ? FontTokens.body : FontTokens.title,
           fontWeight: FontWeight.w500,
         ),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          color: colors.textSecondary,
-          fontSize: FontTokens.caption,
-        ),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 2,
+        style: TextStyle(color: colors.textSecondary, fontSize: 14),
       ),
       value: value,
       onChanged: onChanged,

@@ -309,30 +309,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get oneViewStartTable => 'Start table';
 
   @override
-  String get oneViewEmptySeat => 'Empty seat — tap to sit';
+  String get oneViewEmptySeat => 'Tap to join';
 
   @override
   String get oneViewClaimSeatTitle => 'Claim seat';
 
   @override
-  String get oneViewSitAsMe => 'Sit as me';
+  String get oneViewSitAsMe => 'My profile';
 
   @override
-  String get oneViewSitAsMeSubtitle =>
-      'Use this phone’s profile, then pick a deck';
+  String get oneViewSitAsMeSubtitle => 'Use this phone’s profile';
 
   @override
-  String get oneViewLoadViaQr => 'Load profile via QR';
+  String get oneViewLoadViaQr => 'Scan profile';
 
   @override
-  String get oneViewLoadViaQrSubtitle =>
-      'Scan a friend’s sit code — no Wi‑Fi game';
+  String get oneViewLoadViaQrSubtitle => 'Scan a friend’s QR';
 
   @override
   String get oneViewSitAsGuest => 'Guest';
 
   @override
-  String get oneViewSitAsGuestSubtitle => 'Name only — no deck or stats';
+  String get oneViewSitAsGuestSubtitle => 'Enter a name';
 
   @override
   String get oneViewGuestNameTitle => 'Guest name';
@@ -380,6 +378,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oneViewClearSeat => 'Clear seat';
+
+  @override
+  String get oneViewRename => 'Rename';
+
+  @override
+  String get oneViewRenameHint => 'Player name';
 
   @override
   String get oneViewPoisonMinus => 'Poison −';
@@ -521,7 +525,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oneViewAttackSwipeSubtitle =>
-      'Drag from your card onto a player, then tap their card once per point.';
+      'Drag from your card across one or more players, then tap each card once per point.';
 
   @override
   String get oneViewAttackDamage => 'Damage';
@@ -3800,4 +3804,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String collectionSuggestionCount(String name, int owned, int total) {
     return '$name, $owned of $total';
   }
+
+  @override
+  String get oneViewExtraModes => 'Extra modes';
+
+  @override
+  String oneViewUseProfile(String name) {
+    return 'Use $name';
+  }
+
+  @override
+  String get oneViewDeckStyleMissing =>
+      'Some decks need a style. Set it in Decks to use them here.';
+
+  @override
+  String oneViewResetLifeBody(int life) {
+    return 'Reset life totals to $life and clear poison and commander damage?';
+  }
+
+  @override
+  String get oneViewAttackHint => 'Choose damage type, then tap a player.';
+
+  @override
+  String get oneViewDone => 'Done';
+
+  @override
+  String get oneViewRollAgain => 'Roll again';
+
+  @override
+  String get oneViewScanProfileHint =>
+      'Place your friend’s profile QR inside the frame.';
+
+  @override
+  String get oneViewScanXpHint => 'Place the XP claim QR inside the frame.';
+
+  @override
+  String get oneViewInvalidProfileQr =>
+      'This is not a profile QR. Ask your friend to show their sit code.';
+
+  @override
+  String get oneViewCurrentArt => 'Current art';
+
+  @override
+  String get oneViewCameraUnavailable =>
+      'Camera unavailable. Allow camera access in your phone settings, then reopen the scanner.';
+
+  @override
+  String oneViewPlayerMenu(String name) {
+    return 'Options for $name';
+  }
+
+  @override
+  String get oneViewAttackNeedsPlayer =>
+      'Add a player to that seat before attacking.';
 }

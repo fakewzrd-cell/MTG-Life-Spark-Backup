@@ -535,6 +535,7 @@ class _LifeInputDialogState extends State<LifeInputDialog> {
     final colors = context.gameColors;
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
+      scrollable: true,
       backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: RadiusTokens.radiusXl,

@@ -1,34 +1,32 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/game/game_session_events.dart';
 import '../../core/one_view/one_view_state.dart';
-import '../../features/game/widgets/game_modal_chrome.dart';
 import '../../features/game/widgets/table_tool_result_overlay.dart';
 import '../../features/game/widgets/team_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
-import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
+import '../../ui/tokens/radius_tokens.dart';
+import 'one_view_chrome.dart';
 
 /// Mid-game LobbyConfig toggles from the center menu (plan: settings changeable).
 Future<void> showOneViewSettingsSheet(
   BuildContext context,
   WidgetRef ref,
 ) async {
-  await showGameBottomSheet<void>(
+  await showOneViewDialog<void>(
     context: context,
-    isScrollControlled: true,
-    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
           final config = ref.watch(oneViewProvider.select((s) => s.config));
           final notifier = ref.read(oneViewProvider.notifier);
           final l10n = AppLocalizations.of(context);
-          final colors = AppColorTokens.of(context);
           bool autoKoAll() =>
               config.autoKoFromLife &&
               config.autoKoFromPoison &&
@@ -44,35 +42,22 @@ Future<void> showOneViewSettingsSheet(
               contentPadding: const EdgeInsets.symmetric(
                 vertical: LayoutTokens.gr1,
               ),
-              title: Text(
-                title,
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: FontTokens.body,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              title: Text(title, style: OneViewChrome.menuLabelStyle(context)),
               subtitle: Text(
                 subtitle,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: FontTokens.hudSm,
-                  height: 1.3,
-                ),
+                style: OneViewChrome.dialogBodyStyle(context),
               ),
               value: value,
               onChanged: onChanged,
             );
           }
 
-          return GameSheetBody(
-            scrollable: true,
+          return OneViewMenuDialog(
+            title: l10n.oneViewMidGameSettings,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                GameSheetHeader(title: l10n.oneViewMidGameSettings),
-                SizedBox(height: LayoutTokens.gr2),
                 tile(
                   title: l10n.hostToggleTeams,
                   subtitle: l10n.hostToggleTeamsSubtitle,
@@ -80,33 +65,6 @@ Future<void> showOneViewSettingsSheet(
                   onChanged:
                       (v) => notifier.updateConfig(
                         config.copyWith(teamsEnabled: v),
-                      ),
-                ),
-                tile(
-                  title: l10n.hostTogglePlanechase,
-                  subtitle: l10n.hostTogglePlanechaseSubtitle,
-                  value: config.planechaseEnabled,
-                  onChanged:
-                      (v) => notifier.updateConfig(
-                        config.copyWith(planechaseEnabled: v),
-                      ),
-                ),
-                tile(
-                  title: l10n.hostToggleArchenemy,
-                  subtitle: l10n.hostToggleArchenemySubtitle,
-                  value: config.archenemyEnabled,
-                  onChanged:
-                      (v) => notifier.updateConfig(
-                        config.copyWith(archenemyEnabled: v),
-                      ),
-                ),
-                tile(
-                  title: l10n.hostToggleBounty,
-                  subtitle: l10n.hostToggleBountySubtitle,
-                  value: config.bountyEnabled,
-                  onChanged:
-                      (v) => notifier.updateConfig(
-                        config.copyWith(bountyEnabled: v),
                       ),
                 ),
                 tile(
@@ -153,6 +111,63 @@ Future<void> showOneViewSettingsSheet(
                         ),
                       ),
                 ),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  subtitle:
+                      [
+                            if (config.planechaseEnabled)
+                              l10n.hostTogglePlanechase,
+                            if (config.archenemyEnabled)
+                              l10n.hostToggleArchenemy,
+                            if (config.bountyEnabled) l10n.hostToggleBounty,
+                          ].isEmpty
+                          ? null
+                          : Text(
+                            [
+                              if (config.planechaseEnabled)
+                                l10n.hostTogglePlanechase,
+                              if (config.archenemyEnabled)
+                                l10n.hostToggleArchenemy,
+                              if (config.bountyEnabled) l10n.hostToggleBounty,
+                            ].join(' · '),
+                            style: OneViewChrome.dialogBodyStyle(context),
+                          ),
+                  shape: const Border(),
+                  collapsedShape: const Border(),
+                  title: Text(
+                    l10n.oneViewExtraModes,
+                    style: OneViewChrome.menuLabelStyle(context),
+                  ),
+                  children: [
+                    tile(
+                      title: l10n.hostTogglePlanechase,
+                      subtitle: l10n.hostTogglePlanechaseSubtitle,
+                      value: config.planechaseEnabled,
+                      onChanged:
+                          (v) => notifier.updateConfig(
+                            config.copyWith(planechaseEnabled: v),
+                          ),
+                    ),
+                    tile(
+                      title: l10n.hostToggleArchenemy,
+                      subtitle: l10n.hostToggleArchenemySubtitle,
+                      value: config.archenemyEnabled,
+                      onChanged:
+                          (v) => notifier.updateConfig(
+                            config.copyWith(archenemyEnabled: v),
+                          ),
+                    ),
+                    tile(
+                      title: l10n.hostToggleBounty,
+                      subtitle: l10n.hostToggleBountySubtitle,
+                      value: config.bountyEnabled,
+                      onChanged:
+                          (v) => notifier.updateConfig(
+                            config.copyWith(bountyEnabled: v),
+                          ),
+                    ),
+                  ],
+                ),
               ],
             ),
           );
@@ -169,23 +184,17 @@ Future<TableToolAnnouncement?> showOneViewDiceSheet(
 }) async {
   var kind = TableToolKind.d6;
   final l10n = AppLocalizations.of(context);
-  final rolled = await showGameBottomSheet<TableToolAnnouncement>(
+  final rolled = await showOneViewDialog<TableToolAnnouncement>(
     context: context,
-    enableDrag: false,
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setLocal) {
-          final colors = AppColorTokens.of(context);
-          return GameSheetBody(
+          return OneViewMenuDialog(
+            title: l10n.tableToolsTitle,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GameSheetHeader(
-                  title: l10n.tableToolsTitle,
-                  subtitle: l10n.tableToolsSubtitle,
-                ),
-                SizedBox(height: LayoutTokens.gr3),
                 Row(
                   children: [
                     for (final entry in [
@@ -196,48 +205,19 @@ Future<TableToolAnnouncement?> showOneViewDiceSheet(
                       if (entry.$1 != TableToolKind.d6)
                         SizedBox(width: LayoutTokens.gr1),
                       Expanded(
-                        child: ChoiceChip(
-                          label: Text(entry.$2),
+                        child: _ToolChoice(
+                          label: entry.$2,
                           selected: kind == entry.$1,
-                          onSelected: (_) => setLocal(() => kind = entry.$1),
+                          onTap: () => setLocal(() => kind = entry.$1),
                         ),
                       ),
                     ],
                   ],
                 ),
-                SizedBox(height: LayoutTokens.gr4),
-                Text(
-                  l10n.tableToolsResultHint,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: colors.textSecondary),
-                ),
                 SizedBox(height: LayoutTokens.gr3),
                 FilledButton(
                   onPressed: () {
-                    final rand = math.Random();
-                    final announcement = switch (kind) {
-                      TableToolKind.d6 => TableToolAnnouncement(
-                        id: 'ov-${DateTime.now().microsecondsSinceEpoch}',
-                        playerId: 'one-view',
-                        username: rollerName,
-                        kind: TableToolKind.d6,
-                        dieValue: rand.nextInt(6) + 1,
-                      ),
-                      TableToolKind.d20 => TableToolAnnouncement(
-                        id: 'ov-${DateTime.now().microsecondsSinceEpoch}',
-                        playerId: 'one-view',
-                        username: rollerName,
-                        kind: TableToolKind.d20,
-                        dieValue: rand.nextInt(20) + 1,
-                      ),
-                      TableToolKind.coin => TableToolAnnouncement(
-                        id: 'ov-${DateTime.now().microsecondsSinceEpoch}',
-                        playerId: 'one-view',
-                        username: rollerName,
-                        kind: TableToolKind.coin,
-                        coinHeads: rand.nextBool(),
-                      ),
-                    };
+                    final announcement = rollOneViewTool(kind, rollerName);
                     Navigator.pop(ctx, announcement);
                   },
                   child: Text(switch (kind) {
@@ -256,76 +236,67 @@ Future<TableToolAnnouncement?> showOneViewDiceSheet(
   return rolled;
 }
 
+TableToolAnnouncement rollOneViewTool(TableToolKind kind, String rollerName) {
+  final random = math.Random();
+  return TableToolAnnouncement(
+    id: 'ov-${DateTime.now().microsecondsSinceEpoch}',
+    playerId: 'one-view',
+    username: rollerName,
+    kind: kind,
+    dieValue:
+        kind == TableToolKind.coin
+            ? null
+            : random.nextInt(kind == TableToolKind.d20 ? 20 : 6) + 1,
+    coinHeads: kind == TableToolKind.coin ? random.nextBool() : null,
+  );
+}
+
 /// Assign team colors to claimed seats. Only opened when teams are on.
 Future<void> showOneViewColorsSheet(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
-  await showGameBottomSheet<void>(
+  await showOneViewDialog<void>(
     context: context,
-    isScrollControlled: true,
-    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
           final seats = ref.watch(oneViewProvider.select((s) => s.seats));
           final claimed = seats.where((s) => s.isClaimed).toList();
-          final colors = AppColorTokens.of(context);
-          if (claimed.isEmpty) {
-            return GameSheetBody(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GameSheetHeader(title: l10n.oneViewColorsTitle),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Text(
+          final body =
+              claimed.isEmpty
+                  ? Text(
                     l10n.oneViewColorsEmpty,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: FontTokens.body,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          return GameSheetBody(
-            scrollable: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GameSheetHeader(title: l10n.oneViewColorsTitle),
-                SizedBox(height: LayoutTokens.gr3),
-                for (final seat in claimed) ...[
-                  Text(
-                    seat.displayName,
-                    style: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: FontTokens.headline,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: LayoutTokens.gr2),
-                  Wrap(
-                    spacing: LayoutTokens.gr2,
-                    runSpacing: LayoutTokens.gr2,
+                    style: OneViewChrome.dialogBodyStyle(context),
+                  )
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (final idx in [0, 1, 2, 3, 4])
-                        _TeamChoice(
-                          index: idx,
-                          selected: seat.teamIndex == idx,
-                          onTap:
-                              () => ref
-                                  .read(oneViewProvider.notifier)
-                                  .assignTeam(seat.index, idx),
+                      for (final seat in claimed) ...[
+                        Text(
+                          seat.displayName,
+                          style: OneViewChrome.menuLabelStyle(context),
                         ),
+                        SizedBox(height: LayoutTokens.gr2),
+                        Wrap(
+                          spacing: LayoutTokens.gr2,
+                          runSpacing: LayoutTokens.gr2,
+                          children: [
+                            for (final idx in [0, 1, 2, 3, 4])
+                              _TeamChoice(
+                                index: idx,
+                                selected: seat.teamIndex == idx,
+                                onTap:
+                                    () => ref
+                                        .read(oneViewProvider.notifier)
+                                        .assignTeam(seat.index, idx),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: LayoutTokens.gr4),
+                      ],
                     ],
-                  ),
-                  SizedBox(height: LayoutTokens.gr4),
-                ],
-              ],
-            ),
-          );
+                  );
+          return OneViewMenuDialog(title: l10n.oneViewColorsTitle, child: body);
         },
       );
     },
@@ -370,7 +341,18 @@ class _TeamChoice extends StatelessWidget {
             width: 56,
             height: 56,
             child:
-                index == 0
+                selected
+                    ? Icon(
+                      Icons.check_rounded,
+                      color:
+                          index == 0
+                              ? colors.textPrimary
+                              : ThemeData.estimateBrightnessForColor(fill) ==
+                                  Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                    )
+                    : index == 0
                     ? Icon(Icons.close_rounded, color: colors.textSecondary)
                     : null,
           ),
@@ -386,62 +368,46 @@ Future<void> showOneViewPlayerCountSheet(
   WidgetRef ref,
 ) async {
   final l10n = AppLocalizations.of(context);
-  await showGameBottomSheet<void>(
+  await showOneViewDialog<void>(
     context: context,
-    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
           final seats = ref.watch(oneViewProvider.select((s) => s.seats));
           final colors = AppColorTokens.of(context);
           final notifier = ref.read(oneViewProvider.notifier);
-          return GameSheetBody(
+          final canRemove = seats.length > 1;
+          return OneViewMenuDialog(
+            title: l10n.oneViewPlayerCountTitle,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GameSheetHeader(title: l10n.oneViewPlayerCountTitle),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.person_add_alt_1_rounded),
-                  title: Text(l10n.oneViewAddSeat),
+                OneViewMenuAction(
+                  icon: Icons.person_add_alt_1_rounded,
+                  label: l10n.oneViewAddSeat,
                   enabled: seats.length < 6,
-                  onTap:
-                      seats.length >= 6
-                          ? null
-                          : () {
-                            notifier.addSeats(1);
-                            Navigator.pop(ctx);
-                          },
+                  onTap: () {
+                    notifier.addSeats(1);
+                    Navigator.pop(ctx);
+                  },
                 ),
                 for (final seat in seats.reversed)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      Icons.person_remove_alt_1_rounded,
-                      color: colors.error,
-                    ),
-                    title: Text(
-                      seat.isEmpty
-                          ? l10n.oneViewRemoveEmptySeat(seat.index + 1)
-                          : l10n.oneViewRemoveFilledSeat(
-                            seat.displayName,
-                            seat.index + 1,
-                          ),
-                      style: TextStyle(color: colors.error),
-                    ),
-                    enabled: seats.length > 1,
-                    onTap:
-                        seats.length <= 1
-                            ? null
-                            : () async {
-                              Navigator.pop(ctx);
-                              await confirmAndRemoveSeat(
-                                context,
-                                ref,
-                                seat.index,
-                              );
-                            },
+                  OneViewMenuAction(
+                    icon: Icons.person_remove_alt_1_rounded,
+                    label:
+                        seat.isEmpty
+                            ? l10n.oneViewRemoveEmptySeat(seat.index + 1)
+                            : l10n.oneViewRemoveFilledSeat(
+                              seat.displayName,
+                              seat.index + 1,
+                            ),
+                    color: colors.error,
+                    enabled: canRemove,
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await confirmAndRemoveSeat(context, ref, seat.index);
+                    },
                   ),
               ],
             ),
@@ -450,6 +416,50 @@ Future<void> showOneViewPlayerCountSheet(
       );
     },
   );
+}
+
+class _ToolChoice extends StatelessWidget {
+  const _ToolChoice({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    return Material(
+      color: selected ? colors.primaryAccent : colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: RadiusTokens.radiusLg,
+        side: BorderSide(
+          color: selected ? colors.primaryAccent : colors.borderSubtle,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 56,
+          child: Center(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: OneViewChrome.menuLabelStyle(
+                context,
+                color: selected ? colors.onAccent : colors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Plan: removing a filled seat asks to confirm; life totals stay on others.
@@ -465,7 +475,7 @@ Future<bool> confirmAndRemoveSeat(
   final l10n = AppLocalizations.of(context);
 
   if (seat.isClaimed) {
-    final ok = await showDialog<bool>(
+    final ok = await showOneViewDialog<bool>(
       context: context,
       builder:
           (ctx) => AlertDialog(
@@ -488,14 +498,13 @@ Future<bool> confirmAndRemoveSeat(
   return ref.read(oneViewProvider.notifier).removeSeat(seatIndex);
 }
 
-/// Full-screen local dice/coin result for One View (no gameProvider).
+/// Local result owns its dismissal and can roll again without opening a menu.
 class OneViewDiceOverlay extends StatefulWidget {
   const OneViewDiceOverlay({
     super.key,
     required this.announcement,
     required this.onDismiss,
   });
-
   final TableToolAnnouncement announcement;
   final VoidCallback onDismiss;
 
@@ -504,29 +513,37 @@ class OneViewDiceOverlay extends StatefulWidget {
 }
 
 class _OneViewDiceOverlayState extends State<OneViewDiceOverlay> {
+  late TableToolAnnouncement _announcement;
+
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(const Duration(seconds: 5), () {
-      if (mounted) widget.onDismiss();
-    });
+    _announcement = widget.announcement;
   }
 
   @override
-  Widget build(BuildContext context) {
-    // Reuse Own View result chrome; dismiss is owned locally above.
-    return Stack(
-      children: [
-        IgnorePointer(
-          child: TableToolResultOverlay(announcement: widget.announcement),
-        ),
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: widget.onDismiss,
-          ),
-        ),
-      ],
-    );
+  void didUpdateWidget(OneViewDiceOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.announcement.id != widget.announcement.id) {
+      _announcement = widget.announcement;
+    }
   }
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      TableToolResultOverlay(
+        announcement: _announcement,
+        autoDismiss: null,
+        onDismiss: widget.onDismiss,
+        onRollAgain:
+            () => setState(() {
+              _announcement = rollOneViewTool(
+                _announcement.kind,
+                _announcement.username,
+              );
+            }),
+      ),
+    ],
+  );
 }

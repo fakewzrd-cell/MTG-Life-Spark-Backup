@@ -21,10 +21,16 @@ class TableToolResultOverlay extends ConsumerStatefulWidget {
     super.key,
     required this.announcement,
     this.autoDismiss = const Duration(seconds: 5),
+    this.onDismiss,
+    this.onRollAgain,
+    this.rollAgainLabel,
   });
 
   final TableToolAnnouncement announcement;
-  final Duration autoDismiss;
+  final Duration? autoDismiss;
+  final VoidCallback? onDismiss;
+  final VoidCallback? onRollAgain;
+  final String? rollAgainLabel;
 
   @override
   ConsumerState<TableToolResultOverlay> createState() =>
@@ -56,11 +62,28 @@ class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _spin.stop();
+      _spin.value = 1;
+      _land.value = 1;
+      _settled = true;
+      _shownFace = _finalFace;
+    }
+  }
+
+  @override
   void didUpdateWidget(covariant TableToolResultOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.announcement.id != widget.announcement.id) {
       _armTimer();
-      _play();
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _settled = true;
+        _shownFace = _finalFace;
+      } else {
+        _play();
+      }
     }
   }
 
@@ -120,12 +143,17 @@ class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay>
 
   void _armTimer() {
     _timer?.cancel();
-    _timer = Timer(widget.autoDismiss, _dismiss);
+    final duration = widget.autoDismiss;
+    if (duration != null) _timer = Timer(duration, _dismiss);
   }
 
   void _dismiss() {
     if (!mounted) return;
-    ref.read(gameProvider.notifier).dismissTableToolAnnouncement();
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+    } else {
+      ref.read(gameProvider.notifier).dismissTableToolAnnouncement();
+    }
   }
 
   @override
@@ -146,68 +174,82 @@ class _TableToolResultOverlayState extends ConsumerState<TableToolResultOverlay>
             color: colors.backgroundPrimary.withValues(
               alpha: OpacityTokens.strong,
             ),
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr5),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colors.primaryAccent,
-                    borderRadius: RadiusTokens.radiusXl,
-                  ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: LayoutTokens.gr5,
-                      vertical: LayoutTokens.gr5,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          a.localizedToolLabel(l10n).toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: colors.onAccent.withValues(alpha: 0.85),
-                            fontSize: FontTokens.caption,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
+                    padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr5),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.primaryAccent,
+                        borderRadius: RadiusTokens.radiusXl,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: LayoutTokens.gr5,
+                          vertical: LayoutTokens.gr5,
                         ),
-                        SizedBox(height: LayoutTokens.gr3),
-                        _RollingProp(
-                          kind: a.kind,
-                          face: _settled ? _finalFace : _shownFace,
-                          spin: _spin,
-                          land: _land,
-                          settled: _settled,
-                          headsLabel: l10n.tableToolHeads,
-                          tailsLabel: l10n.tableToolTails,
-                          dieColor: ColorTokens.lightSurface,
-                          pipColor: ColorTokens.lightTextPrimary,
-                          coinColor: colors.emphasis,
-                          coinInk: colors.backgroundPrimary,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              a.localizedToolLabel(l10n).toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colors.onAccent.withValues(alpha: 0.85),
+                                fontSize: FontTokens.caption,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            SizedBox(height: LayoutTokens.gr3),
+                            _RollingProp(
+                              kind: a.kind,
+                              face: _settled ? _finalFace : _shownFace,
+                              spin: _spin,
+                              land: _land,
+                              settled: _settled,
+                              headsLabel: l10n.tableToolHeads,
+                              tailsLabel: l10n.tableToolTails,
+                              dieColor: ColorTokens.lightSurface,
+                              pipColor: ColorTokens.lightTextPrimary,
+                              coinColor: colors.emphasis,
+                              coinInk: colors.backgroundPrimary,
+                            ),
+                            SizedBox(height: LayoutTokens.gr3),
+                            Text(
+                              headline,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colors.onAccent,
+                                fontSize: FontTokens.title,
+                                fontWeight: FontWeight.w700,
+                                height: 1.25,
+                              ),
+                            ),
+                            if (widget.onRollAgain != null) ...[
+                              const SizedBox(height: 16),
+                              FilledButton.tonal(
+                                onPressed: _settled ? widget.onRollAgain : null,
+                                child: Text(
+                                  widget.rollAgainLabel ??
+                                      l10n.oneViewRollAgain,
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: LayoutTokens.gr2),
+                            Text(
+                              l10n.tableToolTapToDismiss,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colors.onAccent.withValues(alpha: 0.85),
+                                fontSize: FontTokens.body,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: LayoutTokens.gr3),
-                        Text(
-                          headline,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: colors.onAccent,
-                            fontSize: FontTokens.title,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25,
-                          ),
-                        ),
-                        SizedBox(height: LayoutTokens.gr2),
-                        Text(
-                          l10n.tableToolTapToDismiss,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: colors.onAccent.withValues(alpha: 0.85),
-                            fontSize: FontTokens.body,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

@@ -35,7 +35,7 @@
     html, body {
       margin: 0;
       height: 100%;
-      background: #000000;
+      background: #12121A;
       color: #ffffff;
     }
     #app-loading {
@@ -45,16 +45,10 @@
       justify-content: center;
       height: 100%;
       gap: 28px;
-      background: #000000;
+      background: #12121A;
       z-index: 9999;
       position: fixed;
       inset: 0;
-    }
-    #app-loading .splash-video {
-      width: min(340px, 72vw);
-      height: min(340px, 72vw);
-      object-fit: contain;
-      background: #000000;
     }
     #app-loading p {
       margin: 0;
@@ -81,16 +75,6 @@
 </head>
 <body>
   <div id="app-loading" aria-live="polite">
-    <video
-      class="splash-video"
-      autoplay
-      muted
-      playsinline
-      preload="auto"
-      aria-hidden="true"
-    >
-      <source src="animations/logo_splash.mp4" type="video/mp4"/>
-    </video>
     <p id="app-loading-text">Loading Life Spark…</p>
     <p id="app-loading-hint" class="hint" hidden></p>
   </div>
@@ -112,20 +96,10 @@
         if (el.parentNode) el.parentNode.removeChild(el);
       }
 
-      // Keep the HTML layer up through the full clip (frozen on its last frame
-      // if the app is still booting). Remove only once Flutter has painted the
-      // real app — that avoids a black page between animation and UI.
+      // The Lottie plays inside Flutter. This layer only covers the blank
+      // page until the first Flutter frame, which uses the same background.
       function maybeDismiss() {
         if (videoDone && appEntered) dismissLoading();
-      }
-
-      function freezeLastFrame(video) {
-        try {
-          video.pause();
-          if (video.duration && isFinite(video.duration) && video.duration > 0) {
-            video.currentTime = Math.max(0, video.duration - 0.05);
-          }
-        } catch (e) {}
       }
 
       function showLoadingCue() {
@@ -145,38 +119,7 @@
         setTimeout(showLoadingCue, 350);
       }
 
-      var TARGET_INTRO_SECONDS = 2.5; // matches BrandedSplash.logoAnimationDuration
-      var video = document.querySelector('#app-loading .splash-video');
-      if (video) {
-        function applyPlaybackRate() {
-          var sourceSeconds = video.duration;
-          if (sourceSeconds && isFinite(sourceSeconds) && sourceSeconds > 0) {
-            video.playbackRate = sourceSeconds / TARGET_INTRO_SECONDS;
-          } else {
-            video.playbackRate = 3 / TARGET_INTRO_SECONDS;
-          }
-        }
-        video.addEventListener('loadedmetadata', applyPlaybackRate);
-        applyPlaybackRate();
-        var playPromise = video.play();
-        if (playPromise && playPromise.catch) {
-          playPromise.catch(function () { markVideoDone(); });
-        }
-        video.addEventListener('ended', function () {
-          freezeLastFrame(video);
-          markVideoDone();
-        });
-        video.addEventListener('error', markVideoDone);
-        // Safety only — well after the sped-up clip, in case `ended` never fires.
-        setTimeout(function () {
-          if (!videoDone) {
-            freezeLastFrame(video);
-            markVideoDone();
-          }
-        }, 8000);
-      } else {
-        markVideoDone();
-      }
+      markVideoDone();
 
       window.__flutterLoadFailed = function () {
         if (text) text.textContent = 'Could not load the app.';
@@ -193,7 +136,7 @@
         maybeDismiss();
       });
       window.addEventListener('flutter-first-frame', function () {
-        // First frame alone must NOT dismiss — wait for the full logo clip.
+        dismissLoading();
       });
       setTimeout(function () {
         if (!document.getElementById('app-loading')) return;

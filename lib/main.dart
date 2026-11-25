@@ -114,8 +114,8 @@ class _AppBootstrapState extends State<_AppBootstrap> {
         }
         if (snapshot.connectionState == ConnectionState.done && !_initDone) {
           _initDone = true;
-          // Defer so we don't setState during build. Do NOT dismiss the HTML
-          // splash here — it owns the logo video on web and must finish once.
+          // Defer so we don't setState during build. The HTML cover drops on
+          // Flutter's first frame; this splash owns the Lottie after that.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) setState(() {});
           });
@@ -130,10 +130,10 @@ class _AppBootstrapState extends State<_AppBootstrap> {
             ready: _initDone,
             onRevealComplete: () {
               if (!mounted || _revealDone) return;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted || _revealDone) return;
-                setState(() => _revealDone = true);
-              });
+              // The logo ticker has stopped, so a post-frame callback would
+              // wait forever. setState is what schedules the frame that
+              // replaces the splash.
+              setState(() => _revealDone = true);
             },
           ),
         );
@@ -218,7 +218,8 @@ Future<void> _initHive() async {
 
   // Web IndexedDB can hang when opening many Hive boxes in parallel.
   await _withStartupTimeout('Loading profile data', _openHiveBoxes());
-  await _foldCommanderSideboards();
+  // Sideboard folding and cache cleanup scan every saved row. Doing that
+  // before the first screen freezes the logo splash, so it runs after enter.
 
   // Ensure default settings exist
   final settingsBox = Hive.box<AppSettings>('appSettings');
@@ -266,7 +267,6 @@ Future<void> _openHiveBoxes() async {
   } else {
     await Future.wait(opens);
   }
-  await ScryfallCardCache().purgeExpired();
 }
 
 Future<T> _withStartupTimeout<T>(String label, Future<T> future) {
@@ -286,6 +286,8 @@ Future<T> _withStartupTimeout<T>(String label, Future<T> future) {
 
 Future<void> _deferredStartupMaintenance() async {
   try {
+    await _foldCommanderSideboards();
+    await ScryfallCardCache().purgeExpired();
     await MatchRepository().purgeOldMatches();
     await FeedbackRepository().init();
     await _deferredProfileMaintenance();

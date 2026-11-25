@@ -1,19 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../core/debug/web_logo_splash.dart';
+import '../../ui/tokens/color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
 
 /// Launch splash: play the Life Spark logo animation, then enter the app.
 ///
 /// Completes only after the intro finishes **and** [ready] is true (bootstrap
-/// done). On web, the HTML shell plays the clip once — Flutter stays black so
-/// we never flash a second static logo or Beta label.
+/// done). The Lottie has no background, so it sits on [ColorTokens.backgroundPrimary]
+/// and can be recolored by changing that surface.
 ///
-/// Native launch is solid black. The player mounts hidden, starts playback,
-/// then fades in so the mark is never shown frozen before it moves.
+/// The player mounts hidden, starts playback, then fades in so the mark is
+/// never shown frozen before it moves.
 class BrandedSplash extends StatefulWidget {
   const BrandedSplash({
     super.key,
@@ -30,34 +34,33 @@ class BrandedSplash extends StatefulWidget {
 
   final VoidCallback? onRevealComplete;
 
-  /// Defaults to true on IO, false on web (HTML owns the intro there).
-  /// Set false in widget tests (no video platform).
+  /// Defaults to true. Set false in widget tests (no animation asset load).
   final bool? useVideoIntro;
 
-  /// Bundled logo open animation (512² H.264 for smooth decode).
-  static const logoAnimationAsset = 'assets/animations/logo_splash.mp4';
+  /// Transparent logo open animation (1920², 181 frames at 60fps).
+  static const logoAnimationAsset = 'assets/animations/logo_splash.json';
 
-  /// Source length of [logoAnimationAsset] (encoded ~3.0s).
-  static const logoAnimationSourceDuration = Duration(milliseconds: 3000);
+  /// Source length of [logoAnimationAsset] (181 frames / 60fps).
+  static const logoAnimationSourceDuration = Duration(milliseconds: 3017);
 
-  /// On-screen intro length — slightly faster than the source clip.
-  static const logoAnimationDuration = Duration(milliseconds: 2500);
+  /// On-screen intro length. The file plays at its authored speed.
+  static const logoAnimationDuration = logoAnimationSourceDuration;
 
-  /// Playback speed so the ~3s asset finishes in [logoAnimationDuration].
+  /// Playback speed. 1 keeps the Lottie timing.
   static double get logoAnimationPlaybackRate =>
       logoAnimationSourceDuration.inMilliseconds /
       logoAnimationDuration.inMilliseconds;
 
-  /// Max display size for the intro video (scaled down on narrow screens).
+  /// Max display size for the intro (scaled down on narrow screens).
   static const double introSize = 340;
 
   /// Fraction of the shortest screen side used for the intro box.
   static const double introViewportFraction = 0.72;
 
-  /// Fade the clip in from black once playback has started (no freeze-frame).
+  /// Fade the clip in once the composition is ready (no freeze-frame).
   static const introFade = Duration(milliseconds: 160);
 
-  /// If the decoder never reports playback, leave black rather than hang forever.
+  /// If the file never loads, leave the surface rather than hang forever.
   static const videoStartTimeout = Duration(milliseconds: 2000);
 
   /// Brief hold after the clip ends before entering the app.
@@ -66,37 +69,56 @@ class BrandedSplash extends StatefulWidget {
   /// How long init may take before we show a loading cue under the intro.
   static const slowLoadThreshold = Duration(milliseconds: 1000);
 
-  /// Brief black hold when video cannot play (tests / decode failure).
+  /// Brief hold when the intro cannot play (tests / decode failure).
   static const revealDuration = Duration(milliseconds: 300);
 
-  /// Hold after the intro before entering the app (IO only; web jumps straight in).
+  /// Hold after the intro before entering the app.
   static const revealHold = Duration(milliseconds: 80);
 
-  static bool get defaultUseVideoIntro => !kIsWeb;
+  static bool get defaultUseVideoIntro => true;
+
+  /// Navigation buttons stay. The bar matches the splash instead of a white plate.
+  static SystemUiOverlayStyle get systemOverlay => SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: ColorTokens.backgroundPrimary,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarContrastEnforced: false,
+    systemNavigationBarDividerColor: Colors.transparent,
+  );
 
   @override
   State<BrandedSplash> createState() => _BrandedSplashState();
 }
 
-class _BrandedSplashState extends State<BrandedSplash> {
-  VideoPlayerController? _video;
+class _BrandedSplashState extends State<BrandedSplash>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  Timer? _introDeadline;
 
   var _showLoadingCue = false;
   var _finishing = false;
   var _introFinished = false;
-  var _videoReady = false;
+  var _compositionReady = false;
   var _introOpaque = false;
 
-  bool get _playVideo =>
+  bool get _playIntro =>
       widget.useVideoIntro ?? BrandedSplash.defaultUseVideoIntro;
 
   @override
   void initState() {
     super.initState();
-    if (_playVideo) {
-      _initVideo();
+    SystemChrome.setSystemUIOverlayStyle(BrandedSplash.systemOverlay);
+    _controller = AnimationController(vsync: this);
+    _controller.addStatusListener(_onStatus);
+
+    if (_playIntro) {
+      Future<void>.delayed(BrandedSplash.videoStartTimeout, () {
+        if (!mounted || _introFinished || _introOpaque) return;
+        _markIntroFinished();
+      });
     } else if (kIsWeb) {
-      // HTML owns the clip — finish as soon as it reports `ended` (no extra black wait).
       listenForWebLogoSplashDone(() {
         if (!mounted) return;
         _markIntroFinished();
@@ -116,71 +138,38 @@ class _BrandedSplashState extends State<BrandedSplash> {
     }
   }
 
-  Future<void> _initVideo() async {
-    final controller = VideoPlayerController.asset(
-      BrandedSplash.logoAnimationAsset,
-      videoPlayerOptions: VideoPlayerOptions(
-        mixWithOthers: true,
-        allowBackgroundPlayback: false,
-      ),
-    );
-    _video = controller;
-    try {
-      await controller.initialize();
-      if (!mounted) return;
-      await controller.setLooping(false);
-      await controller.setVolume(0);
-      await controller.setPlaybackSpeed(
-        BrandedSplash.logoAnimationPlaybackRate,
-      );
-      await controller.seekTo(Duration.zero);
-      if (!mounted) return;
-      controller.addListener(_onVideoTick);
-      // Mount the player first (opacity 0) so Android has a surface, then play.
-      setState(() => _videoReady = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted || _video != controller) return;
-        await controller.play();
-        if (!mounted) return;
-        _revealIntroIfPlaying();
-      });
-      Future<void>.delayed(BrandedSplash.videoStartTimeout, () {
-        if (!mounted || _introFinished || _introOpaque) return;
-        _markIntroFinished();
-      });
-    } catch (_) {
-      if (!mounted) return;
-      await _disposeVideo();
-      Future<void>.delayed(BrandedSplash.revealDuration, () {
-        if (!mounted) return;
-        _markIntroFinished();
-      });
-    }
-  }
-
-  Future<void> _disposeVideo() async {
-    final c = _video;
-    _video = null;
-    if (c == null) return;
-    c.removeListener(_onVideoTick);
-    await c.dispose();
-  }
-
-  void _revealIntroIfPlaying() {
-    final c = _video;
-    if (_introOpaque || c == null) return;
-    final value = c.value;
-    if (!value.isInitialized) return;
-    if (!value.isPlaying && value.position <= Duration.zero) return;
+  void _onComposition(LottieComposition composition) {
+    if (!mounted || _introFinished || !_playIntro) return;
+    final duration = composition.duration;
+    _controller.duration = duration;
+    _compositionReady = true;
     _introOpaque = true;
-    if (mounted) setState(() {});
+    setState(() {});
+    _controller.forward();
+    // Status can miss if a startup task blocks the ticker. Leave anyway once
+    // the authored clip length has passed.
+    _introDeadline?.cancel();
+    _introDeadline = Timer(
+      duration == Duration.zero
+          ? BrandedSplash.revealDuration
+          : duration + const Duration(milliseconds: 50),
+      () {
+        if (!mounted) return;
+        _markIntroFinished();
+      },
+    );
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (status != AnimationStatus.completed) return;
+    _markIntroFinished();
   }
 
   void _markIntroFinished() {
     if (_introFinished) return;
     _introFinished = true;
     if (mounted) setState(() {});
-    if (_playVideo) {
+    if (_playIntro) {
       Future<void>.delayed(BrandedSplash.taglineHold, () {
         if (!mounted) return;
         _tryFinish();
@@ -188,23 +177,6 @@ class _BrandedSplashState extends State<BrandedSplash> {
       return;
     }
     _tryFinish();
-  }
-
-  void _onVideoTick() {
-    final c = _video;
-    if (c == null || !c.value.isInitialized) return;
-    _revealIntroIfPlaying();
-    if (_introFinished) return;
-    final value = c.value;
-    final duration = value.duration;
-    if (duration <= Duration.zero) return;
-
-    final atEnd = value.isCompleted || value.position >= duration;
-    if (!atEnd) return;
-    if (value.isPlaying) {
-      c.pause();
-    }
-    _markIntroFinished();
   }
 
   @override
@@ -222,7 +194,6 @@ class _BrandedSplashState extends State<BrandedSplash> {
       setState(() => _showLoadingCue = false);
     }
     // Yield so onRevealComplete never runs from didUpdateWidget (during build).
-    // Web skips the extra hold and jumps in under the HTML intro layer.
     await Future<void>.delayed(
       kIsWeb ? Duration.zero : BrandedSplash.revealHold,
     );
@@ -232,11 +203,9 @@ class _BrandedSplashState extends State<BrandedSplash> {
 
   @override
   void dispose() {
-    final c = _video;
-    if (c != null) {
-      c.removeListener(_onVideoTick);
-      c.dispose();
-    }
+    _introDeadline?.cancel();
+    _controller.removeStatusListener(_onStatus);
+    _controller.dispose();
     super.dispose();
   }
 
@@ -250,36 +219,39 @@ class _BrandedSplashState extends State<BrandedSplash> {
 
   @override
   Widget build(BuildContext context) {
-    const splashBlack = Color(0xFF000000);
+    final splashColor = ColorTokens.backgroundPrimary;
     final showLoading = _showLoadingCue && !_finishing;
     final introSize = _introBoxSize(context);
 
-    return Scaffold(
-      backgroundColor: splashBlack,
-      body: ColoredBox(
-        color: splashBlack,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: introSize,
-                height: introSize,
-                child: _buildIntro(),
-              ),
-              if (showLoading) ...[
-                SizedBox(height: LayoutTokens.gr4),
-                Text(
-                  widget.message,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: FontTokens.sm,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.2,
-                  ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: BrandedSplash.systemOverlay,
+      child: Scaffold(
+        backgroundColor: splashColor,
+        body: ColoredBox(
+          color: splashColor,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: introSize,
+                  height: introSize,
+                  child: _buildIntro(),
                 ),
+                if (showLoading) ...[
+                  SizedBox(height: LayoutTokens.gr4),
+                  Text(
+                    widget.message,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: FontTokens.sm,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -287,34 +259,20 @@ class _BrandedSplashState extends State<BrandedSplash> {
   }
 
   Widget _buildIntro() {
-    // Web: HTML owns the animation — keep Flutter black (no static logo).
-    if (!_playVideo) {
-      return const SizedBox.shrink();
-    }
-
-    final video = _video;
-    final showPlayer =
-        _videoReady && video != null && video.value.isInitialized;
-
-    Widget child = const SizedBox.shrink();
-    if (showPlayer) {
-      child = ClipRect(
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child: SizedBox(
-            width: video.value.size.width,
-            height: video.value.size.height,
-            child: VideoPlayer(video),
-          ),
-        ),
-      );
-    }
+    if (!_playIntro) return const SizedBox.shrink();
 
     return AnimatedOpacity(
-      opacity: _introOpaque && showPlayer ? 1 : 0,
+      opacity: _introOpaque && _compositionReady ? 1 : 0,
       duration: BrandedSplash.introFade,
       curve: Curves.easeOut,
-      child: child,
+      child: Lottie.asset(
+        BrandedSplash.logoAnimationAsset,
+        controller: _controller,
+        animate: false,
+        repeat: false,
+        fit: BoxFit.contain,
+        onLoaded: _onComposition,
+      ),
     );
   }
 }

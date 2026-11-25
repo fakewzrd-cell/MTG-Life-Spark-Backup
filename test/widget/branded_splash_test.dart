@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mgt_life_spark/shared/widgets/branded_splash.dart';
 import 'package:video_player/video_player.dart';
 
@@ -104,6 +106,55 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(completed, isTrue);
+  });
+
+  testWidgets('logo animation hands off once when ready', (tester) async {
+    final data = await rootBundle.load(BrandedSplash.logoAnimationAsset);
+    final composition = await LottieComposition.fromBytes(
+      data.buffer.asUint8List(),
+    );
+    expect(composition.duration, BrandedSplash.logoAnimationDuration);
+
+    var completed = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BrandedSplash(
+          ready: true,
+          onRevealComplete: () => completed = true,
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump();
+    // Let the composition mount, then play past its end plus the handoff holds.
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(BrandedSplash.logoAnimationDuration);
+    await tester.pump(BrandedSplash.taglineHold);
+    await tester.pump(BrandedSplash.revealHold);
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(completed, isTrue);
+  });
+
+  testWidgets('logo frames stay cheap enough to leave the splash', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: BrandedSplash(ready: true)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    final clock = Stopwatch()..start();
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    clock.stop();
+    expect(tester.takeException(), isNull);
+    // 20 frames of the spinning mark should not stall startup.
+    expect(clock.elapsedMilliseconds, lessThan(4000));
   });
 
   testWidgets('disabled video intro stays black with no player', (

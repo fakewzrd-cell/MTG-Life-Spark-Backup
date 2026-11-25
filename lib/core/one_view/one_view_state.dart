@@ -5,6 +5,7 @@ import '../game/game_constants.dart';
 import '../game/game_format.dart';
 import '../game/lobby_state.dart';
 import '../models/player_deck.dart';
+import '../models/player_profile.dart';
 import '../persistence/providers.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/commander_image_resolver.dart';
@@ -51,6 +52,15 @@ class OneViewSeat {
   bool get isEmpty => playerId == null || playerId!.isEmpty;
 
   bool get isClaimed => !isEmpty;
+
+  /// Commander art when the seat has one, otherwise the profile photo.
+  String? get cardArtUrl {
+    final commander = commanderImageUrl?.trim();
+    if (commander != null && commander.isNotEmpty) return commander;
+    final avatar = avatarUrl?.trim();
+    if (avatar != null && avatar.isNotEmpty) return avatar;
+    return null;
+  }
 
   String get displayName {
     if (isEmpty) return '';
@@ -123,6 +133,85 @@ class OneViewSeat {
       seatColor: AppTheme.playerColor(index),
     );
   }
+}
+
+String? _trimmedOrNull(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
+  return trimmed;
+}
+
+/// Deck and picture already saved on a profile.
+///
+/// One deck, or the deck whose commander matches the profile, is applied.
+/// With no deck, the profile commander's picture is used. The profile photo
+/// stays available when there is no commander art.
+class OneViewProfileSeatIdentity {
+  const OneViewProfileSeatIdentity({
+    this.deckId,
+    this.commanderName,
+    this.commanderImageUrl,
+    this.colorIdentity = const [],
+    this.avatarUrl,
+  });
+
+  final String? deckId;
+  final String? commanderName;
+  final String? commanderImageUrl;
+  final List<String> colorIdentity;
+  final String? avatarUrl;
+}
+
+OneViewProfileSeatIdentity oneViewProfileSeatIdentity({
+  required PlayerProfile profile,
+  required Iterable<PlayerDeck> decks,
+  required GameFormat format,
+}) {
+  final eligible = [
+    for (final deck in decks)
+      if (!isPreviewPlaceholderDeck(deck) &&
+          deck.matchesLobbyFormat(format) &&
+          deck.hasDeckStyle)
+        deck,
+  ];
+  final selectedName =
+      _trimmedOrNull(profile.selectedCommanderName)?.toLowerCase();
+  PlayerDeck? deck;
+  if (selectedName != null) {
+    for (final candidate in eligible) {
+      if (candidate.commanderName.trim().toLowerCase() == selectedName) {
+        deck = candidate;
+        break;
+      }
+    }
+  }
+  deck ??= eligible.length == 1 ? eligible.single : null;
+
+  String? commanderName;
+  String? commanderImageUrl;
+  var colors = const <String>[];
+  String? deckId;
+  if (deck != null) {
+    deckId = deck.id;
+    commanderName = _trimmedOrNull(deck.commanderName);
+    colors = List<String>.from(deck.commanderColorIdentity);
+    commanderImageUrl = _trimmedOrNull(
+      resolveDeckCommanderImageUrl(deck: deck, profile: profile),
+    );
+  } else {
+    commanderImageUrl = _trimmedOrNull(profile.selectedCommanderImageUrl);
+    if (commanderImageUrl != null) {
+      commanderName = _trimmedOrNull(profile.selectedCommanderName);
+    }
+  }
+
+  return OneViewProfileSeatIdentity(
+    deckId: deckId,
+    commanderName: commanderName,
+    commanderImageUrl: commanderImageUrl,
+    colorIdentity: colors,
+    avatarUrl: _trimmedOrNull(profile.profileAvatarImageUrl),
+  );
 }
 
 class OneViewState {
@@ -239,6 +328,9 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
   }
 
   /// Sit as the local profile on [seatIndex]. Returns false if blocked.
+  ///
+  /// Uses that profile's deck commander art, or their profile photo. The
+  /// player is not asked to search for a card.
   bool claimAsMe(int seatIndex) {
     if (!_validSeat(seatIndex)) return false;
     final seat = state.seats[seatIndex];
@@ -248,16 +340,21 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     if (profile == null) return false;
     if (_profileAlreadySeated(profile.playerId)) return false;
 
+    final identity = oneViewProfileSeatIdentity(
+      profile: profile,
+      decks: _ref.read(deckRepositoryProvider).getAll(),
+      format: state.config.format,
+    );
     _replaceSeat(
       seat.copyWith(
         playerId: profile.playerId,
         username: profile.username,
-        avatarUrl: profile.profileAvatarImageUrl,
+        avatarUrl: identity.avatarUrl,
         isGuest: false,
-        selectedDeckId: null,
-        commanderName: null,
-        commanderImageUrl: null,
-        commanderColorIdentity: const <String>[],
+        selectedDeckId: identity.deckId,
+        commanderName: identity.commanderName,
+        commanderImageUrl: identity.commanderImageUrl,
+        commanderColorIdentity: identity.colorIdentity,
       ),
     );
     return true;
@@ -300,16 +397,38 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     if (id.isEmpty) return false;
     if (_profileAlreadySeated(id)) return false;
 
+    final local = _ref.read(profileRepositoryProvider).getProfile();
+    final scannedAvatar = _trimmedOrNull(avatarUrl);
+    String? deckId;
+    String? commanderName;
+    String? commanderImageUrl;
+    var colors = const <String>[];
+    var avatar = scannedAvatar;
+    // This phone only has decks for the local profile. Another player's
+    // code contributes their photo and nothing else.
+    if (local != null && local.playerId == id) {
+      final identity = oneViewProfileSeatIdentity(
+        profile: local,
+        decks: _ref.read(deckRepositoryProvider).getAll(),
+        format: state.config.format,
+      );
+      deckId = identity.deckId;
+      commanderName = identity.commanderName;
+      commanderImageUrl = identity.commanderImageUrl;
+      colors = identity.colorIdentity;
+      avatar ??= identity.avatarUrl;
+    }
+
     _replaceSeat(
       seat.copyWith(
         playerId: id,
         username: username.trim().isEmpty ? 'Player' : username.trim(),
-        avatarUrl: avatarUrl,
+        avatarUrl: avatar,
         isGuest: false,
-        selectedDeckId: null,
-        commanderName: null,
-        commanderImageUrl: null,
-        commanderColorIdentity: const <String>[],
+        selectedDeckId: deckId,
+        commanderName: commanderName,
+        commanderImageUrl: commanderImageUrl,
+        commanderColorIdentity: colors,
       ),
     );
     return true;
@@ -380,6 +499,22 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
         commanderColorIdentity: const <String>[],
       ),
     );
+  }
+
+  /// Rename a claimed seat. A blank name is ignored.
+  ///
+  /// When the seat is this phone's profile, the profile name is saved too.
+  Future<void> renameSeat(int seatIndex, String name) async {
+    if (!_validSeat(seatIndex)) return;
+    final seat = state.seats[seatIndex];
+    if (!seat.isClaimed) return;
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || trimmed == seat.username) return;
+    _replaceSeat(seat.copyWith(username: trimmed));
+    final profile = _ref.read(profileRepositoryProvider).getProfile();
+    if (profile == null || profile.playerId != seat.playerId) return;
+    profile.username = trimmed;
+    await _ref.read(profileRepositoryProvider).saveProfile(profile);
   }
 
   void clearSeat(int seatIndex) {

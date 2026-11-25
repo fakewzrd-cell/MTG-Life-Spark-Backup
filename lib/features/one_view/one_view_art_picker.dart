@@ -3,30 +3,27 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/game/scryfall_service.dart';
 import '../../core/one_view/one_view_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
-import '../../ui/tokens/font_tokens.dart';
-import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
-import '../game/widgets/game_modal_chrome.dart';
 import 'one_view_deck_picker.dart';
+import 'one_view_chrome.dart';
 
 /// Search a commander or any card and paint it on a One View seat.
 ///
-/// Returns after the sheet closes. Non-guest "Use a deck" opens the deck picker.
+/// Returns after the popup closes. Non-guest "Use a deck" opens the deck picker.
 Future<void> showOneViewArtPicker(
   BuildContext context,
   WidgetRef ref,
   int seatIndex,
 ) async {
-  final openDeck = await showGameBottomSheet<bool>(
+  final openDeck = await showOneViewDialog<bool>(
     context: context,
-    isScrollControlled: true,
-    enableDrag: false,
     builder: (ctx) => _ArtPickerSheet(seatIndex: seatIndex),
   );
   if (openDeck == true && context.mounted) {
@@ -69,6 +66,7 @@ class _ArtPickerSheetState extends ConsumerState<_ArtPickerSheet> {
   Future<void> _searchCards(String query) async {
     final l10n = AppLocalizations.of(context);
     final trimmed = query.trim();
+    final request = ++_request;
     if (trimmed.length < 2) {
       setState(() {
         _results = [];
@@ -78,7 +76,6 @@ class _ArtPickerSheetState extends ConsumerState<_ArtPickerSheet> {
       return;
     }
 
-    final request = ++_request;
     setState(() {
       _loading = true;
       _error = null;
@@ -126,80 +123,72 @@ class _ArtPickerSheetState extends ConsumerState<_ArtPickerSheet> {
     final hasArt =
         seat.commanderImageUrl != null && seat.commanderImageUrl!.isNotEmpty;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenH = MediaQuery.sizeOf(context).height;
-        final cap =
-            constraints.maxHeight.isFinite
-                ? constraints.maxHeight
-                : screenH * 0.72;
-        final height = math.min(cap, screenH * 0.72);
-        return SizedBox(
-          height: height,
-          child: Padding(
-            padding: GameModalChrome.sheetPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                GameSheetHeader(title: l10n.oneViewCardArt),
-                SizedBox(height: LayoutTokens.gr2),
-                TextField(
-                  key: const ValueKey('one-view-art-search'),
-                  controller: _search,
-                  autofocus: true,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: l10n.oneViewCardArtSearchHint,
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon:
-                        _loading
-                            ? const Padding(
-                              padding: EdgeInsets.all(14),
-                              child: SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            )
-                            : null,
-                  ),
-                  onChanged: _onChanged,
-                  onSubmitted: _searchCards,
-                ),
-                if (!seat.isGuest)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.style, color: colors.primaryAccent),
-                    title: Text(l10n.oneViewCardArtUseDeck),
-                    onTap: () => Navigator.pop(context, true),
-                  ),
-                if (hasArt)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      Icons.hide_image_outlined,
-                      color: colors.error,
-                    ),
-                    title: Text(
-                      l10n.oneViewCardArtRemove,
-                      style: TextStyle(color: colors.error),
-                    ),
-                    onTap: () {
-                      ref
-                          .read(oneViewProvider.notifier)
-                          .clearCommanderVisual(widget.seatIndex);
-                      Navigator.pop(context);
-                    },
-                  ),
-                SizedBox(height: LayoutTokens.gr1),
-                Expanded(child: _resultsBody(colors, l10n)),
-              ],
+    final available =
+        MediaQuery.sizeOf(context).height -
+        MediaQuery.viewInsetsOf(context).bottom -
+        MediaQuery.viewPaddingOf(context).vertical;
+    final resultsHeight = math.min(280.0, math.max(64.0, available * 0.32));
+    return OneViewMenuDialog(
+      title: l10n.oneViewCardArt,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            key: const ValueKey('one-view-art-search'),
+            controller: _search,
+            autofocus: true,
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: l10n.oneViewCardArtSearchHint,
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon:
+                  _loading
+                      ? const Padding(
+                        padding: EdgeInsets.all(14),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                      : null,
             ),
+            onChanged: _onChanged,
+            onSubmitted: _searchCards,
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          SizedBox(height: resultsHeight, child: _resultsBody(colors, l10n)),
+          if (hasArt && _search.text.trim().isEmpty)
+            OneViewMenuAction(
+              icon: Icons.image_outlined,
+              leading: OneViewPortrait(url: seat.commanderImageUrl, size: 36),
+              label: seat.commanderName ?? l10n.oneViewCurrentArt,
+              subtitle: l10n.oneViewCurrentArt,
+              selected: true,
+              onTap: null,
+            ),
+          if (!seat.isGuest || hasArt)
+            Divider(color: colors.borderSubtle, height: 24),
+          if (!seat.isGuest)
+            OneViewMenuAction(
+              icon: Icons.style,
+              label: l10n.oneViewCardArtUseDeck,
+              onTap: () => Navigator.pop(context, true),
+            ),
+          if (hasArt)
+            OneViewMenuAction(
+              icon: Icons.hide_image_outlined,
+              label: l10n.oneViewCardArtRemove,
+              color: colors.error,
+              onTap: () {
+                ref
+                    .read(oneViewProvider.notifier)
+                    .clearCommanderVisual(widget.seatIndex);
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
     );
   }
 
@@ -213,10 +202,13 @@ class _ArtPickerSheetState extends ConsumerState<_ArtPickerSheet> {
           (_search.text.trim().length < 2
               ? l10n.oneViewCardArtEmpty
               : l10n.oneViewCardArtNone);
-      return Text(
-        message,
-        style: TextStyle(
-          color: _error == null ? colors.textSecondary : colors.error,
+      return Align(
+        alignment: Alignment.topLeft,
+        child: Text(
+          message,
+          style: OneViewChrome.dialogBodyStyle(
+            context,
+          ).copyWith(color: _error == null ? null : colors.error),
         ),
       );
     }
@@ -257,12 +249,13 @@ class _ArtPickerSheetState extends ConsumerState<_ArtPickerSheet> {
             card.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w600,
-              fontSize: FontTokens.body,
-            ),
+            style: OneViewChrome.menuLabelStyle(context),
           ),
+          trailing:
+              ref.read(oneViewProvider).seats[widget.seatIndex].commanderName ==
+                      card.name
+                  ? Icon(Icons.check_rounded, color: colors.primaryAccent)
+                  : null,
           onTap: () => _apply(card),
         );
       },

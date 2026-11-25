@@ -117,17 +117,17 @@ flutter_launcher_icons:
   # Keep mark inside OEM adaptive safe zone (~66% center).
   adaptive_icon_foreground_inset: 28
 
-# Branded launch screen (Android/iOS) — solid black so the logo video can
-# start in motion without a static mark sitting on screen first.
+# Branded launch screen (Android/iOS) — app background, no baked-in logo.
+# The transparent Lottie plays once Flutter starts.
 # Android 12+ icon is a black vector (`drawable/splash_empty`) so the OS
 # never falls back to the launcher mark. After regenerate, restore that
 # override in values-v31 / values-night-v31 styles.
 #   dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#000000"
+  color: "#12121A"
   android_12:
-    color: "#000000"
-    icon_background_color: "#000000"
+    color: "#12121A"
+    icon_background_color: "#12121A"
     image: assets/images/splash_blank.png
   ios: true
   web: false

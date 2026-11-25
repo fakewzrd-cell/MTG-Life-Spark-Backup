@@ -19,6 +19,35 @@ List<DeviceOrientation> preferredOrientationsForLogicalWidth(double width) {
   return const <DeviceOrientation>[DeviceOrientation.portraitUp];
 }
 
+/// Set while a screen, such as the One View table, allows every orientation.
+///
+/// A phone in landscape is wider than [kLargeScreenOrientationBreakpoint], so
+/// the app-wide rule would treat that turn as a tablet and then lock portrait
+/// on the way back. [held] keeps that rule from running until the screen
+/// restores the default itself.
+abstract final class AppOrientationOverride {
+  static bool _held = false;
+
+  static bool get held => _held;
+
+  static void hold() => _held = true;
+
+  static void release() => _held = false;
+}
+
+/// Whether a size change should reapply the app-wide portrait lock.
+///
+/// [wasLargeScreen] is the last size class this rule saw. The first call
+/// passes null and applies once.
+bool shouldApplyAppOrientationLock({
+  required bool orientationHeld,
+  required bool? wasLargeScreen,
+  required bool isLargeScreen,
+}) {
+  if (orientationHeld) return false;
+  return wasLargeScreen != isLargeScreen;
+}
+
 /// System status / navigation bar styling aligned with app chrome.
 abstract final class AppSystemUi {
   static Future<void> bootstrap() async {
@@ -108,8 +137,13 @@ class _AppAdaptiveOrientationScopeState
     final display = View.of(context).display;
     final logicalWidth = display.size.width / display.devicePixelRatio;
     final isLargeScreen = logicalWidth >= kLargeScreenOrientationBreakpoint;
-    if (_wasLargeScreen == isLargeScreen) return;
+    final apply = shouldApplyAppOrientationLock(
+      orientationHeld: AppOrientationOverride.held,
+      wasLargeScreen: _wasLargeScreen,
+      isLargeScreen: isLargeScreen,
+    );
     _wasLargeScreen = isLargeScreen;
+    if (!apply) return;
     unawaited(
       SystemChrome.setPreferredOrientations(
         preferredOrientationsForLogicalWidth(logicalWidth),

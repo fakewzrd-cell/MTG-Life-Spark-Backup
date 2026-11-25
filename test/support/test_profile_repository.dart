@@ -13,6 +13,7 @@ class TestProfileRepository extends ProfileRepository {
 
   PlayerProfile? profile;
   int commanderKillIncrements = 0;
+  int saveCount = 0;
 
   @override
   PlayerProfile? getProfile() {
@@ -26,5 +27,11 @@ class TestProfileRepository extends ProfileRepository {
   @override
   Future<void> incrementCommanderKills() async {
     commanderKillIncrements++;
+  }
+
+  @override
+  Future<void> saveProfile(PlayerProfile profile) async {
+    saveCount++;
+    this.profile = profile;
   }
 }
