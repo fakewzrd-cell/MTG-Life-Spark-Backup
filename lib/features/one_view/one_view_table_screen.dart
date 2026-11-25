@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -9,8 +8,10 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/game/game_session_events.dart';
 import '../../core/game/progression_service.dart';
 import '../../core/one_view/one_view_match_recording.dart';
+import '../../core/one_view/one_view_orientation.dart';
 import '../../core/one_view/one_view_sit_code.dart';
 import '../../core/one_view/one_view_state.dart';
+import '../../core/one_view/one_view_xp_claim.dart';
 import '../../core/persistence/providers.dart';
 import '../../features/game/widgets/game_modal_chrome.dart';
 import '../../features/game/widgets/team_colors.dart';
@@ -23,6 +24,7 @@ import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import 'one_view_deck_picker.dart';
 import 'one_view_table_tools.dart';
+import 'one_view_xp_claim_ui.dart';
 
 /// Shared-phone tabletop: rotated seats, life +/- , claim, center tools.
 class OneViewTableScreen extends ConsumerStatefulWidget {
@@ -32,30 +34,35 @@ class OneViewTableScreen extends ConsumerStatefulWidget {
   ConsumerState<OneViewTableScreen> createState() => _OneViewTableScreenState();
 }
 
-class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
+class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
+    with WidgetsBindingObserver {
   TableToolAnnouncement? _diceAnnouncement;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WakelockPlus.enable();
-    // Prefer landscape for the shared table.
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.portraitUp,
-    ]);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _applyTableOrientation());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     WakelockPlus.disable();
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    OneViewOrientation.restoreAppDefault();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    _applyTableOrientation();
+  }
+
+  void _applyTableOrientation() {
+    if (!mounted) return;
+    final size = MediaQuery.sizeOf(context);
+    OneViewOrientation.lockForTable(size);
   }
 
   Future<void> _leave() async {
@@ -80,13 +87,23 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
     );
     if (leave != true || !mounted) return;
 
-    // Plan: record seated players + decks on this phone; no cross-phone XP.
     final oneView = ref.read(oneViewProvider);
     final profile = ref.read(profileRepositoryProvider).getProfile();
+    final claimed = oneView.seats.where((s) => s.isClaimed).toList();
+
+    String? winnerPlayerId;
+    if (claimed.length >= 2) {
+      winnerPlayerId = await _pickWinner(claimed);
+      if (!mounted) return;
+    }
+
     final snapshots = oneViewRecordingSnapshots(
       oneView: oneView,
       localPlayerId: profile?.playerId,
+      winnerPlayerId: winnerPlayerId,
     );
+
+    String? matchId;
     if (snapshots != null && snapshots.game.localPlayerId.isNotEmpty) {
       final result = await ref
           .read(progressionServiceProvider)
@@ -95,6 +112,7 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
             lobbyState: snapshots.lobby,
             startTime: oneView.startTime ?? DateTime.now(),
           );
+      matchId = result.matchId.isEmpty ? null : result.matchId;
       bumpProfileRevision(ref);
       bumpDeckListRevision(ref);
       if (mounted && result.awardsProgression && result.xpGained > 0) {
@@ -104,9 +122,79 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
       }
     }
 
+    // Cross-phone XP: claim QRs for sit-code seats (not guests / not local).
+    final claimSeats = oneViewXpClaimSeats(
+      oneView: oneView,
+      localPlayerId: profile?.playerId,
+    );
+    if (mounted && claimSeats.isNotEmpty) {
+      final resolvedMatchId =
+          matchId ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final start = oneView.startTime ?? DateTime.now();
+      final durationSeconds = DateTime.now().difference(start).inSeconds;
+      final claims =
+          claimSeats.map((seat) {
+            final opponents =
+                claimed
+                    .where((s) => s.playerId != seat.playerId)
+                    .map((s) => s.displayName)
+                    .toList();
+            return (
+              seat: seat,
+              payload: OneViewXpClaim.build(
+                matchId: resolvedMatchId,
+                playerId: seat.playerId!,
+                username: seat.displayName,
+                won: winnerPlayerId != null && winnerPlayerId == seat.playerId,
+                playerCount: claimed.length,
+                format: oneView.config.format.displayName,
+                startingLife: oneView.config.startingLife,
+                commanderName: seat.commanderName,
+                opponentNames: opponents,
+                durationSeconds: durationSeconds,
+              ),
+            );
+          }).toList();
+      await showOneViewXpClaimHandoffSheet(context: context, claims: claims);
+    }
+
     ref.read(oneViewProvider.notifier).reset();
     if (!mounted) return;
     context.go(AppRoutes.lobby);
+  }
+
+  /// Returns winner playerId, or null when skipped / cancelled as "no winner".
+  Future<String?> _pickWinner(List<OneViewSeat> claimed) async {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<String?>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(l10n.oneViewPickWinnerTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l10n.oneViewPickWinnerBody),
+                const SizedBox(height: 12),
+                for (final seat in claimed)
+                  ListTile(
+                    title: Text(seat.displayName),
+                    onTap: () => Navigator.pop(ctx, seat.playerId),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: Text(l10n.oneViewPickWinnerSkip),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -136,6 +224,9 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
                 Expanded(
                   child: _SeatLayout(
                     seats: state.seats,
+                    portrait: OneViewOrientation.isPortrait(
+                      MediaQuery.sizeOf(context),
+                    ),
                     onSeatTap: (i) => _onSeatTap(i, state.seats[i]),
                     onLifeDelta: (i, d) {
                       ref.read(oneViewProvider.notifier).adjustLife(i, d);
@@ -576,174 +667,134 @@ class _CenterTools extends StatelessWidget {
 class _SeatLayout extends StatelessWidget {
   const _SeatLayout({
     required this.seats,
+    required this.portrait,
     required this.onSeatTap,
     required this.onLifeDelta,
   });
 
   final List<OneViewSeat> seats;
+  final bool portrait;
   final ValueChanged<int> onSeatTap;
   final void Function(int index, int delta) onLifeDelta;
+
+  Widget _tile(int i, {required bool rotate180}) => _SeatTile(
+    seat: seats[i],
+    rotate180: rotate180,
+    onTap: () => onSeatTap(i),
+    onLifeDelta: (d) => onLifeDelta(i, d),
+  );
 
   @override
   Widget build(BuildContext context) {
     final n = seats.length;
     return switch (n) {
-      1 => _SeatTile(
-        seat: seats[0],
-        rotate180: false,
-        onTap: () => onSeatTap(0),
-        onLifeDelta: (d) => onLifeDelta(0, d),
-      ),
+      1 => _tile(0, rotate180: false),
       2 => Column(
         children: [
-          Expanded(
-            child: _SeatTile(
-              seat: seats[0],
-              rotate180: true,
-              onTap: () => onSeatTap(0),
-              onLifeDelta: (d) => onLifeDelta(0, d),
-            ),
-          ),
-          Expanded(
-            child: _SeatTile(
-              seat: seats[1],
-              rotate180: false,
-              onTap: () => onSeatTap(1),
-              onLifeDelta: (d) => onLifeDelta(1, d),
-            ),
-          ),
+          Expanded(child: _tile(0, rotate180: true)),
+          Expanded(child: _tile(1, rotate180: false)),
         ],
       ),
-      3 => Row(
-        children: [
-          Expanded(
-            child: _SeatTile(
-              seat: seats[0],
-              rotate180: false,
-              onTap: () => onSeatTap(0),
-              onLifeDelta: (d) => onLifeDelta(0, d),
-            ),
-          ),
-          Expanded(
-            child: Column(
+      // Portrait: top / bottom-two. Landscape: left + right stack.
+      3 =>
+        portrait
+            ? Column(
               children: [
+                Expanded(child: _tile(0, rotate180: true)),
                 Expanded(
-                  child: _SeatTile(
-                    seat: seats[1],
-                    rotate180: true,
-                    onTap: () => onSeatTap(1),
-                    onLifeDelta: (d) => onLifeDelta(1, d),
+                  child: Row(
+                    children: [
+                      Expanded(child: _tile(1, rotate180: false)),
+                      Expanded(child: _tile(2, rotate180: false)),
+                    ],
                   ),
                 ),
+              ],
+            )
+            : Row(
+              children: [
+                Expanded(child: _tile(0, rotate180: false)),
                 Expanded(
-                  child: _SeatTile(
-                    seat: seats[2],
-                    rotate180: false,
-                    onTap: () => onSeatTap(2),
-                    onLifeDelta: (d) => onLifeDelta(2, d),
+                  child: Column(
+                    children: [
+                      Expanded(child: _tile(1, rotate180: true)),
+                      Expanded(child: _tile(2, rotate180: false)),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
       4 => Column(
         children: [
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  child: _SeatTile(
-                    seat: seats[0],
-                    rotate180: true,
-                    onTap: () => onSeatTap(0),
-                    onLifeDelta: (d) => onLifeDelta(0, d),
-                  ),
-                ),
-                Expanded(
-                  child: _SeatTile(
-                    seat: seats[1],
-                    rotate180: true,
-                    onTap: () => onSeatTap(1),
-                    onLifeDelta: (d) => onLifeDelta(1, d),
-                  ),
-                ),
+                Expanded(child: _tile(0, rotate180: true)),
+                Expanded(child: _tile(1, rotate180: true)),
               ],
             ),
           ),
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  child: _SeatTile(
-                    seat: seats[2],
-                    rotate180: false,
-                    onTap: () => onSeatTap(2),
-                    onLifeDelta: (d) => onLifeDelta(2, d),
-                  ),
-                ),
-                Expanded(
-                  child: _SeatTile(
-                    seat: seats[3],
-                    rotate180: false,
-                    onTap: () => onSeatTap(3),
-                    onLifeDelta: (d) => onLifeDelta(3, d),
-                  ),
-                ),
+                Expanded(child: _tile(2, rotate180: false)),
+                Expanded(child: _tile(3, rotate180: false)),
               ],
             ),
           ),
         ],
       ),
-      5 => Column(
-        children: [
-          Expanded(
-            child: Row(
+      // Portrait: 2 / 1 / 2 so the middle seat stays readable.
+      5 =>
+        portrait
+            ? Column(
               children: [
-                for (final i in [0, 1])
-                  Expanded(
-                    child: _SeatTile(
-                      seat: seats[i],
-                      rotate180: true,
-                      onTap: () => onSeatTap(i),
-                      onLifeDelta: (d) => onLifeDelta(i, d),
-                    ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: _tile(0, rotate180: true)),
+                      Expanded(child: _tile(1, rotate180: true)),
+                    ],
                   ),
+                ),
+                Expanded(child: _tile(2, rotate180: false)),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: _tile(3, rotate180: false)),
+                      Expanded(child: _tile(4, rotate180: false)),
+                    ],
+                  ),
+                ),
+              ],
+            )
+            : Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      for (final i in [0, 1])
+                        Expanded(child: _tile(i, rotate180: true)),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      for (final i in [2, 3, 4])
+                        Expanded(child: _tile(i, rotate180: false)),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                for (final i in [2, 3, 4])
-                  Expanded(
-                    child: _SeatTile(
-                      seat: seats[i],
-                      rotate180: false,
-                      onTap: () => onSeatTap(i),
-                      onLifeDelta: (d) => onLifeDelta(i, d),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
       _ => Column(
         children: [
           Expanded(
             child: Row(
               children: [
                 for (final i in [0, 1, 2])
-                  Expanded(
-                    child: _SeatTile(
-                      seat: seats[i],
-                      rotate180: true,
-                      onTap: () => onSeatTap(i),
-                      onLifeDelta: (d) => onLifeDelta(i, d),
-                    ),
-                  ),
+                  Expanded(child: _tile(i, rotate180: true)),
               ],
             ),
           ),
@@ -751,14 +802,7 @@ class _SeatLayout extends StatelessWidget {
             child: Row(
               children: [
                 for (final i in [3, 4, 5])
-                  Expanded(
-                    child: _SeatTile(
-                      seat: seats[i],
-                      rotate180: false,
-                      onTap: () => onSeatTap(i),
-                      onLifeDelta: (d) => onLifeDelta(i, d),
-                    ),
-                  ),
+                  Expanded(child: _tile(i, rotate180: false)),
               ],
             ),
           ),

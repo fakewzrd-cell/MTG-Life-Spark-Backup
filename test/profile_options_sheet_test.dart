@@ -44,6 +44,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Edit profile'), findsOneWidget);
+    expect(find.text('Show sit code'), findsOneWidget);
+    expect(find.text('Claim One View XP'), findsOneWidget);
     expect(find.text('Back up profile'), findsOneWidget);
     expect(find.text('Load backup'), findsOneWidget);
     expect(find.text('Change your name or avatar'), findsOneWidget);

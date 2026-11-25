@@ -891,6 +891,102 @@ abstract class AppLocalizations {
   /// **'Match saved on this phone · +{xp} XP'**
   String oneViewMatchRecorded(int xp);
 
+  /// No description provided for @oneViewPickWinnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who won?'**
+  String get oneViewPickWinnerTitle;
+
+  /// No description provided for @oneViewPickWinnerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — skip to record participation only.'**
+  String get oneViewPickWinnerBody;
+
+  /// No description provided for @oneViewPickWinnerSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'No winner'**
+  String get oneViewPickWinnerSkip;
+
+  /// No description provided for @oneViewXpClaimTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share XP claim'**
+  String get oneViewXpClaimTitle;
+
+  /// No description provided for @oneViewXpClaimBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends with sit-code seats scan this on their phone to get XP.'**
+  String get oneViewXpClaimBody;
+
+  /// No description provided for @oneViewXpClaimNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get oneViewXpClaimNext;
+
+  /// No description provided for @oneViewXpClaimDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get oneViewXpClaimDone;
+
+  /// No description provided for @oneViewXpClaimFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim for {name}'**
+  String oneViewXpClaimFor(String name);
+
+  /// No description provided for @oneViewClaimXp.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim One View XP'**
+  String get oneViewClaimXp;
+
+  /// No description provided for @oneViewClaimXpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a claim QR from the table phone'**
+  String get oneViewClaimXpSubtitle;
+
+  /// No description provided for @oneViewClaimXpScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan XP claim'**
+  String get oneViewClaimXpScanTitle;
+
+  /// No description provided for @oneViewClaimXpApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed +{xp} XP'**
+  String oneViewClaimXpApplied(int xp);
+
+  /// No description provided for @oneViewClaimXpAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'That claim was already used on this phone.'**
+  String get oneViewClaimXpAlready;
+
+  /// No description provided for @oneViewClaimXpWrongProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'This claim is for a different Life Spark profile.'**
+  String get oneViewClaimXpWrongProfile;
+
+  /// No description provided for @oneViewClaimXpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not claim XP. Try again.'**
+  String get oneViewClaimXpFailed;
+
+  /// No description provided for @oneViewClaimXpInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That QR is not a One View XP claim.'**
+  String get oneViewClaimXpInvalid;
+
   /// No description provided for @hostLobbyTitle.
   ///
   /// In en, this message translates to:

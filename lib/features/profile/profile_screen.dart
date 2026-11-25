@@ -22,6 +22,7 @@ import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 import '../one_view/one_view_table_screen.dart';
+import '../one_view/one_view_xp_claim_ui.dart';
 import 'backup_restore_flow.dart';
 import 'profile_carousel_sections.dart';
 import 'profile_hero_layout.dart';
@@ -74,6 +75,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await Future<void>.delayed(MotionTokens.standard);
         if (!mounted) return;
         await showOneViewSitCodeSheet(context, ref);
+      case ProfileSheetAction.claimOneViewXp:
+        await Future<void>.delayed(MotionTokens.standard);
+        if (!mounted) return;
+        await showOneViewXpClaimScanner(context, ref);
       case ProfileSheetAction.backupProfile:
         // Wait for the options sheet to finish dismissing before share UI.
         await Future<void>.delayed(MotionTokens.standard);

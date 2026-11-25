@@ -136,8 +136,8 @@ v1 ships all 1–6 as usable maps; 4 is the showcase layout.
 - [x] Add Sit as me / Guest / QR sit-code claiming and deck picker on seat claim
 - [x] Add English One View / Own View strings and update router for the hub + One View routes
 
-### Follow-ups (not blocking v1)
+### Follow-ups (shipped)
 
-- Landscape lock enforcement on tablets; portrait fallback polish for odd seat counts
-- Winner picker on end-table (v1 records without a declared winner → participation XP when eligible)
-- Cross-phone XP push for sit-code profiles (explicitly out of v1)
+- [x] Landscape lock enforcement on tablets; portrait fallback polish for odd seat counts
+- [x] Winner picker on end-table (optional; skip → participation XP when eligible)
+- [x] Cross-phone XP via claim QR for sit-code seats (scan from Profile → Claim One View XP)

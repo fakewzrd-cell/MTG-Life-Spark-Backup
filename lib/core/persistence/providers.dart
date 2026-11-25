@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/player_profile.dart';
+import '../one_view/one_view_xp_claim_repository.dart';
+import '../one_view/one_view_xp_claim_service.dart';
 import 'profile_repository.dart';
 import 'match_repository.dart';
 import 'feedback_repository.dart';
@@ -77,6 +79,20 @@ void bumpDeckListRevision(WidgetRef ref) {
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SettingsRepository();
+});
+
+final oneViewXpClaimRepositoryProvider = Provider<OneViewXpClaimRepository>((
+  ref,
+) {
+  return OneViewXpClaimRepository();
+});
+
+final oneViewXpClaimServiceProvider = Provider<OneViewXpClaimService>((ref) {
+  return OneViewXpClaimService(
+    profileRepo: ref.read(profileRepositoryProvider),
+    matchRepo: ref.read(matchRepositoryProvider),
+    claimRepo: ref.read(oneViewXpClaimRepositoryProvider),
+  );
 });
 
 final backupServiceProvider = Provider<BackupService>((ref) {

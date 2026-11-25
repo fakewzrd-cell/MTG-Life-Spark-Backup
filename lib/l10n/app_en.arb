@@ -226,6 +226,36 @@
       }
     }
   },
+  "oneViewPickWinnerTitle": "Who won?",
+  "oneViewPickWinnerBody": "Optional — skip to record participation only.",
+  "oneViewPickWinnerSkip": "No winner",
+  "oneViewXpClaimTitle": "Share XP claim",
+  "oneViewXpClaimBody": "Friends with sit-code seats scan this on their phone to get XP.",
+  "oneViewXpClaimNext": "Next",
+  "oneViewXpClaimDone": "Done",
+  "oneViewXpClaimFor": "Claim for {name}",
+  "@oneViewXpClaimFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "oneViewClaimXp": "Claim One View XP",
+  "oneViewClaimXpSubtitle": "Scan a claim QR from the table phone",
+  "oneViewClaimXpScanTitle": "Scan XP claim",
+  "oneViewClaimXpApplied": "Claimed +{xp} XP",
+  "@oneViewClaimXpApplied": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "oneViewClaimXpAlready": "That claim was already used on this phone.",
+  "oneViewClaimXpWrongProfile": "This claim is for a different Life Spark profile.",
+  "oneViewClaimXpFailed": "Could not claim XP. Try again.",
+  "oneViewClaimXpInvalid": "That QR is not a One View XP claim.",
   "hostLobbyTitle": "Host Lobby",
   "hostLeaveLobbyTooltip": "Leave lobby",
   "hostPlayersScanQr": "Players: {count} / {max}  •  Scan QR to join",

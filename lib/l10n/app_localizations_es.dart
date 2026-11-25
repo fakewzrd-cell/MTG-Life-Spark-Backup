@@ -451,6 +451,62 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get oneViewPickWinnerTitle => 'Who won?';
+
+  @override
+  String get oneViewPickWinnerBody =>
+      'Optional — skip to record participation only.';
+
+  @override
+  String get oneViewPickWinnerSkip => 'No winner';
+
+  @override
+  String get oneViewXpClaimTitle => 'Share XP claim';
+
+  @override
+  String get oneViewXpClaimBody =>
+      'Friends with sit-code seats scan this on their phone to get XP.';
+
+  @override
+  String get oneViewXpClaimNext => 'Next';
+
+  @override
+  String get oneViewXpClaimDone => 'Done';
+
+  @override
+  String oneViewXpClaimFor(String name) {
+    return 'Claim for $name';
+  }
+
+  @override
+  String get oneViewClaimXp => 'Claim One View XP';
+
+  @override
+  String get oneViewClaimXpSubtitle => 'Scan a claim QR from the table phone';
+
+  @override
+  String get oneViewClaimXpScanTitle => 'Scan XP claim';
+
+  @override
+  String oneViewClaimXpApplied(int xp) {
+    return 'Claimed +$xp XP';
+  }
+
+  @override
+  String get oneViewClaimXpAlready =>
+      'That claim was already used on this phone.';
+
+  @override
+  String get oneViewClaimXpWrongProfile =>
+      'This claim is for a different Life Spark profile.';
+
+  @override
+  String get oneViewClaimXpFailed => 'Could not claim XP. Try again.';
+
+  @override
+  String get oneViewClaimXpInvalid => 'That QR is not a One View XP claim.';
+
+  @override
   String get hostLobbyTitle => 'Sala del anfitrión';
 
   @override

@@ -7,11 +7,11 @@ import 'one_view_state.dart';
 
 /// Builds lobby + game snapshots from One View for on-device match recording.
 ///
-/// Plan: save names/ids/decks on this phone; no XP push to other phones.
-/// Winner is unset on manual end-table (participation XP when 2+ seated).
+/// [winnerPlayerId] comes from the optional end-table winner picker (null = none).
 ({LobbyState lobby, GameState game})? oneViewRecordingSnapshots({
   required OneViewState oneView,
   required String? localPlayerId,
+  String? winnerPlayerId,
 }) {
   final claimed = oneView.seats.where((s) => s.isClaimed).toList();
   if (claimed.isEmpty) return null;
@@ -70,6 +70,12 @@ import 'one_view_state.dart';
     isGameStarted: true,
   );
 
+  final resolvedWinner =
+      (winnerPlayerId != null &&
+              players.any((p) => p.playerId == winnerPlayerId))
+          ? winnerPlayerId
+          : null;
+
   final game = GameState(
     players: players,
     turnOrder: players.map((p) => p.playerId).toList(),
@@ -80,6 +86,8 @@ import 'one_view_state.dart';
     localPlayerId: localSeated ? localId : '',
     teamAssignments: teamAssignments,
     gameStartTime: oneView.startTime ?? DateTime.now(),
+    gameOver: true,
+    winnerPlayerId: resolvedWinner,
     autoKoFromLife: oneView.config.autoKoFromLife,
     autoKoFromPoison: oneView.config.autoKoFromPoison,
     autoKoFromCommanderDamage: oneView.config.autoKoFromCommanderDamage,
@@ -93,6 +101,23 @@ import 'one_view_state.dart';
   );
 
   return (lobby: lobby, game: game);
+}
+
+/// Non-guest sit-code seats that need an XP claim QR (everyone except local).
+List<OneViewSeat> oneViewXpClaimSeats({
+  required OneViewState oneView,
+  required String? localPlayerId,
+}) {
+  final local = localPlayerId ?? '';
+  return oneView.seats
+      .where(
+        (s) =>
+            s.isClaimed &&
+            !s.isGuest &&
+            s.playerId != null &&
+            s.playerId != local,
+      )
+      .toList();
 }
 
 /// Whether [ProgressionService.recordMatch] can award XP for this table.

@@ -11,6 +11,7 @@ import '../game/widgets/game_modal_chrome.dart';
 enum ProfileSheetAction {
   editProfile,
   showSitCode,
+  claimOneViewXp,
   backupProfile,
   restoreProfile,
 }
@@ -56,6 +57,13 @@ class _ProfileOptionsSheet extends StatelessWidget {
             title: l10n.oneViewShowSitCode,
             subtitle: l10n.oneViewShowSitCodeSubtitle,
             onTap: () => _pick(context, ProfileSheetAction.showSitCode),
+          ),
+          _ProfileOptionTile(
+            colors: colors,
+            icon: Icons.qr_code_scanner_rounded,
+            title: l10n.oneViewClaimXp,
+            subtitle: l10n.oneViewClaimXpSubtitle,
+            onTap: () => _pick(context, ProfileSheetAction.claimOneViewXp),
           ),
           _ProfileOptionTile(
             colors: colors,

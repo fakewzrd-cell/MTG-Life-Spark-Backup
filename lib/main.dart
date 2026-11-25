@@ -253,6 +253,7 @@ Future<void> _openHiveBoxes() async {
     Hive.openBox<OwnedAlbum>(CollectionRepository.albumBoxName),
     Hive.openBox<String>(EdhrecClient.boxName),
     Hive.openBox<String>(ScryfallCardCache.boxName),
+    Hive.openBox<String>('oneViewXpClaims'),
   ];
   if (kIsWeb) {
     for (final open in opens) {
