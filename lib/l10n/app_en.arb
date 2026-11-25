@@ -161,6 +161,14 @@
   "oneViewSkipDeck": "Continue without a deck",
   "oneViewNoDecks": "No decks for this format yet. Add one in Decks.",
   "oneViewChangeDeck": "Change deck",
+  "oneViewCardArt": "Card art",
+  "oneViewCardArtSubtitle": "Commander or any card, on this seat",
+  "oneViewCardArtSearchHint": "Search a commander or card",
+  "oneViewCardArtEmpty": "Search to put art on this seat",
+  "oneViewCardArtNone": "No cards found",
+  "oneViewCardArtFailed": "Could not search. Check your connection.",
+  "oneViewCardArtRemove": "Remove art",
+  "oneViewCardArtUseDeck": "Use a deck",
   "oneViewClearSeat": "Clear seat",
   "oneViewPoisonMinus": "Poison −",
   "oneViewPoisonPlus": "Poison +",
@@ -186,6 +194,21 @@
   "oneViewColorsTitle": "Team colors",
   "oneViewColorsEmpty": "Claim seats first, then assign team colors.",
   "oneViewPlayerCountTitle": "Player count",
+  "oneViewLayoutTitle": "Sitting layout",
+  "oneViewLayoutFull": "Full screen",
+  "oneViewLayoutStacked": "Top and bottom",
+  "oneViewLayoutSideBySide": "Side by side",
+  "oneViewLayoutOneOverTwo": "One above two",
+  "oneViewLayoutTwoOverOne": "Two above one",
+  "oneViewLayoutOneBesideTwo": "One beside two",
+  "oneViewLayoutTwoBesideOne": "Two beside one",
+  "oneViewLayoutGrid2x2": "Two by two",
+  "oneViewLayoutOneOverThree": "One above three",
+  "oneViewLayoutThreeOverOne": "Three above one",
+  "oneViewLayoutTwoOverThree": "Two above three",
+  "oneViewLayoutThreeOverTwo": "Three above two",
+  "oneViewLayoutThreeOverThree": "Three above three",
+  "oneViewLayoutThreeRowsOfTwo": "Three rows of pairs",
   "oneViewRemoveEmptySeat": "Remove empty seat {number}",
   "@oneViewRemoveEmptySeat": {
     "placeholders": {
@@ -216,7 +239,22 @@
   },
   "oneViewRemoveSeatConfirm": "Remove seat",
   "oneViewPoisonLabel": "Poison",
+  "oneViewMenuCounters": "Counters",
+  "oneViewMenuSeat": "Seat",
   "oneViewCommanderDamageLabel": "Commander damage",
+  "oneViewAttackSwipe": "Drag to deal damage",
+  "oneViewAttackSwipeSubtitle": "Drag from your card onto a player, then tap their card once per point.",
+  "oneViewAttackDamage": "Damage",
+  "oneViewAttackTap": "Tap",
+  "oneViewCommanderDamageCount": "Commander {count}",
+  "@oneViewCommanderDamageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "oneViewSeatTools": "Seat tools",
   "oneViewCommanderDamageEmpty": "No other claimed seats to track damage from.",
   "oneViewMatchRecorded": "Match saved on this phone · +{xp} XP",
   "@oneViewMatchRecorded": {

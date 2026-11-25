@@ -32,8 +32,9 @@ class PlayerDeckAdapter extends TypeAdapter<PlayerDeck> {
       format: fields[12] == null ? 'commander' : fields[12] as String,
       deckStyleId: fields[13] == null ? '' : fields[13] as String,
       isPinned: fields[14] == null ? false : fields[14] as bool,
-      chosenBracket: fields[15] as int?,
-      updatedAtMillis: fields[16] == null ? 0 : fields[16] as int,
+      chosenBracket: fields[15] is int ? fields[15] as int : null,
+      // Field 16 was briefly a bool (legacy bracketRaised). Treat that as 0.
+      updatedAtMillis: fields[16] is int ? fields[16] as int : 0,
     );
   }
 

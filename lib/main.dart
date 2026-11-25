@@ -162,7 +162,11 @@ class _ErrorApp extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context).startupErrorTitle,
+                  Localizations.of<AppLocalizations>(
+                        context,
+                        AppLocalizations,
+                      )?.startupErrorTitle ??
+                      'Something went wrong while starting Life Spark',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

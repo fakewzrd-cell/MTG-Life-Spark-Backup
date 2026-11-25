@@ -188,9 +188,14 @@ class GameSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final pad = GameModalChrome.sheetPadding(context);
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final size = MediaQuery.sizeOf(context);
+    // Portrait bottom sheets sit under the status bar area of the *screen*,
+    // but their own top edge is mid-screen — padding.top would double-gap.
+    // Landscape / full-height sheets need top inset or titles hit the clock.
+    final protectTop = size.width > size.height;
     if (!scrollable) {
       return SafeArea(
-        top: false,
+        top: protectTop,
         // Keyboard lifts the sheet; keep SafeArea off the bottom so dock
         // padding cannot overflow the remaining height.
         bottom: !keyboardOpen,
@@ -199,7 +204,7 @@ class GameSheetBody extends StatelessWidget {
     }
 
     return SafeArea(
-      top: false,
+      top: protectTop,
       bottom: !keyboardOpen,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -293,24 +298,18 @@ Future<T?> showGameBottomSheet<T>({
         paddingBottom: mq.padding.bottom,
         shellDock: shellDock,
       );
-      Widget inner = builder(ctx);
-      final paddingChanged = bottom != mq.padding.bottom;
-      final consumeKeyboard = keyboard > 0;
-      if (paddingChanged || consumeKeyboard) {
-        inner = MediaQuery(
-          data: mq.copyWith(
-            padding: mq.padding.copyWith(bottom: bottom),
-            // Chrome lifts the sheet by [keyboard]. Zero insets so child
-            // sheets that also pad viewInsets (New deck, pickers, whisper)
-            // cannot double the gap and overflow.
-            viewInsets:
-                consumeKeyboard
-                    ? mq.viewInsets.copyWith(bottom: 0)
-                    : mq.viewInsets,
-          ),
-          child: inner,
-        );
-      }
+      // Always the same parent. Inserting this MediaQuery only after the
+      // keyboard opens recreates the sheet and drops the text field's focus.
+      final inner = MediaQuery(
+        data: mq.copyWith(
+          padding: mq.padding.copyWith(bottom: bottom),
+          // Chrome lifts the sheet by [keyboard]. Zero insets so child
+          // sheets that also pad viewInsets cannot double the gap.
+          viewInsets:
+              keyboard > 0 ? mq.viewInsets.copyWith(bottom: 0) : mq.viewInsets,
+        ),
+        child: builder(ctx),
+      );
       return Align(
         alignment: Alignment.bottomCenter,
         heightFactor: 1,
@@ -515,8 +514,12 @@ class GameFormDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.gameColors;
+    final mq = MediaQuery.of(context);
+    // Leave room for the IME in landscape; Dialog already insets via MediaQuery.
+    final maxBodyH = (mq.size.height - mq.viewInsets.bottom) * 0.45;
     return AlertDialog(
       backgroundColor: colors.surface,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       shape: RoundedRectangleBorder(
         borderRadius: RadiusTokens.radiusXl,
         side: BorderSide(color: colors.backgroundSecondary),
@@ -531,7 +534,10 @@ class GameFormDialog extends StatelessWidget {
         title: title,
         onClose: () => Navigator.pop(context),
       ),
-      content: content,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxBodyH.clamp(80, 320)),
+        child: SingleChildScrollView(child: content),
+      ),
       actions: [
         Padding(
           padding: EdgeInsets.fromLTRB(

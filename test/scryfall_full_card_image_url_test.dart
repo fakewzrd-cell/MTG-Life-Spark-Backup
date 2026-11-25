@@ -1,7 +1,53 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mgt_life_spark/core/game/scryfall_service.dart';
 
 void main() {
+  test('list thumbs use the small Scryfall rendition', () {
+    expect(
+      scryfallListThumbUrl(
+        'https://cards.scryfall.io/art_crop/front/a/b/uuid.jpg?1',
+      ),
+      'https://cards.scryfall.io/small/front/a/b/uuid.jpg?1',
+    );
+    expect(
+      scryfallListThumbUrl(
+        'https://cards.scryfall.io/normal/front/a/b/uuid.jpg',
+      ),
+      'https://cards.scryfall.io/small/front/a/b/uuid.jpg',
+    );
+    expect(scryfallListThumbUrl(null), isNull);
+  });
+
+  test('preview decode keeps only the requested cards', () {
+    final body = jsonEncode({
+      'data': [
+        for (var i = 0; i < 5; i++)
+          {
+            'id': 'id-$i',
+            'name': 'Card $i',
+            'color_identity': ['U'],
+            'oracle_text':
+                'A very long rules text that a picker does not need.',
+            'image_uris': {
+              'art_crop': 'https://cards.scryfall.io/art_crop/front/$i.jpg',
+              'normal': 'https://cards.scryfall.io/normal/front/$i.jpg',
+            },
+          },
+      ],
+    });
+    final maps = decodeScryfallPreviewMaps(body, limit: 2);
+    expect(maps, hasLength(2));
+    expect(maps.first['name'], 'Card 0');
+    expect(
+      maps.first['imageUrl'],
+      'https://cards.scryfall.io/art_crop/front/0.jpg',
+    );
+    expect(maps.first['colorIdentity'], ['U']);
+    expect(maps.first.containsKey('oracle_text'), isFalse);
+  });
+
   test('swaps Scryfall art_crop path to the full card', () {
     expect(
       scryfallFullCardImageUrl(

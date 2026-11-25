@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -190,6 +191,45 @@ class ScryfallService {
     return data
         .map((card) => _parseCard(card as Map<String, dynamic>))
         .toList();
+  }
+
+  /// One name search for a picker. Parses off the UI isolate and keeps [limit]
+  /// cards, so typing does not freeze the sheet on a full Scryfall page.
+  Future<List<ScryfallCard>> searchCardPreviews(
+    String query, {
+    int limit = 12,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return [];
+    final encoded = Uri.encodeComponent('name:$trimmed game:paper');
+    final uri = Uri.parse(
+      '$_base/cards/search?q=$encoded&order=name&unique=cards',
+    );
+    final response = await _client
+        .get(uri, headers: _headers)
+        .timeout(const Duration(seconds: 12));
+    if (response.statusCode == 404) return [];
+    if (response.statusCode != 200) {
+      throw Exception('Scryfall API error: ${response.statusCode}');
+    }
+    final body = response.body;
+    final cap = limit < 1 ? 1 : limit;
+    final maps = await Isolate.run(
+      () => decodeScryfallPreviewMaps(body, limit: cap),
+    );
+    return [
+      for (final raw in maps)
+        ScryfallCard(
+          id: raw['id'] as String?,
+          name: raw['name'] as String? ?? '',
+          imageUrl: raw['imageUrl'] as String?,
+          cardFaceUrl: raw['cardFaceUrl'] as String?,
+          colorIdentity: [
+            for (final color in raw['colorIdentity'] as List? ?? const [])
+              color.toString(),
+          ],
+        ),
+    ];
   }
 
   // ── Variant decks (Planechase, Archenemy, Bounty) ─────────────────────────
@@ -553,6 +593,71 @@ Map<String, ScryfallCard> indexScryfallCards(Iterable<ScryfallCard> cards) {
     put(scryfallFrontName(card.name), card);
   }
   return out;
+}
+
+/// First [limit] cards from a Scryfall search body, with only the fields a
+/// picker needs. Safe to run off the UI isolate.
+List<Map<String, Object?>> decodeScryfallPreviewMaps(
+  String body, {
+  int limit = 12,
+}) {
+  final decoded = jsonDecode(body);
+  if (decoded is! Map) return const [];
+  final data = decoded['data'];
+  if (data is! List) return const [];
+  final cap = limit < 1 ? 1 : limit;
+  final out = <Map<String, Object?>>[];
+  for (final raw in data) {
+    if (out.length >= cap) break;
+    if (raw is! Map) continue;
+    final card = Map<String, dynamic>.from(raw);
+    final imageUris = card['image_uris'];
+    Map<String, dynamic>? uris =
+        imageUris is Map ? Map<String, dynamic>.from(imageUris) : null;
+    if (uris == null) {
+      final faces = card['card_faces'];
+      if (faces is List && faces.isNotEmpty && faces.first is Map) {
+        final faceUris = (faces.first as Map)['image_uris'];
+        if (faceUris is Map) uris = Map<String, dynamic>.from(faceUris);
+      }
+    }
+    String? pick(List<String> keys) {
+      if (uris == null) return null;
+      for (final key in keys) {
+        final value = uris[key];
+        if (value is String && value.isNotEmpty) return value;
+      }
+      return null;
+    }
+
+    final colors = card['color_identity'];
+    out.add({
+      'id': card['id'] as String?,
+      'name': card['name'] as String? ?? '',
+      'imageUrl': pick(const ['art_crop', 'normal']),
+      'cardFaceUrl': pick(const ['normal', 'art_crop']),
+      'colorIdentity':
+          colors is List
+              ? [
+                for (final color in colors)
+                  if (color != null) color.toString(),
+              ]
+              : const <String>[],
+    });
+  }
+  return out;
+}
+
+/// List-sized Scryfall image (`small`) derived from a larger CDN path.
+String? scryfallListThumbUrl(String? url) {
+  final value = url?.trim();
+  if (value == null || value.isEmpty) return null;
+  return value
+      .replaceAll('/art_crop/', '/small/')
+      .replaceAll('/normal/', '/small/')
+      .replaceAll('/large/', '/small/')
+      .replaceAll('/png/', '/small/')
+      .replaceAll('/border_crop/', '/small/');
 }
 
 /// Scryfall CDN path for a full card face (`normal`) instead of illustration crop.

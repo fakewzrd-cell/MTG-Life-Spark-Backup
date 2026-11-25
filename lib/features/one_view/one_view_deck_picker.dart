@@ -28,6 +28,7 @@ Future<void> showOneViewDeckPicker(
   await showGameBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    enableDrag: false,
     builder: (ctx) {
       final colors = AppColorTokens.of(ctx);
       final l10n = AppLocalizations.of(ctx);

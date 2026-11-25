@@ -10,6 +10,8 @@ extension GameHapticsContext on BuildContext {
   void gameHapticSelection() => _runGameHaptic(this, (s) => s.selection());
 
   void gameHapticMedium() => _runGameHaptic(this, (s) => s.medium());
+
+  void gameHapticHeavy() => _runGameHaptic(this, (s) => s.heavy());
 }
 
 void _runGameHaptic(

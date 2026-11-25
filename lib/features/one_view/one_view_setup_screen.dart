@@ -147,9 +147,7 @@ class OneViewSetupScreen extends ConsumerWidget {
           },
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(
-              borderRadius: RadiusTokens.radiusXl,
-            ),
+            shape: RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
           ),
           child: Text(l10n.oneViewStartTable),
         ),
@@ -209,11 +207,10 @@ class _GameplayToggles extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: RadiusTokens.radiusXl,
-      ),
+    return Material(
+      color: colors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: RadiusTokens.radiusXl),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           _tile(
@@ -222,8 +219,9 @@ class _GameplayToggles extends StatelessWidget {
             subtitle: l10n.hostTogglePlanechaseSubtitle,
             value: config.planechaseEnabled,
             onChanged:
-                (v) =>
-                    notifier.updateConfig(config.copyWith(planechaseEnabled: v)),
+                (v) => notifier.updateConfig(
+                  config.copyWith(planechaseEnabled: v),
+                ),
           ),
           _tile(
             context,
@@ -264,6 +262,16 @@ class _GameplayToggles extends StatelessWidget {
             onChanged:
                 (v) => notifier.updateConfig(
                   config.copyWith(commanderDamageReducesLife: v),
+                ),
+          ),
+          _tile(
+            context,
+            title: l10n.oneViewAttackSwipe,
+            subtitle: l10n.oneViewAttackSwipeSubtitle,
+            value: config.attackSwipeEnabled,
+            onChanged:
+                (v) => notifier.updateConfig(
+                  config.copyWith(attackSwipeEnabled: v),
                 ),
           ),
           _tile(

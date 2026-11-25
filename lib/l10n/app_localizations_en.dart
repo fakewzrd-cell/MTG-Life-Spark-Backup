@@ -355,6 +355,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get oneViewChangeDeck => 'Change deck';
 
   @override
+  String get oneViewCardArt => 'Card art';
+
+  @override
+  String get oneViewCardArtSubtitle => 'Commander or any card, on this seat';
+
+  @override
+  String get oneViewCardArtSearchHint => 'Search a commander or card';
+
+  @override
+  String get oneViewCardArtEmpty => 'Search to put art on this seat';
+
+  @override
+  String get oneViewCardArtNone => 'No cards found';
+
+  @override
+  String get oneViewCardArtFailed => 'Could not search. Check your connection.';
+
+  @override
+  String get oneViewCardArtRemove => 'Remove art';
+
+  @override
+  String get oneViewCardArtUseDeck => 'Use a deck';
+
+  @override
   String get oneViewClearSeat => 'Clear seat';
 
   @override
@@ -415,6 +439,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get oneViewPlayerCountTitle => 'Player count';
 
   @override
+  String get oneViewLayoutTitle => 'Sitting layout';
+
+  @override
+  String get oneViewLayoutFull => 'Full screen';
+
+  @override
+  String get oneViewLayoutStacked => 'Top and bottom';
+
+  @override
+  String get oneViewLayoutSideBySide => 'Side by side';
+
+  @override
+  String get oneViewLayoutOneOverTwo => 'One above two';
+
+  @override
+  String get oneViewLayoutTwoOverOne => 'Two above one';
+
+  @override
+  String get oneViewLayoutOneBesideTwo => 'One beside two';
+
+  @override
+  String get oneViewLayoutTwoBesideOne => 'Two beside one';
+
+  @override
+  String get oneViewLayoutGrid2x2 => 'Two by two';
+
+  @override
+  String get oneViewLayoutOneOverThree => 'One above three';
+
+  @override
+  String get oneViewLayoutThreeOverOne => 'Three above one';
+
+  @override
+  String get oneViewLayoutTwoOverThree => 'Two above three';
+
+  @override
+  String get oneViewLayoutThreeOverTwo => 'Three above two';
+
+  @override
+  String get oneViewLayoutThreeOverThree => 'Three above three';
+
+  @override
+  String get oneViewLayoutThreeRowsOfTwo => 'Three rows of pairs';
+
+  @override
   String oneViewRemoveEmptySeat(int number) {
     return 'Remove empty seat $number';
   }
@@ -439,7 +508,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get oneViewPoisonLabel => 'Poison';
 
   @override
+  String get oneViewMenuCounters => 'Counters';
+
+  @override
+  String get oneViewMenuSeat => 'Seat';
+
+  @override
   String get oneViewCommanderDamageLabel => 'Commander damage';
+
+  @override
+  String get oneViewAttackSwipe => 'Drag to deal damage';
+
+  @override
+  String get oneViewAttackSwipeSubtitle =>
+      'Drag from your card onto a player, then tap their card once per point.';
+
+  @override
+  String get oneViewAttackDamage => 'Damage';
+
+  @override
+  String get oneViewAttackTap => 'Tap';
+
+  @override
+  String oneViewCommanderDamageCount(int count) {
+    return 'Commander $count';
+  }
+
+  @override
+  String get oneViewSeatTools => 'Seat tools';
 
   @override
   String get oneViewCommanderDamageEmpty =>

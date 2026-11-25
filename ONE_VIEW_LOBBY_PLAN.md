@@ -75,12 +75,37 @@ flowchart TD
 
 1. **Guest decks** — Guests do **not** pick a deck. Name only; no deck/commander stats for that seat.
 2. **One profile, one seat** — the same Sit as me / QR profile cannot sit in two seats.
-3. **Phone orientation** — One View table prefers **landscape**.
+3. **Phone orientation** — One View table **allows rotation** (portrait + landscape). Seat maps adapt; landscape remains the usual tabletop pose.
 4. **Keep screen on** — while the One View table is open, keep the display awake.
 5. **Seat tools in v1** — life +/- first; poison + commander damage from the seat (tap / long-press), not a full Own View HUD clone.
 6. **Friend sit QR** — “Show sit code” on the friend’s Profile; separate from Own View Host QR.
 7. **Mid-game player count** — adding seats adds empty seats; removing a filled seat asks to confirm; remaining life totals stay.
 8. **End game** — reuse current leave/end flow; record seated players + decks on this phone.
+
+## Tabletop chrome (locked — reference for function, not style)
+
+Reference: [lifecounter.app](https://lifecounter.app/) (Lotus). Use it for **layout/function ideas only**. Do **not** copy Lotus colors, chrome shapes, or branding. Goal: Life Spark One View that is **more functional** than the reference (deck art, sit/claim/QR, XP, mid-game modes) while giving life totals **more** screen than we do today.
+
+**Problem today:** [`one_view_table_screen.dart`](lib/features/one_view/one_view_table_screen.dart) puts seats in a `Column` with a full-width `_CenterTools` strip underneath. That bottom bar steals vertical space.
+
+**Locked UX:**
+
+1. **No persistent bottom bar** — no mode pills and no reserved tool row under the seats. Life tiles own the screen.
+2. **Edge-to-edge seat panels** — full-bleed seats (1–6 maps), minimal gutters, oversized life + clear +/-. **Life Spark** colors, tokens, and commander art — not a Lotus lookalike.
+3. **Floating center hub** — one small overlay at the table center. Tap opens dice / reset / player count / colors / settings / end table (and Life Spark–specific tools). Does **not** reserve a chrome strip.
+4. **Secondary tracking stays seat-local** — poison + commander damage via seat tap/sheet (already locked). Do **not** add a global bottom mode switcher.
+5. **Safe areas** — seat grid is inset with `SafeArea` so life/+/- never sit under status, nav, or cutout; hub stays centered in that inset. No reserved tool bar.
+6. **Gestures later** — only if they make our table *more* usable (e.g. ±10 long-press); not to mimic Lotus swipe modes.
+
+```mermaid
+flowchart TD
+  Table[One View table]
+  Table --> Seats[Edge-to-edge rotated seats]
+  Table --> Hub[Floating center hub]
+  Seats --> Life[Life plus minus]
+  Seats --> SeatSheet[Seat sheet poison cmd claim]
+  Hub --> Tools[Dice reset seats colors settings leave]
+```
 
 ## Seat maps (locked, landscape)
 

@@ -40,6 +40,9 @@ class LobbyConfig {
   // Commander damage also reduces life total (when true)
   final bool commanderDamageReducesLife;
 
+  /// One View: drag from your card onto another player to deal damage.
+  final bool attackSwipeEnabled;
+
   // Turn timing
   final int? turnTimeLimitSeconds; // null = no limit
   final bool trackTurnDuration;
@@ -60,6 +63,7 @@ class LobbyConfig {
     this.autoKoFromPoison = true,
     this.autoKoFromCommanderDamage = true,
     this.commanderDamageReducesLife = true,
+    this.attackSwipeEnabled = true,
     this.turnTimeLimitSeconds,
     this.trackTurnDuration = false,
     this.phasesEnabled = false,
@@ -80,6 +84,7 @@ class LobbyConfig {
     bool? autoKoFromPoison,
     bool? autoKoFromCommanderDamage,
     bool? commanderDamageReducesLife,
+    bool? attackSwipeEnabled,
     Object? turnTimeLimitSeconds = _sentinel,
     bool? trackTurnDuration,
     bool? phasesEnabled,
@@ -98,6 +103,7 @@ class LobbyConfig {
         autoKoFromCommanderDamage ?? this.autoKoFromCommanderDamage,
     commanderDamageReducesLife:
         commanderDamageReducesLife ?? this.commanderDamageReducesLife,
+    attackSwipeEnabled: attackSwipeEnabled ?? this.attackSwipeEnabled,
     turnTimeLimitSeconds:
         identical(turnTimeLimitSeconds, _sentinel)
             ? this.turnTimeLimitSeconds
@@ -119,6 +125,7 @@ class LobbyConfig {
     'autoKoFromPoison': autoKoFromPoison,
     'autoKoFromCommanderDamage': autoKoFromCommanderDamage,
     'commanderDamageReducesLife': commanderDamageReducesLife,
+    'attackSwipeEnabled': attackSwipeEnabled,
     'turnTimeLimitSeconds': turnTimeLimitSeconds,
     'trackTurnDuration': trackTurnDuration,
     'phasesEnabled': phasesEnabled,
@@ -143,6 +150,7 @@ class LobbyConfig {
         json['autoKoFromCommanderDamage'] as bool? ?? true,
     commanderDamageReducesLife:
         json['commanderDamageReducesLife'] as bool? ?? true,
+    attackSwipeEnabled: json['attackSwipeEnabled'] as bool? ?? true,
     turnTimeLimitSeconds: (json['turnTimeLimitSeconds'] as num?)?.toInt(),
     trackTurnDuration: json['trackTurnDuration'] as bool? ?? false,
     phasesEnabled: json['phasesEnabled'] as bool? ?? false,

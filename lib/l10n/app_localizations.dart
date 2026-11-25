@@ -729,6 +729,54 @@ abstract class AppLocalizations {
   /// **'Change deck'**
   String get oneViewChangeDeck;
 
+  /// No description provided for @oneViewCardArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Card art'**
+  String get oneViewCardArt;
+
+  /// No description provided for @oneViewCardArtSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Commander or any card, on this seat'**
+  String get oneViewCardArtSubtitle;
+
+  /// No description provided for @oneViewCardArtSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a commander or card'**
+  String get oneViewCardArtSearchHint;
+
+  /// No description provided for @oneViewCardArtEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Search to put art on this seat'**
+  String get oneViewCardArtEmpty;
+
+  /// No description provided for @oneViewCardArtNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards found'**
+  String get oneViewCardArtNone;
+
+  /// No description provided for @oneViewCardArtFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not search. Check your connection.'**
+  String get oneViewCardArtFailed;
+
+  /// No description provided for @oneViewCardArtRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove art'**
+  String get oneViewCardArtRemove;
+
+  /// No description provided for @oneViewCardArtUseDeck.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a deck'**
+  String get oneViewCardArtUseDeck;
+
   /// No description provided for @oneViewClearSeat.
   ///
   /// In en, this message translates to:
@@ -837,6 +885,96 @@ abstract class AppLocalizations {
   /// **'Player count'**
   String get oneViewPlayerCountTitle;
 
+  /// No description provided for @oneViewLayoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sitting layout'**
+  String get oneViewLayoutTitle;
+
+  /// No description provided for @oneViewLayoutFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get oneViewLayoutFull;
+
+  /// No description provided for @oneViewLayoutStacked.
+  ///
+  /// In en, this message translates to:
+  /// **'Top and bottom'**
+  String get oneViewLayoutStacked;
+
+  /// No description provided for @oneViewLayoutSideBySide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side by side'**
+  String get oneViewLayoutSideBySide;
+
+  /// No description provided for @oneViewLayoutOneOverTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'One above two'**
+  String get oneViewLayoutOneOverTwo;
+
+  /// No description provided for @oneViewLayoutTwoOverOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Two above one'**
+  String get oneViewLayoutTwoOverOne;
+
+  /// No description provided for @oneViewLayoutOneBesideTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'One beside two'**
+  String get oneViewLayoutOneBesideTwo;
+
+  /// No description provided for @oneViewLayoutTwoBesideOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Two beside one'**
+  String get oneViewLayoutTwoBesideOne;
+
+  /// No description provided for @oneViewLayoutGrid2x2.
+  ///
+  /// In en, this message translates to:
+  /// **'Two by two'**
+  String get oneViewLayoutGrid2x2;
+
+  /// No description provided for @oneViewLayoutOneOverThree.
+  ///
+  /// In en, this message translates to:
+  /// **'One above three'**
+  String get oneViewLayoutOneOverThree;
+
+  /// No description provided for @oneViewLayoutThreeOverOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Three above one'**
+  String get oneViewLayoutThreeOverOne;
+
+  /// No description provided for @oneViewLayoutTwoOverThree.
+  ///
+  /// In en, this message translates to:
+  /// **'Two above three'**
+  String get oneViewLayoutTwoOverThree;
+
+  /// No description provided for @oneViewLayoutThreeOverTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Three above two'**
+  String get oneViewLayoutThreeOverTwo;
+
+  /// No description provided for @oneViewLayoutThreeOverThree.
+  ///
+  /// In en, this message translates to:
+  /// **'Three above three'**
+  String get oneViewLayoutThreeOverThree;
+
+  /// No description provided for @oneViewLayoutThreeRowsOfTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Three rows of pairs'**
+  String get oneViewLayoutThreeRowsOfTwo;
+
   /// No description provided for @oneViewRemoveEmptySeat.
   ///
   /// In en, this message translates to:
@@ -873,11 +1011,59 @@ abstract class AppLocalizations {
   /// **'Poison'**
   String get oneViewPoisonLabel;
 
+  /// No description provided for @oneViewMenuCounters.
+  ///
+  /// In en, this message translates to:
+  /// **'Counters'**
+  String get oneViewMenuCounters;
+
+  /// No description provided for @oneViewMenuSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat'**
+  String get oneViewMenuSeat;
+
   /// No description provided for @oneViewCommanderDamageLabel.
   ///
   /// In en, this message translates to:
   /// **'Commander damage'**
   String get oneViewCommanderDamageLabel;
+
+  /// No description provided for @oneViewAttackSwipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to deal damage'**
+  String get oneViewAttackSwipe;
+
+  /// No description provided for @oneViewAttackSwipeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag from your card onto a player, then tap their card once per point.'**
+  String get oneViewAttackSwipeSubtitle;
+
+  /// No description provided for @oneViewAttackDamage.
+  ///
+  /// In en, this message translates to:
+  /// **'Damage'**
+  String get oneViewAttackDamage;
+
+  /// No description provided for @oneViewAttackTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap'**
+  String get oneViewAttackTap;
+
+  /// No description provided for @oneViewCommanderDamageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Commander {count}'**
+  String oneViewCommanderDamageCount(int count);
+
+  /// No description provided for @oneViewSeatTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Seat tools'**
+  String get oneViewSeatTools;
 
   /// No description provided for @oneViewCommanderDamageEmpty.
   ///

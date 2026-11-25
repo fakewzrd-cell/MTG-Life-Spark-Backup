@@ -8,6 +8,7 @@ import '../models/player_deck.dart';
 import '../persistence/providers.dart';
 import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/commander_image_resolver.dart';
+import 'one_view_layout.dart';
 
 /// One claimed (or empty) seat on the One View table.
 class OneViewSeat {
@@ -53,7 +54,8 @@ class OneViewSeat {
 
   String get displayName {
     if (isEmpty) return '';
-    if (isGuest) return username?.trim().isNotEmpty == true ? username! : 'Guest';
+    if (isGuest)
+      return username?.trim().isNotEmpty == true ? username! : 'Guest';
     return username ?? 'Player';
   }
 
@@ -114,10 +116,7 @@ class OneViewSeat {
   static const Object _sentinel = Object();
 
   /// Empty placeholder seat for [seatCount] setup.
-  factory OneViewSeat.empty({
-    required int index,
-    required int startingLife,
-  }) {
+  factory OneViewSeat.empty({required int index, required int startingLife}) {
     return OneViewSeat(
       index: index,
       life: startingLife,
@@ -131,12 +130,14 @@ class OneViewState {
   final List<OneViewSeat> seats;
   final bool started;
   final DateTime? startTime;
+  final OneViewSeatLayout layout;
 
   const OneViewState({
     this.config = const LobbyConfig(),
     this.seats = const [],
     this.started = false,
     this.startTime,
+    this.layout = OneViewSeatLayout.grid2x2,
   });
 
   int get seatCount => seats.length;
@@ -146,6 +147,7 @@ class OneViewState {
     List<OneViewSeat>? seats,
     bool? started,
     Object? startTime = _sentinel,
+    OneViewSeatLayout? layout,
   }) {
     return OneViewState(
       config: config ?? this.config,
@@ -155,6 +157,7 @@ class OneViewState {
           identical(startTime, _sentinel)
               ? this.startTime
               : startTime as DateTime?,
+      layout: layout ?? this.layout,
     );
   }
 
@@ -195,9 +198,7 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
 
   void setPlayerCount(int count) {
     updateConfig(
-      state.config.copyWith(
-        maxPlayers: LobbyConfig.clampMaxPlayers(count),
-      ),
+      state.config.copyWith(maxPlayers: LobbyConfig.clampMaxPlayers(count)),
     );
   }
 
@@ -218,7 +219,15 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
       started: true,
       startTime: DateTime.now(),
       config: state.config.copyWith(maxPlayers: n, startingLife: life),
+      layout: OneViewSeatLayout.defaultFor(n),
     );
+  }
+
+  /// Sitting arrangement for the current player count. Ignored if it does not fit.
+  void setLayout(OneViewSeatLayout layout) {
+    final count = state.seats.length;
+    if (count < 1 || !layout.fits(count)) return;
+    state = state.copyWith(layout: layout);
   }
 
   void reset() {
@@ -260,8 +269,7 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     final seat = state.seats[seatIndex];
     if (seat.isClaimed) return false;
 
-    final guestId =
-        'guest-$seatIndex-${DateTime.now().millisecondsSinceEpoch}';
+    final guestId = 'guest-$seatIndex-${DateTime.now().millisecondsSinceEpoch}';
     final trimmed = name?.trim();
     _replaceSeat(
       seat.copyWith(
@@ -327,6 +335,39 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     );
   }
 
+  /// Commander or any card art for this seat, including guests.
+  void setCommanderVisual({
+    required int seatIndex,
+    required String name,
+    required String? imageUrl,
+    List<String> colorIdentity = const [],
+  }) {
+    if (!_validSeat(seatIndex)) return;
+    final seat = state.seats[seatIndex];
+    if (seat.isEmpty) return;
+    final trimmed = name.trim();
+    _replaceSeat(
+      seat.copyWith(
+        commanderName: trimmed.isEmpty ? null : trimmed,
+        commanderImageUrl: imageUrl,
+        commanderColorIdentity: colorIdentity,
+      ),
+    );
+  }
+
+  void clearCommanderVisual(int seatIndex) {
+    if (!_validSeat(seatIndex)) return;
+    final seat = state.seats[seatIndex];
+    if (seat.isEmpty) return;
+    _replaceSeat(
+      seat.copyWith(
+        commanderName: null,
+        commanderImageUrl: null,
+        commanderColorIdentity: const <String>[],
+      ),
+    );
+  }
+
   void clearDeck(int seatIndex) {
     if (!_validSeat(seatIndex)) return;
     final seat = state.seats[seatIndex];
@@ -356,9 +397,7 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
 
   void setLife(int seatIndex, int life) {
     if (!_validSeat(seatIndex)) return;
-    _replaceSeat(
-      state.seats[seatIndex].copyWith(life: life.clamp(-999, 999)),
-    );
+    _replaceSeat(state.seats[seatIndex].copyWith(life: life.clamp(-999, 999)));
   }
 
   void adjustPoison(int seatIndex, int delta) {
@@ -401,6 +440,7 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     state = state.copyWith(
       seats: seats,
       config: state.config.copyWith(maxPlayers: seats.length),
+      layout: _layoutForCount(seats.length),
     );
   }
 
@@ -426,7 +466,10 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
           commanderColorIdentity: s.commanderColorIdentity,
           life: s.life,
           poison: s.poison,
-          commanderDamageFrom: _remapDamageKeys(s.commanderDamageFrom, seatIndex),
+          commanderDamageFrom: _remapDamageKeys(
+            s.commanderDamageFrom,
+            seatIndex,
+          ),
           teamIndex: s.teamIndex,
           seatColor: AppTheme.playerColor(i),
         ),
@@ -435,8 +478,14 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
     state = state.copyWith(
       seats: reindexed,
       config: state.config.copyWith(maxPlayers: reindexed.length),
+      layout: _layoutForCount(reindexed.length),
     );
     return true;
+  }
+
+  OneViewSeatLayout _layoutForCount(int count) {
+    if (state.layout.fits(count)) return state.layout;
+    return OneViewSeatLayout.defaultFor(count);
   }
 
   void resetLifeTotals() {
@@ -480,7 +529,8 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
   }
 }
 
-final oneViewProvider =
-    StateNotifierProvider<OneViewNotifier, OneViewState>((ref) {
+final oneViewProvider = StateNotifierProvider<OneViewNotifier, OneViewState>((
+  ref,
+) {
   return OneViewNotifier(ref);
 });

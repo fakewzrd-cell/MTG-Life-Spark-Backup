@@ -30,9 +30,7 @@ ProviderContainer _lobbyContainer({
       sessionServiceProvider.overrideWith((ref) => ble),
       profileRepositoryProvider.overrideWithValue(
         profileRepo ??
-            TestProfileRepository(
-              profile: PlayerProfile(username: 'host'),
-            ),
+            TestProfileRepository(profile: PlayerProfile(username: 'host')),
       ),
       settingsRepositoryProvider.overrideWithValue(
         settingsRepo ?? TestSettingsRepository(),
@@ -43,6 +41,7 @@ ProviderContainer _lobbyContainer({
     ],
   );
 }
+
 void main() {
   group('LobbyConfig', () {
     test('round-trips through JSON', () {
@@ -61,6 +60,17 @@ void main() {
       expect(restored.teamsEnabled, isTrue);
       expect(restored.turnTimeLimitSeconds, 600);
       expect(restored.trackTurnDuration, isTrue);
+      expect(restored.attackSwipeEnabled, isTrue);
+    });
+
+    test('attack swipe stays on when an older config has no key', () {
+      expect(LobbyConfig.fromJson(const {}).attackSwipeEnabled, isTrue);
+      expect(
+        LobbyConfig.fromJson(const {
+          'attackSwipeEnabled': false,
+        }).attackSwipeEnabled,
+        isFalse,
+      );
     });
   });
 
@@ -132,10 +142,7 @@ void main() {
       final container = _lobbyContainer(
         ble: ble,
         settingsRepo: TestSettingsRepository(
-          AppSettings(
-            defaultFormat: 'Standard',
-            defaultStartingLife: 20,
-          ),
+          AppSettings(defaultFormat: 'Standard', defaultStartingLife: 20),
         ),
       );
       addTearDown(container.dispose);
@@ -152,10 +159,7 @@ void main() {
       final container = _lobbyContainer(
         ble: ble,
         settingsRepo: TestSettingsRepository(
-          AppSettings(
-            defaultFormat: 'Standard',
-            defaultStartingLife: 20,
-          ),
+          AppSettings(defaultFormat: 'Standard', defaultStartingLife: 20),
         ),
       );
       addTearDown(container.dispose);
@@ -163,10 +167,7 @@ void main() {
       final notifier = container.read(lobbyProvider.notifier);
       notifier.initAsHost();
       notifier.updateConfig(
-        const LobbyConfig(
-          format: GameFormat.modern,
-          startingLife: 25,
-        ),
+        const LobbyConfig(format: GameFormat.modern, startingLife: 25),
       );
       notifier.initAsHost();
 
@@ -175,20 +176,22 @@ void main() {
       expect(lobby.config.startingLife, 25);
     });
 
-    test('initAsHost keeps matchLabel on re-init when players already present',
-        () {
-      final ble = FakeBleService();
-      final container = _lobbyContainer(ble: ble);
-      addTearDown(container.dispose);
+    test(
+      'initAsHost keeps matchLabel on re-init when players already present',
+      () {
+        final ble = FakeBleService();
+        final container = _lobbyContainer(ble: ble);
+        addTearDown(container.dispose);
 
-      final notifier = container.read(lobbyProvider.notifier);
-      notifier.initAsHost();
-      notifier.setMatchLabel('Friday EDH');
-      expect(container.read(lobbyProvider).matchLabel, 'Friday EDH');
+        final notifier = container.read(lobbyProvider.notifier);
+        notifier.initAsHost();
+        notifier.setMatchLabel('Friday EDH');
+        expect(container.read(lobbyProvider).matchLabel, 'Friday EDH');
 
-      notifier.initAsHost();
-      expect(container.read(lobbyProvider).matchLabel, 'Friday EDH');
-    });
+        notifier.initAsHost();
+        expect(container.read(lobbyProvider).matchLabel, 'Friday EDH');
+      },
+    );
 
     test('setReady toggles slot and host rebroadcasts lobby update', () {
       final ble = FakeBleService();
@@ -305,10 +308,11 @@ void main() {
           lobby.players.map((p) => p.username).toList(),
           everyElement('Planeswalker'),
         );
-        expect(
-          lobby.players.map((p) => p.playerId).toSet(),
-          {'host-uuid', 'guest-uuid-1', 'guest-uuid-2'},
-        );
+        expect(lobby.players.map((p) => p.playerId).toSet(), {
+          'host-uuid',
+          'guest-uuid-1',
+          'guest-uuid-2',
+        });
       });
     });
 
@@ -327,10 +331,7 @@ void main() {
         ble.sentMessages.where((m) => m.type == BleMessageType.stateSnapshot),
         isNotEmpty,
       );
-      expect(
-        ble.sentMessages.last.payload['matchLabel'],
-        'Friday EDH',
-      );
+      expect(ble.sentMessages.last.payload['matchLabel'], 'Friday EDH');
 
       notifier.setMatchLabel('   ');
       expect(container.read(lobbyProvider).matchLabel, isNull);
@@ -423,43 +424,43 @@ void main() {
       expect(ble.sentMessages.last.payload['reason'], 'lobbyFull');
     });
 
-    test('host applies a ready update and drops a disconnected guest', () async {
-      final ble = FakeBleService();
-      final container = _lobbyContainer(ble: ble);
-      addTearDown(container.dispose);
+    test(
+      'host applies a ready update and drops a disconnected guest',
+      () async {
+        final ble = FakeBleService();
+        final container = _lobbyContainer(ble: ble);
+        addTearDown(container.dispose);
 
-      final notifier = container.read(lobbyProvider.notifier);
-      notifier.initAsHost();
-      ble.emit(
-        BleMessage(
-          type: BleMessageType.lobbyPlayerJoined,
-          payload: {'pid': 'guest', 'username': 'Guest'},
-          seqNum: 1,
-        ),
-      );
-      await Future<void>.delayed(Duration.zero);
-      ble.emit(
-        BleMessage(
-          type: BleMessageType.lobbyPlayerReady,
-          payload: {'pid': 'guest', 'ready': true},
-          seqNum: 2,
-        ),
-      );
-      await Future<void>.delayed(Duration.zero);
-      expect(
-        container.read(lobbyProvider).players.last.isReady,
-        isTrue,
-      );
+        final notifier = container.read(lobbyProvider.notifier);
+        notifier.initAsHost();
+        ble.emit(
+          BleMessage(
+            type: BleMessageType.lobbyPlayerJoined,
+            payload: {'pid': 'guest', 'username': 'Guest'},
+            seqNum: 1,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        ble.emit(
+          BleMessage(
+            type: BleMessageType.lobbyPlayerReady,
+            payload: {'pid': 'guest', 'ready': true},
+            seqNum: 2,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(container.read(lobbyProvider).players.last.isReady, isTrue);
 
-      ble.emitConnection(
-        const BleConnectionEvent(
-          playerId: 'guest',
-          status: BleConnectionStatus.disconnected,
-        ),
-      );
-      await Future<void>.delayed(Duration.zero);
-      expect(container.read(lobbyProvider).players, hasLength(1));
-    });
+        ble.emitConnection(
+          const BleConnectionEvent(
+            playerId: 'guest',
+            status: BleConnectionStatus.disconnected,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(container.read(lobbyProvider).players, hasLength(1));
+      },
+    );
 
     test('client follows the host snapshot, start, and session end', () async {
       final ble = FakeBleService();

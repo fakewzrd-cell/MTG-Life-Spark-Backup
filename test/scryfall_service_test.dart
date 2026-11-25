@@ -56,6 +56,7 @@ void main() {
     final service = ScryfallService(client: MockClient((_) async => _json({})));
     expect(await service.searchCards('   '), isEmpty);
     expect(await service.searchCommanders(''), isEmpty);
+    expect(await service.searchCardPreviews(''), isEmpty);
     expect(await service.fetchCardFuzzy('  '), isNull);
     expect(await service.fetchRulings(null), isEmpty);
     expect(await service.fetchRulings(''), isEmpty);
@@ -96,6 +97,28 @@ void main() {
       await expectLater(service.searchCards('Broken'), throwsException);
     },
   );
+
+  test('preview search returns a short list from one request', () async {
+    var hits = 0;
+    final service = ScryfallService(
+      client: MockClient((request) async {
+        hits++;
+        expect(request.url.path, contains('/cards/search'));
+        return _json({
+          'data': [
+            for (var i = 0; i < 30; i++) _card(name: 'Card $i', id: 'id-$i'),
+          ],
+        });
+      }),
+    );
+
+    final cards = await service.searchCardPreviews('atr', limit: 3);
+    expect(hits, 1);
+    expect(cards, hasLength(3));
+    expect(cards.first.name, 'Card 0');
+    expect(cards.first.imageUrl, 'https://img/bolt.jpg');
+    expect(cards.first.colorIdentity, ['R']);
+  });
 
   test(
     'fuzzy, exact, and rulings lookups handle success and failure',

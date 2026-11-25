@@ -199,7 +199,7 @@ class _LifeCounterWidgetState extends State<LifeCounterWidget>
     if (widget.isEliminated) return;
     final result = await showDialog<int>(
       context: context,
-      builder: (_) => _LifeInputDialog(currentLife: widget.life),
+      builder: (_) => LifeInputDialog(currentLife: widget.life),
     );
     if (result != null && mounted) {
       final delta = result - widget.life;
@@ -470,15 +470,15 @@ class _LifeEdgeStepStripState extends State<_LifeEdgeStepStrip> {
 
 // ── Numeric input dialog ───────────────────────────────────────────────────
 
-class _LifeInputDialog extends StatefulWidget {
+class LifeInputDialog extends StatefulWidget {
   final int currentLife;
-  const _LifeInputDialog({required this.currentLife});
+  const LifeInputDialog({super.key, required this.currentLife});
 
   @override
-  State<_LifeInputDialog> createState() => _LifeInputDialogState();
+  State<LifeInputDialog> createState() => _LifeInputDialogState();
 }
 
-class _LifeInputDialogState extends State<_LifeInputDialog> {
+class _LifeInputDialogState extends State<LifeInputDialog> {
   String _input = '';
 
   void _press(String digit) {

@@ -12,8 +12,6 @@ import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_color_tokens.dart';
 import '../../ui/tokens/font_tokens.dart';
 import '../../ui/tokens/layout_tokens.dart';
-import '../../ui/tokens/opacity_tokens.dart';
-import '../../ui/tokens/radius_tokens.dart';
 
 /// Mid-game LobbyConfig toggles from the center menu (plan: settings changeable).
 Future<void> showOneViewSettingsSheet(
@@ -23,6 +21,7 @@ Future<void> showOneViewSettingsSheet(
   await showGameBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
@@ -42,19 +41,23 @@ Future<void> showOneViewSettingsSheet(
             required ValueChanged<bool> onChanged,
           }) {
             return SwitchListTile(
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: LayoutTokens.gr1,
+              ),
               title: Text(
                 title,
                 style: TextStyle(
                   color: colors.textPrimary,
-                  fontWeight: FontWeight.w500,
+                  fontSize: FontTokens.body,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 subtitle,
                 style: TextStyle(
                   color: colors.textSecondary,
-                  fontSize: FontTokens.caption,
+                  fontSize: FontTokens.hudSm,
+                  height: 1.3,
                 ),
               ),
               value: value,
@@ -129,6 +132,15 @@ Future<void> showOneViewSettingsSheet(
                       ),
                 ),
                 tile(
+                  title: l10n.oneViewAttackSwipe,
+                  subtitle: l10n.oneViewAttackSwipeSubtitle,
+                  value: config.attackSwipeEnabled,
+                  onChanged:
+                      (v) => notifier.updateConfig(
+                        config.copyWith(attackSwipeEnabled: v),
+                      ),
+                ),
+                tile(
                   title: l10n.hostToggleTurnTimer,
                   subtitle: l10n.hostToggleTurnTimerSubtitle,
                   value: config.trackTurnDuration,
@@ -159,6 +171,7 @@ Future<TableToolAnnouncement?> showOneViewDiceSheet(
   final l10n = AppLocalizations.of(context);
   final rolled = await showGameBottomSheet<TableToolAnnouncement>(
     context: context,
+    enableDrag: false,
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setLocal) {
@@ -243,15 +256,13 @@ Future<TableToolAnnouncement?> showOneViewDiceSheet(
   return rolled;
 }
 
-/// Assign team colors to claimed seats (center “colors” tool).
-Future<void> showOneViewColorsSheet(
-  BuildContext context,
-  WidgetRef ref,
-) async {
+/// Assign team colors to claimed seats. Only opened when teams are on.
+Future<void> showOneViewColorsSheet(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
   await showGameBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
@@ -262,12 +273,16 @@ Future<void> showOneViewColorsSheet(
             return GameSheetBody(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   GameSheetHeader(title: l10n.oneViewColorsTitle),
                   SizedBox(height: LayoutTokens.gr2),
                   Text(
                     l10n.oneViewColorsEmpty,
-                    style: TextStyle(color: colors.textSecondary),
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontSize: FontTokens.body,
+                    ),
                   ),
                 ],
               ),
@@ -280,34 +295,34 @@ Future<void> showOneViewColorsSheet(
               mainAxisSize: MainAxisSize.min,
               children: [
                 GameSheetHeader(title: l10n.oneViewColorsTitle),
-                SizedBox(height: LayoutTokens.gr2),
-                for (final seat in claimed)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      backgroundColor:
-                          seat.teamIndex > 0
-                              ? teamColor(seat.teamIndex)
-                              : colors.backgroundSecondary,
-                      child: Text(
-                        '${seat.index + 1}',
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontSize: FontTokens.caption,
-                        ),
-                      ),
+                SizedBox(height: LayoutTokens.gr3),
+                for (final seat in claimed) ...[
+                  Text(
+                    seat.displayName,
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontSize: FontTokens.headline,
+                      fontWeight: FontWeight.w600,
                     ),
-                    title: Text(seat.displayName),
-                    subtitle: Text(
-                      seat.teamIndex == 0
-                          ? l10n.overviewTeamNone
-                          : l10n.overviewTeamN('${seat.teamIndex}'),
-                    ),
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await _pickTeamForSeat(context, ref, seat);
-                    },
                   ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  Wrap(
+                    spacing: LayoutTokens.gr2,
+                    runSpacing: LayoutTokens.gr2,
+                    children: [
+                      for (final idx in [0, 1, 2, 3, 4])
+                        _TeamChoice(
+                          index: idx,
+                          selected: seat.teamIndex == idx,
+                          onTap:
+                              () => ref
+                                  .read(oneViewProvider.notifier)
+                                  .assignTeam(seat.index, idx),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: LayoutTokens.gr4),
+                ],
               ],
             ),
           );
@@ -317,80 +332,52 @@ Future<void> showOneViewColorsSheet(
   );
 }
 
-Future<void> _pickTeamForSeat(
-  BuildContext context,
-  WidgetRef ref,
-  OneViewSeat seat,
-) async {
-  final l10n = AppLocalizations.of(context);
-  await showGameBottomSheet<void>(
-    context: context,
-    builder: (ctx) {
-      final colors = AppColorTokens.of(ctx);
-      return GameSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GameSheetHeader(title: l10n.overviewAssignTeamTitle),
-            SizedBox(height: LayoutTokens.gr2),
-            for (final idx in [0, 1, 2, 3, 4])
-              Padding(
-                padding: const EdgeInsets.only(bottom: LayoutTokens.gr1),
-                child: Material(
-                  color:
-                      seat.teamIndex == idx
-                          ? (idx == 0
-                              ? colors.textSecondary.withValues(
-                                alpha: OpacityTokens.subtle,
-                              )
-                              : teamColor(idx).withValues(
-                                alpha: OpacityTokens.subtle,
-                              ))
-                          : Colors.transparent,
-                  borderRadius: RadiusTokens.radiusXl,
-                  child: InkWell(
-                    borderRadius: RadiusTokens.radiusXl,
-                    onTap: () {
-                      ref
-                          .read(oneViewProvider.notifier)
-                          .assignTeam(seat.index, idx);
-                      Navigator.pop(ctx);
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: LayoutTokens.gr3,
-                        vertical: LayoutTokens.gr2,
-                      ),
-                      child: Row(
-                        children: [
-                          if (idx > 0)
-                            Container(
-                              width: LayoutTokens.gr2,
-                              height: LayoutTokens.gr2,
-                              margin: EdgeInsets.only(right: LayoutTokens.gr2),
-                              decoration: BoxDecoration(
-                                color: teamColor(idx),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          Text(
-                            idx == 0
-                                ? l10n.overviewTeamNone
-                                : l10n.overviewTeamN('$idx'),
-                            style: TextStyle(color: colors.textPrimary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+class _TeamChoice extends StatelessWidget {
+  const _TeamChoice({
+    required this.index,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int index;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColorTokens.of(context);
+    final l10n = AppLocalizations.of(context);
+    final fill = index == 0 ? colors.backgroundSecondary : teamColor(index);
+    final label =
+        index == 0 ? l10n.overviewTeamNone : l10n.overviewTeamN('$index');
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Material(
+        color: fill,
+        shape: CircleBorder(
+          side: BorderSide(
+            color: selected ? colors.textPrimary : colors.borderSubtle,
+            width: selected ? 3 : 1,
+          ),
         ),
-      );
-    },
-  );
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child:
+                index == 0
+                    ? Icon(Icons.close_rounded, color: colors.textSecondary)
+                    : null,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Add empty seats or remove a seat (confirm when filled).
@@ -401,6 +388,7 @@ Future<void> showOneViewPlayerCountSheet(
   final l10n = AppLocalizations.of(context);
   await showGameBottomSheet<void>(
     context: context,
+    enableDrag: false,
     builder: (ctx) {
       return Consumer(
         builder: (context, ref, _) {
@@ -482,9 +470,7 @@ Future<bool> confirmAndRemoveSeat(
       builder:
           (ctx) => AlertDialog(
             title: Text(l10n.oneViewRemoveSeatTitle),
-            content: Text(
-              l10n.oneViewRemoveSeatBody(seat.displayName),
-            ),
+            content: Text(l10n.oneViewRemoveSeatBody(seat.displayName)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
