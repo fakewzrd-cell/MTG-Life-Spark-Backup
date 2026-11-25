@@ -813,6 +813,84 @@ abstract class AppLocalizations {
   /// **'Show this QR at a One View table. It is not a Host join code.'**
   String get oneViewShowSitCodeBody;
 
+  /// No description provided for @oneViewMidGameSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Table settings'**
+  String get oneViewMidGameSettings;
+
+  /// No description provided for @oneViewColorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Team colors'**
+  String get oneViewColorsTitle;
+
+  /// No description provided for @oneViewColorsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim seats first, then assign team colors.'**
+  String get oneViewColorsEmpty;
+
+  /// No description provided for @oneViewPlayerCountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Player count'**
+  String get oneViewPlayerCountTitle;
+
+  /// No description provided for @oneViewRemoveEmptySeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove empty seat {number}'**
+  String oneViewRemoveEmptySeat(int number);
+
+  /// No description provided for @oneViewRemoveFilledSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} (seat {number})'**
+  String oneViewRemoveFilledSeat(String name, int number);
+
+  /// No description provided for @oneViewRemoveSeatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this seat?'**
+  String get oneViewRemoveSeatTitle;
+
+  /// No description provided for @oneViewRemoveSeatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will leave the table. Other life totals stay.'**
+  String oneViewRemoveSeatBody(String name);
+
+  /// No description provided for @oneViewRemoveSeatConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove seat'**
+  String get oneViewRemoveSeatConfirm;
+
+  /// No description provided for @oneViewPoisonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Poison'**
+  String get oneViewPoisonLabel;
+
+  /// No description provided for @oneViewCommanderDamageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Commander damage'**
+  String get oneViewCommanderDamageLabel;
+
+  /// No description provided for @oneViewCommanderDamageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No other claimed seats to track damage from.'**
+  String get oneViewCommanderDamageEmpty;
+
+  /// No description provided for @oneViewMatchRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Match saved on this phone · +{xp} XP'**
+  String oneViewMatchRecorded(int xp);
+
   /// No description provided for @hostLobbyTitle.
   ///
   /// In en, this message translates to:

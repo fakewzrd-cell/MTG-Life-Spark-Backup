@@ -138,7 +138,6 @@ v1 ships all 1–6 as usable maps; 4 is the showcase layout.
 
 ### Follow-ups (not blocking v1)
 
-- Mid-game LobbyConfig editor from the center menu (toggles beyond reset / add seat / end)
-- Commander-damage-from-seat picker UI (poison is in seat tools; full matrix polish later)
-- Match history / XP recording for seated One View profiles beyond this-device life tracking
 - Landscape lock enforcement on tablets; portrait fallback polish for odd seat counts
+- Winner picker on end-table (v1 records without a declared winner → participation XP when eligible)
+- Cross-phone XP push for sit-code profiles (explicitly out of v1)

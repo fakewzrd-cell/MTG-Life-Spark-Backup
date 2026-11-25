@@ -402,6 +402,55 @@ class AppLocalizationsEs extends AppLocalizations {
       'Show this QR at a One View table. It is not a Host join code.';
 
   @override
+  String get oneViewMidGameSettings => 'Table settings';
+
+  @override
+  String get oneViewColorsTitle => 'Team colors';
+
+  @override
+  String get oneViewColorsEmpty =>
+      'Claim seats first, then assign team colors.';
+
+  @override
+  String get oneViewPlayerCountTitle => 'Player count';
+
+  @override
+  String oneViewRemoveEmptySeat(int number) {
+    return 'Remove empty seat $number';
+  }
+
+  @override
+  String oneViewRemoveFilledSeat(String name, int number) {
+    return 'Remove $name (seat $number)';
+  }
+
+  @override
+  String get oneViewRemoveSeatTitle => 'Remove this seat?';
+
+  @override
+  String oneViewRemoveSeatBody(String name) {
+    return '$name will leave the table. Other life totals stay.';
+  }
+
+  @override
+  String get oneViewRemoveSeatConfirm => 'Remove seat';
+
+  @override
+  String get oneViewPoisonLabel => 'Poison';
+
+  @override
+  String get oneViewCommanderDamageLabel => 'Commander damage';
+
+  @override
+  String get oneViewCommanderDamageEmpty =>
+      'No other claimed seats to track damage from.';
+
+  @override
+  String oneViewMatchRecorded(int xp) {
+    return 'Match saved on this phone · +$xp XP';
+  }
+
+  @override
   String get hostLobbyTitle => 'Sala del anfitrión';
 
   @override

@@ -25,6 +25,9 @@ class OneViewSeat {
 
   /// Commander damage dealt *to* this seat, keyed by source seat index.
   final Map<int, int> commanderDamageFrom;
+
+  /// Team color index (0 = none). Center “colors” tool assigns this.
+  final int teamIndex;
   final Color seatColor;
 
   const OneViewSeat({
@@ -40,6 +43,7 @@ class OneViewSeat {
     required this.life,
     this.poison = 0,
     this.commanderDamageFrom = const {},
+    this.teamIndex = 0,
     required this.seatColor,
   });
 
@@ -68,6 +72,7 @@ class OneViewSeat {
     int? life,
     int? poison,
     Map<int, int>? commanderDamageFrom,
+    int? teamIndex,
     Color? seatColor,
   }) {
     return OneViewSeat(
@@ -101,6 +106,7 @@ class OneViewSeat {
       poison: poison ?? this.poison,
       commanderDamageFrom:
           commanderDamageFrom ?? Map<int, int>.from(this.commanderDamageFrom),
+      teamIndex: teamIndex ?? this.teamIndex,
       seatColor: seatColor ?? this.seatColor,
     );
   }
@@ -421,6 +427,7 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
           life: s.life,
           poison: s.poison,
           commanderDamageFrom: _remapDamageKeys(s.commanderDamageFrom, seatIndex),
+          teamIndex: s.teamIndex,
           seatColor: AppTheme.playerColor(i),
         ),
       );
@@ -446,6 +453,12 @@ class OneViewNotifier extends StateNotifier<OneViewState> {
               )
               .toList(),
     );
+  }
+
+  void assignTeam(int seatIndex, int teamIndex) {
+    if (!_validSeat(seatIndex)) return;
+    final seat = state.seats[seatIndex];
+    _replaceSeat(seat.copyWith(teamIndex: teamIndex.clamp(0, 4)));
   }
 
   Map<int, int> _remapDamageKeys(Map<int, int> src, int removedIndex) {

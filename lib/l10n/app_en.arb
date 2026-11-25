@@ -182,6 +182,50 @@
   "oneViewShowSitCode": "Show sit code",
   "oneViewShowSitCodeSubtitle": "Friends scan this to sit at One View",
   "oneViewShowSitCodeBody": "Show this QR at a One View table. It is not a Host join code.",
+  "oneViewMidGameSettings": "Table settings",
+  "oneViewColorsTitle": "Team colors",
+  "oneViewColorsEmpty": "Claim seats first, then assign team colors.",
+  "oneViewPlayerCountTitle": "Player count",
+  "oneViewRemoveEmptySeat": "Remove empty seat {number}",
+  "@oneViewRemoveEmptySeat": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "oneViewRemoveFilledSeat": "Remove {name} (seat {number})",
+  "@oneViewRemoveFilledSeat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "oneViewRemoveSeatTitle": "Remove this seat?",
+  "oneViewRemoveSeatBody": "{name} will leave the table. Other life totals stay.",
+  "@oneViewRemoveSeatBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "oneViewRemoveSeatConfirm": "Remove seat",
+  "oneViewPoisonLabel": "Poison",
+  "oneViewCommanderDamageLabel": "Commander damage",
+  "oneViewCommanderDamageEmpty": "No other claimed seats to track damage from.",
+  "oneViewMatchRecorded": "Match saved on this phone · +{xp} XP",
+  "@oneViewMatchRecorded": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "hostLobbyTitle": "Host Lobby",
   "hostLeaveLobbyTooltip": "Leave lobby",
   "hostPlayersScanQr": "Players: {count} / {max}  •  Scan QR to join",

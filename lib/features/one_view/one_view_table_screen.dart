@@ -6,10 +6,14 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../core/game/game_session_events.dart';
+import '../../core/game/progression_service.dart';
+import '../../core/one_view/one_view_match_recording.dart';
 import '../../core/one_view/one_view_sit_code.dart';
 import '../../core/one_view/one_view_state.dart';
 import '../../core/persistence/providers.dart';
 import '../../features/game/widgets/game_modal_chrome.dart';
+import '../../features/game/widgets/team_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
 import '../../ui/theme/app_color_tokens.dart';
@@ -18,6 +22,7 @@ import '../../ui/tokens/layout_tokens.dart';
 import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import 'one_view_deck_picker.dart';
+import 'one_view_table_tools.dart';
 
 /// Shared-phone tabletop: rotated seats, life +/- , claim, center tools.
 class OneViewTableScreen extends ConsumerStatefulWidget {
@@ -28,6 +33,8 @@ class OneViewTableScreen extends ConsumerStatefulWidget {
 }
 
 class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
+  TableToolAnnouncement? _diceAnnouncement;
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +79,31 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
           ),
     );
     if (leave != true || !mounted) return;
+
+    // Plan: record seated players + decks on this phone; no cross-phone XP.
+    final oneView = ref.read(oneViewProvider);
+    final profile = ref.read(profileRepositoryProvider).getProfile();
+    final snapshots = oneViewRecordingSnapshots(
+      oneView: oneView,
+      localPlayerId: profile?.playerId,
+    );
+    if (snapshots != null && snapshots.game.localPlayerId.isNotEmpty) {
+      final result = await ref
+          .read(progressionServiceProvider)
+          .recordMatch(
+            finalState: snapshots.game,
+            lobbyState: snapshots.lobby,
+            startTime: oneView.startTime ?? DateTime.now(),
+          );
+      bumpProfileRevision(ref);
+      bumpDeckListRevision(ref);
+      if (mounted && result.awardsProgression && result.xpGained > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.oneViewMatchRecorded(result.xpGained))),
+        );
+      }
+    }
+
     ref.read(oneViewProvider.notifier).reset();
     if (!mounted) return;
     context.go(AppRoutes.lobby);
@@ -97,27 +129,48 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
     return Scaffold(
       backgroundColor: colors.backgroundPrimary,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: _SeatLayout(
-                seats: state.seats,
-                onSeatTap: (i) => _onSeatTap(i, state.seats[i]),
-                onLifeDelta: (i, d) {
-                  ref.read(oneViewProvider.notifier).adjustLife(i, d);
-                },
+            Column(
+              children: [
+                Expanded(
+                  child: _SeatLayout(
+                    seats: state.seats,
+                    onSeatTap: (i) => _onSeatTap(i, state.seats[i]),
+                    onLifeDelta: (i, d) {
+                      ref.read(oneViewProvider.notifier).adjustLife(i, d);
+                    },
+                  ),
+                ),
+                _CenterTools(
+                  onResetLife: () {
+                    ref.read(oneViewProvider.notifier).resetLifeTotals();
+                  },
+                  onPlayerCount: () => showOneViewPlayerCountSheet(context, ref),
+                  onDice: () async {
+                    final profile =
+                        ref.read(profileRepositoryProvider).getProfile();
+                    final roll = await showOneViewDiceSheet(
+                      context,
+                      rollerName: profile?.username ?? 'Table',
+                    );
+                    if (roll != null && mounted) {
+                      setState(() => _diceAnnouncement = roll);
+                    }
+                  },
+                  onColors: () => showOneViewColorsSheet(context, ref),
+                  onMenu: () => _showMenu(l10n),
+                  onLeave: _leave,
+                ),
+              ],
+            ),
+            if (_diceAnnouncement != null)
+              Positioned.fill(
+                child: OneViewDiceOverlay(
+                  announcement: _diceAnnouncement!,
+                  onDismiss: () => setState(() => _diceAnnouncement = null),
+                ),
               ),
-            ),
-            _CenterTools(
-              onResetLife: () {
-                ref.read(oneViewProvider.notifier).resetLifeTotals();
-              },
-              onAddSeat: () {
-                ref.read(oneViewProvider.notifier).addSeats(1);
-              },
-              onMenu: () => _showMenu(l10n),
-              onLeave: _leave,
-            ),
           ],
         ),
       ),
@@ -249,73 +302,151 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
 
   Future<void> _showSeatTools(int index, OneViewSeat seat) async {
     final l10n = AppLocalizations.of(context);
-    final colors = AppColorTokens.of(context);
-    final notifier = ref.read(oneViewProvider.notifier);
     await showGameBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) {
-        return GameSheetBody(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              GameSheetHeader(title: seat.displayName),
-              SizedBox(height: LayoutTokens.gr2),
-              Row(
+        return Consumer(
+          builder: (context, ref, _) {
+            final live = ref.watch(
+              oneViewProvider.select(
+                (s) => s.seats.firstWhere((x) => x.index == index),
+              ),
+            );
+            final allSeats = ref.watch(oneViewProvider.select((s) => s.seats));
+            final colors = AppColorTokens.of(context);
+            final notifier = ref.read(oneViewProvider.notifier);
+            final others = allSeats.where(
+              (s) => s.index != index && s.isClaimed,
+            );
+            return GameSheetBody(
+              scrollable: true,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        notifier.adjustPoison(index, -1);
-                      },
-                      child: Text(l10n.oneViewPoisonMinus),
+                  GameSheetHeader(title: live.displayName),
+                  SizedBox(height: LayoutTokens.gr2),
+                  Text(
+                    l10n.oneViewPoisonLabel,
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: LayoutTokens.gr2),
-                    child: Text(
-                      l10n.oneViewPoisonCount(seat.poison),
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w600,
+                  SizedBox(height: LayoutTokens.gr1),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => notifier.adjustPoison(index, -1),
+                          child: Text(l10n.oneViewPoisonMinus),
+                        ),
                       ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: LayoutTokens.gr2,
+                        ),
+                        child: Text(
+                          l10n.oneViewPoisonCount(live.poison),
+                          style: TextStyle(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => notifier.adjustPoison(index, 1),
+                          child: Text(l10n.oneViewPoisonPlus),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: LayoutTokens.gr3),
+                  Text(
+                    l10n.oneViewCommanderDamageLabel,
+                    style: TextStyle(
+                      color: colors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        notifier.adjustPoison(index, 1);
+                  SizedBox(height: LayoutTokens.gr1),
+                  if (others.isEmpty)
+                    Text(
+                      l10n.oneViewCommanderDamageEmpty,
+                      style: TextStyle(color: colors.textSecondary),
+                    )
+                  else
+                    for (final from in others)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: LayoutTokens.gr1),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                from.displayName,
+                                style: TextStyle(color: colors.textPrimary),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed:
+                                  () => notifier.adjustCommanderDamage(
+                                    targetSeatIndex: index,
+                                    fromSeatIndex: from.index,
+                                    delta: -1,
+                                  ),
+                              icon: const Icon(Icons.remove_rounded),
+                            ),
+                            Text(
+                              '${live.commanderDamageFrom[from.index] ?? 0}',
+                              style: TextStyle(
+                                color: colors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed:
+                                  () => notifier.adjustCommanderDamage(
+                                    targetSeatIndex: index,
+                                    fromSeatIndex: from.index,
+                                    delta: 1,
+                                  ),
+                              icon: const Icon(Icons.add_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                  SizedBox(height: LayoutTokens.gr2),
+                  if (!live.isGuest)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.style),
+                      title: Text(l10n.oneViewChangeDeck),
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        await showOneViewDeckPicker(context, ref, index);
                       },
-                      child: Text(l10n.oneViewPoisonPlus),
                     ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.logout_rounded, color: colors.error),
+                    title: Text(
+                      l10n.oneViewClearSeat,
+                      style: TextStyle(color: colors.error),
+                    ),
+                    onTap: () {
+                      notifier.clearSeat(index);
+                      Navigator.pop(ctx);
+                    },
                   ),
                 ],
               ),
-              SizedBox(height: LayoutTokens.gr2),
-              if (!seat.isGuest)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.style),
-                  title: Text(l10n.oneViewChangeDeck),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    await showOneViewDeckPicker(context, ref, index);
-                  },
-                ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.logout_rounded, color: colors.error),
-                title: Text(
-                  l10n.oneViewClearSeat,
-                  style: TextStyle(color: colors.error),
-                ),
-                onTap: () {
-                  notifier.clearSeat(index);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -332,6 +463,14 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
             children: [
               GameSheetHeader(title: l10n.oneViewTableMenu),
               ListTile(
+                leading: const Icon(Icons.tune_rounded),
+                title: Text(l10n.oneViewMidGameSettings),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await showOneViewSettingsSheet(context, ref);
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.restart_alt_rounded),
                 title: Text(l10n.oneViewResetLife),
                 onTap: () {
@@ -340,11 +479,11 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.person_add_alt_1_rounded),
-                title: Text(l10n.oneViewAddSeat),
-                onTap: () {
-                  ref.read(oneViewProvider.notifier).addSeats(1);
+                leading: const Icon(Icons.groups_rounded),
+                title: Text(l10n.oneViewPlayerCountTitle),
+                onTap: () async {
                   Navigator.pop(ctx);
+                  await showOneViewPlayerCountSheet(context, ref);
                 },
               ),
               ListTile(
@@ -369,13 +508,17 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen> {
 class _CenterTools extends StatelessWidget {
   const _CenterTools({
     required this.onResetLife,
-    required this.onAddSeat,
+    required this.onPlayerCount,
+    required this.onDice,
+    required this.onColors,
     required this.onMenu,
     required this.onLeave,
   });
 
   final VoidCallback onResetLife;
-  final VoidCallback onAddSeat;
+  final VoidCallback onPlayerCount;
+  final VoidCallback onDice;
+  final VoidCallback onColors;
   final VoidCallback onMenu;
   final VoidCallback onLeave;
 
@@ -387,7 +530,7 @@ class _CenterTools extends StatelessWidget {
       color: colors.surface,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: LayoutTokens.gr2,
+          horizontal: LayoutTokens.gr1,
           vertical: LayoutTokens.gr1,
         ),
         child: Row(
@@ -398,9 +541,19 @@ class _CenterTools extends StatelessWidget {
               icon: const Icon(Icons.restart_alt_rounded),
             ),
             IconButton(
-              tooltip: l10n.oneViewAddSeat,
-              onPressed: onAddSeat,
-              icon: const Icon(Icons.person_add_alt_1_rounded),
+              tooltip: l10n.oneViewPlayerCountTitle,
+              onPressed: onPlayerCount,
+              icon: const Icon(Icons.groups_rounded),
+            ),
+            IconButton(
+              tooltip: l10n.tableToolsTitle,
+              onPressed: onDice,
+              icon: const Icon(Icons.casino_rounded),
+            ),
+            IconButton(
+              tooltip: l10n.oneViewColorsTitle,
+              onPressed: onColors,
+              icon: const Icon(Icons.palette_rounded),
             ),
             const Spacer(),
             IconButton(
@@ -639,7 +792,10 @@ class _SeatTile extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: RadiusTokens.radiusXl,
           side: BorderSide(
-            color: seat.seatColor.withValues(alpha: OpacityTokens.half),
+            color: (seat.teamIndex > 0
+                    ? teamColor(seat.teamIndex)
+                    : seat.seatColor)
+                .withValues(alpha: OpacityTokens.half),
             width: 2,
           ),
         ),
