@@ -939,6 +939,12 @@ abstract class AppLocalizations {
   /// **'Claim for {name}'**
   String oneViewXpClaimFor(String name);
 
+  /// No description provided for @oneViewXpClaimStep.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String oneViewXpClaimStep(int current, int total);
+
   /// No description provided for @oneViewClaimXp.
   ///
   /// In en, this message translates to:

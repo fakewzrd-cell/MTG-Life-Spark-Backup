@@ -63,6 +63,13 @@ class _XpClaimHandoffBodyState extends State<_XpClaimHandoffBody> {
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (widget.claims.length > 1) ...[
+            SizedBox(height: LayoutTokens.gr1),
+            Text(
+              l10n.oneViewXpClaimStep(_index + 1, widget.claims.length),
+              style: TextStyle(color: colors.textSecondary),
+            ),
+          ],
           SizedBox(height: LayoutTokens.gr3),
           Container(
             padding: const EdgeInsets.all(12),

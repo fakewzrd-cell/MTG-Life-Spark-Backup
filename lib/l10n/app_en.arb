@@ -241,6 +241,17 @@
       }
     }
   },
+  "oneViewXpClaimStep": "{current} of {total}",
+  "@oneViewXpClaimStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "oneViewClaimXp": "Claim One View XP",
   "oneViewClaimXpSubtitle": "Scan a claim QR from the table phone",
   "oneViewClaimXpScanTitle": "Scan XP claim",

@@ -42,6 +42,7 @@ class OneViewXpClaimService {
 
   Future<OneViewXpClaimResult> apply(OneViewXpClaimData claim) async {
     await _claimRepo.init();
+    await _matchRepo.init();
     final profile = _profileRepo.getProfile();
     if (profile == null) {
       return const OneViewXpClaimResult(status: OneViewXpClaimStatus.noProfile);
@@ -64,12 +65,9 @@ class OneViewXpClaimService {
       isFirstWin: isFirstWin,
       playerCount: claim.playerCount,
     );
+    // Solo / malformed claims never award XP — don't burn the claim key.
     if (xp <= 0) {
-      await _claimRepo.markClaimed(claim.claimKey);
-      return const OneViewXpClaimResult(
-        status: OneViewXpClaimStatus.applied,
-        xpGained: 0,
-      );
+      return const OneViewXpClaimResult(status: OneViewXpClaimStatus.failed);
     }
 
     try {
@@ -84,7 +82,7 @@ class OneViewXpClaimService {
                     : 'Unknown',
             opponentNames: claim.opponentNames,
             result: won ? 'win' : 'loss',
-            eliminationReason: won ? 'survived' : 'survived',
+            eliminationReason: 'survived',
             format: claim.format,
             durationMinutes: claim.durationSeconds ~/ 60,
             startingLifeTotal: claim.startingLife,

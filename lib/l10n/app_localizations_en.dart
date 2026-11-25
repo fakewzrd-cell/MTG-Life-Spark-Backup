@@ -479,6 +479,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String oneViewXpClaimStep(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
   String get oneViewClaimXp => 'Claim One View XP';
 
   @override

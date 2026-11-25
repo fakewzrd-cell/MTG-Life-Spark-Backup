@@ -94,17 +94,22 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
 
     String? winnerPlayerId;
     if (claimed.length >= 2) {
-      winnerPlayerId = await _pickWinner(claimed);
+      final pick = await _pickWinner(claimed);
       if (!mounted) return;
+      // Cancel aborts the whole end-table flow (table stays open).
+      if (pick == null) return;
+      winnerPlayerId = pick.winnerPlayerId;
     }
 
+    // One match id shared by host recording + friend claim QRs.
+    final matchId = DateTime.now().millisecondsSinceEpoch.toString();
     final snapshots = oneViewRecordingSnapshots(
       oneView: oneView,
       localPlayerId: profile?.playerId,
       winnerPlayerId: winnerPlayerId,
     );
 
-    String? matchId;
+    var recordedXp = 0;
     if (snapshots != null && snapshots.game.localPlayerId.isNotEmpty) {
       final result = await ref
           .read(progressionServiceProvider)
@@ -112,25 +117,24 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
             finalState: snapshots.game,
             lobbyState: snapshots.lobby,
             startTime: oneView.startTime ?? DateTime.now(),
+            matchId: matchId,
           );
-      matchId = result.matchId.isEmpty ? null : result.matchId;
       bumpProfileRevision(ref);
       bumpDeckListRevision(ref);
-      if (mounted && result.awardsProgression && result.xpGained > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.oneViewMatchRecorded(result.xpGained))),
-        );
+      if (result.awardsProgression && result.xpGained > 0) {
+        recordedXp = result.xpGained;
       }
     }
 
-    // Cross-phone XP: claim QRs for sit-code seats (not guests / not local).
-    final claimSeats = oneViewXpClaimSeats(
-      oneView: oneView,
-      localPlayerId: profile?.playerId,
-    );
+    // Cross-phone XP only when the table itself would award progression.
+    final claimSeats =
+        claimed.length >= 2
+            ? oneViewXpClaimSeats(
+              oneView: oneView,
+              localPlayerId: profile?.playerId,
+            )
+            : const <OneViewSeat>[];
     if (mounted && claimSeats.isNotEmpty) {
-      final resolvedMatchId =
-          matchId ?? DateTime.now().millisecondsSinceEpoch.toString();
       final start = oneView.startTime ?? DateTime.now();
       final durationSeconds = DateTime.now().difference(start).inSeconds;
       final claims =
@@ -143,7 +147,7 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
             return (
               seat: seat,
               payload: OneViewXpClaim.build(
-                matchId: resolvedMatchId,
+                matchId: matchId,
                 playerId: seat.playerId!,
                 username: seat.displayName,
                 won: winnerPlayerId != null && winnerPlayerId == seat.playerId,
@@ -159,16 +163,26 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
       await showOneViewXpClaimHandoffSheet(context: context, claims: claims);
     }
 
+    if (mounted && recordedXp > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.oneViewMatchRecorded(recordedXp))),
+      );
+    }
+
     ref.read(oneViewProvider.notifier).reset();
     if (!mounted) return;
     context.go(AppRoutes.lobby);
   }
 
-  /// Returns winner playerId, or null when skipped / cancelled as "no winner".
-  Future<String?> _pickWinner(List<OneViewSeat> claimed) async {
+  /// Picks a winner, or skip (no winner). Returns null when the user cancels
+  /// (abort end-table).
+  Future<({String? winnerPlayerId})?> _pickWinner(
+    List<OneViewSeat> claimed,
+  ) async {
     final l10n = AppLocalizations.of(context);
-    return showDialog<String?>(
+    return showDialog<({String? winnerPlayerId})>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
           title: Text(l10n.oneViewPickWinnerTitle),
@@ -182,14 +196,21 @@ class _OneViewTableScreenState extends ConsumerState<OneViewTableScreen>
                 for (final seat in claimed)
                   ListTile(
                     title: Text(seat.displayName),
-                    onTap: () => Navigator.pop(ctx, seat.playerId),
+                    onTap:
+                        () => Navigator.pop(ctx, (
+                          winnerPlayerId: seat.playerId,
+                        )),
                   ),
               ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx, null),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, (winnerPlayerId: null)),
               child: Text(l10n.oneViewPickWinnerSkip),
             ),
           ],
