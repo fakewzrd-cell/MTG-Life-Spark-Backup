@@ -21,7 +21,9 @@ jobs:
         run: flutter pub get
 
       - name: Analyze lib
-        run: flutter analyze lib
+        # Stable Flutter currently reports mass material.dart deprecation infos;
+        # keep errors/warnings fatal without blocking the job on infos alone.
+        run: flutter analyze lib --no-fatal-infos
 
       - name: Test with coverage
         run: flutter test --coverage
