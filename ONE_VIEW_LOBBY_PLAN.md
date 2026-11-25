@@ -130,8 +130,15 @@ v1 ships all 1–6 as usable maps; 4 is the showcase layout.
 
 ## Implementation todos
 
-- [ ] Lobby hub shows One View | Own View; Own View opens existing Host/Join with no behavior change
-- [ ] Add One View setup screen (players, layout, life, LobbyConfig toggles) and local seat bootstrap without Wi-Fi
-- [ ] Add rotated tabletop with claimable seats, deck pick, life controls, and mid-game settings
-- [ ] Add Sit as me / Guest / QR sit-code claiming and deck picker on seat claim
-- [ ] Add English One View / Own View strings and update router for the hub + One View routes
+- [x] Lobby hub shows One View | Own View; Own View opens existing Host/Join with no behavior change
+- [x] Add One View setup screen (players, layout, life, LobbyConfig toggles) and local seat bootstrap without Wi-Fi
+- [x] Add rotated tabletop with claimable seats, deck pick, life controls, and mid-game settings
+- [x] Add Sit as me / Guest / QR sit-code claiming and deck picker on seat claim
+- [x] Add English One View / Own View strings and update router for the hub + One View routes
+
+### Follow-ups (not blocking v1)
+
+- Mid-game LobbyConfig editor from the center menu (toggles beyond reset / add seat / end)
+- Commander-damage-from-seat picker UI (poison is in seat tools; full matrix polish later)
+- Match history / XP recording for seated One View profiles beyond this-device life tracking
+- Landscape lock enforcement on tablets; portrait fallback polish for odd seat counts

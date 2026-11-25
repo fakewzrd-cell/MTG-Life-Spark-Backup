@@ -19,6 +19,9 @@ import '../../features/settings/about_screen.dart';
 import '../../features/feedback/feedback_screen.dart';
 import '../../features/lobby/lobby_screen.dart';
 import '../../features/lobby/join_scan_screen.dart';
+import '../../features/lobby/own_view_lobby_screen.dart';
+import '../../features/one_view/one_view_setup_screen.dart';
+import '../../features/one_view/one_view_table_screen.dart';
 import '../../features/commander/commander_select_screen.dart';
 import '../../features/game/screens/game_screen.dart';
 import '../../features/end_game/end_game_screen.dart';
@@ -31,8 +34,11 @@ class AppRoutes {
   static const onboarding = '/onboarding';
   static const home = '/home';
   static const lobby = '/lobby';
+  static const lobbyOwnView = '/lobby/own';
   static const lobbyHost = '/lobby/host';
   static const lobbyJoin = '/lobby/join';
+  static const oneViewSetup = '/lobby/one-view/setup';
+  static const oneViewTable = '/lobby/one-view/table';
   static const settings = '/settings';
 
   /// Primary route for deck library (shell tab).
@@ -145,6 +151,33 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.lobby,
                 builder: (context, state) => const GameLobbyScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'own',
+                    builder: (context, state) => const OwnViewLobbyScreen(),
+                  ),
+                  GoRoute(
+                    path: 'one-view',
+                    redirect: (context, state) {
+                      // Bare /lobby/one-view → setup
+                      if (state.uri.path == '/lobby/one-view') {
+                        return AppRoutes.oneViewSetup;
+                      }
+                      return null;
+                    },
+                    routes: [
+                      GoRoute(
+                        path: 'setup',
+                        builder:
+                            (context, state) => const OneViewSetupScreen(),
+                      ),
+                      GoRoute(
+                        path: 'table',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        builder:
+                            (context, state) => const OneViewTableScreen(),
+                      ),
+                    ],
+                  ),
                   GoRoute(
                     path: 'host',
                     builder: (context, state) => const LobbyScreen(),

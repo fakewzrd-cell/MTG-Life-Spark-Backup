@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/one_view/one_view_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/utils/app_router.dart';
 import '../../ui/theme/app_color_tokens.dart';
@@ -10,13 +12,12 @@ import '../../ui/tokens/opacity_tokens.dart';
 import '../../ui/tokens/radius_tokens.dart';
 import '../../ui/tokens/typography_tokens.dart';
 
-/// Game lobby — title, then large Host / Join with equal gaps
-/// title→Host, Host→Join, and Join→nav.
-class GameLobbyScreen extends StatelessWidget {
+/// Game lobby hub — One View (shared phone) | Own View (separate phones).
+class GameLobbyScreen extends ConsumerWidget {
   const GameLobbyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = AppColorTokens.of(context);
     final l10n = AppLocalizations.of(context);
     // Sit on the nav's top edge so the last spacer is the Join↔nav gap.
@@ -46,21 +47,24 @@ class GameLobbyScreen extends StatelessWidget {
                     Expanded(
                       flex: 6,
                       child: _BigActionButton(
-                        label: l10n.lobbyHostGame,
-                        subtitle: l10n.lobbyHostGameSubtitle,
-                        icon: Icons.groups_rounded,
+                        label: l10n.oneViewTitle,
+                        subtitle: l10n.oneViewSubtitle,
+                        icon: Icons.table_restaurant_rounded,
                         filled: true,
-                        onTap: () => context.push(AppRoutes.lobbyHost),
+                        onTap: () {
+                          ref.read(oneViewProvider.notifier).prepareSetup();
+                          context.push(AppRoutes.oneViewSetup);
+                        },
                       ),
                     ),
                     const Spacer(flex: 1),
                     Expanded(
                       flex: 6,
                       child: _BigActionButton(
-                        label: l10n.lobbyJoinGame,
-                        subtitle: l10n.lobbyJoinGameSubtitle,
-                        icon: Icons.qr_code_scanner_rounded,
-                        onTap: () => context.push(AppRoutes.lobbyJoin),
+                        label: l10n.ownViewTitle,
+                        subtitle: l10n.ownViewSubtitle,
+                        icon: Icons.phone_android_rounded,
+                        onTap: () => context.push(AppRoutes.lobbyOwnView),
                       ),
                     ),
                     const Spacer(flex: 1),
@@ -104,7 +108,7 @@ class _BigActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  /// Host is the filled primary. Join stays a quiet surface.
+  /// One View is the filled primary. Own View stays a quiet surface.
   final bool filled;
 
   @override

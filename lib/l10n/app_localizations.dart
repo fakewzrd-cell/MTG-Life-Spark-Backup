@@ -579,6 +579,30 @@ abstract class AppLocalizations {
   /// **'Lobby'**
   String get lobbyTitle;
 
+  /// No description provided for @oneViewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One View'**
+  String get oneViewTitle;
+
+  /// No description provided for @oneViewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone shares this phone'**
+  String get oneViewSubtitle;
+
+  /// No description provided for @ownViewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Own View'**
+  String get ownViewTitle;
+
+  /// No description provided for @ownViewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Each player uses their own phone'**
+  String get ownViewSubtitle;
+
   /// No description provided for @lobbyHostGame.
   ///
   /// In en, this message translates to:
@@ -602,6 +626,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan the host\'s QR code on the same Wi‑Fi'**
   String get lobbyJoinGameSubtitle;
+
+  /// No description provided for @oneViewSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One View setup'**
+  String get oneViewSetupTitle;
+
+  /// No description provided for @oneViewPlayersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Players'**
+  String get oneViewPlayersLabel;
+
+  /// No description provided for @oneViewStartTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Start table'**
+  String get oneViewStartTable;
+
+  /// No description provided for @oneViewEmptySeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty seat — tap to sit'**
+  String get oneViewEmptySeat;
+
+  /// No description provided for @oneViewClaimSeatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim seat'**
+  String get oneViewClaimSeatTitle;
+
+  /// No description provided for @oneViewSitAsMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit as me'**
+  String get oneViewSitAsMe;
+
+  /// No description provided for @oneViewSitAsMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this phone’s profile, then pick a deck'**
+  String get oneViewSitAsMeSubtitle;
+
+  /// No description provided for @oneViewLoadViaQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Load profile via QR'**
+  String get oneViewLoadViaQr;
+
+  /// No description provided for @oneViewLoadViaQrSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a friend’s sit code — no Wi‑Fi game'**
+  String get oneViewLoadViaQrSubtitle;
+
+  /// No description provided for @oneViewSitAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get oneViewSitAsGuest;
+
+  /// No description provided for @oneViewSitAsGuestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name only — no deck or stats'**
+  String get oneViewSitAsGuestSubtitle;
+
+  /// No description provided for @oneViewGuestNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest name'**
+  String get oneViewGuestNameTitle;
+
+  /// No description provided for @oneViewGuestNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional name'**
+  String get oneViewGuestNameHint;
+
+  /// No description provided for @oneViewSitBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'That profile is already seated, or the seat is taken.'**
+  String get oneViewSitBlocked;
+
+  /// No description provided for @oneViewSkipDeck.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without a deck'**
+  String get oneViewSkipDeck;
+
+  /// No description provided for @oneViewNoDecks.
+  ///
+  /// In en, this message translates to:
+  /// **'No decks for this format yet. Add one in Decks.'**
+  String get oneViewNoDecks;
+
+  /// No description provided for @oneViewChangeDeck.
+  ///
+  /// In en, this message translates to:
+  /// **'Change deck'**
+  String get oneViewChangeDeck;
+
+  /// No description provided for @oneViewClearSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear seat'**
+  String get oneViewClearSeat;
+
+  /// No description provided for @oneViewPoisonMinus.
+  ///
+  /// In en, this message translates to:
+  /// **'Poison −'**
+  String get oneViewPoisonMinus;
+
+  /// No description provided for @oneViewPoisonPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'Poison +'**
+  String get oneViewPoisonPlus;
+
+  /// No description provided for @oneViewPoisonCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Poison {count}'**
+  String oneViewPoisonCount(int count);
+
+  /// No description provided for @oneViewResetLife.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset life'**
+  String get oneViewResetLife;
+
+  /// No description provided for @oneViewAddSeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Add seat'**
+  String get oneViewAddSeat;
+
+  /// No description provided for @oneViewTableMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Table menu'**
+  String get oneViewTableMenu;
+
+  /// No description provided for @oneViewEndTableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'End One View?'**
+  String get oneViewEndTableTitle;
+
+  /// No description provided for @oneViewEndTableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Life totals on this table will be cleared.'**
+  String get oneViewEndTableBody;
+
+  /// No description provided for @oneViewEndTableConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'End table'**
+  String get oneViewEndTableConfirm;
+
+  /// No description provided for @oneViewScanSitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan sit code'**
+  String get oneViewScanSitCode;
+
+  /// No description provided for @oneViewShowSitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show sit code'**
+  String get oneViewShowSitCode;
+
+  /// No description provided for @oneViewShowSitCodeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends scan this to sit at One View'**
+  String get oneViewShowSitCodeSubtitle;
+
+  /// No description provided for @oneViewShowSitCodeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this QR at a One View table. It is not a Host join code.'**
+  String get oneViewShowSitCodeBody;
 
   /// No description provided for @hostLobbyTitle.
   ///

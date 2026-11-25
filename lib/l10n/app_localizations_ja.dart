@@ -264,6 +264,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lobbyTitle => 'ロビー';
 
   @override
+  String get oneViewTitle => 'One View';
+
+  @override
+  String get oneViewSubtitle => 'Everyone shares this phone';
+
+  @override
+  String get ownViewTitle => 'Own View';
+
+  @override
+  String get ownViewSubtitle => 'Each player uses their own phone';
+
+  @override
   String get lobbyHostGame => 'ホストする';
 
   @override
@@ -274,6 +286,108 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lobbyJoinGameSubtitle => '同じWi‑FiでホストのQRコードを読み取る';
+
+  @override
+  String get oneViewSetupTitle => 'One View setup';
+
+  @override
+  String get oneViewPlayersLabel => 'Players';
+
+  @override
+  String get oneViewStartTable => 'Start table';
+
+  @override
+  String get oneViewEmptySeat => 'Empty seat — tap to sit';
+
+  @override
+  String get oneViewClaimSeatTitle => 'Claim seat';
+
+  @override
+  String get oneViewSitAsMe => 'Sit as me';
+
+  @override
+  String get oneViewSitAsMeSubtitle =>
+      'Use this phone’s profile, then pick a deck';
+
+  @override
+  String get oneViewLoadViaQr => 'Load profile via QR';
+
+  @override
+  String get oneViewLoadViaQrSubtitle =>
+      'Scan a friend’s sit code — no Wi‑Fi game';
+
+  @override
+  String get oneViewSitAsGuest => 'Guest';
+
+  @override
+  String get oneViewSitAsGuestSubtitle => 'Name only — no deck or stats';
+
+  @override
+  String get oneViewGuestNameTitle => 'Guest name';
+
+  @override
+  String get oneViewGuestNameHint => 'Optional name';
+
+  @override
+  String get oneViewSitBlocked =>
+      'That profile is already seated, or the seat is taken.';
+
+  @override
+  String get oneViewSkipDeck => 'Continue without a deck';
+
+  @override
+  String get oneViewNoDecks =>
+      'No decks for this format yet. Add one in Decks.';
+
+  @override
+  String get oneViewChangeDeck => 'Change deck';
+
+  @override
+  String get oneViewClearSeat => 'Clear seat';
+
+  @override
+  String get oneViewPoisonMinus => 'Poison −';
+
+  @override
+  String get oneViewPoisonPlus => 'Poison +';
+
+  @override
+  String oneViewPoisonCount(int count) {
+    return 'Poison $count';
+  }
+
+  @override
+  String get oneViewResetLife => 'Reset life';
+
+  @override
+  String get oneViewAddSeat => 'Add seat';
+
+  @override
+  String get oneViewTableMenu => 'Table menu';
+
+  @override
+  String get oneViewEndTableTitle => 'End One View?';
+
+  @override
+  String get oneViewEndTableBody =>
+      'Life totals on this table will be cleared.';
+
+  @override
+  String get oneViewEndTableConfirm => 'End table';
+
+  @override
+  String get oneViewScanSitCode => 'Scan sit code';
+
+  @override
+  String get oneViewShowSitCode => 'Show sit code';
+
+  @override
+  String get oneViewShowSitCodeSubtitle =>
+      'Friends scan this to sit at One View';
+
+  @override
+  String get oneViewShowSitCodeBody =>
+      'Show this QR at a One View table. It is not a Host join code.';
 
   @override
   String get hostLobbyTitle => 'ホストロビー';

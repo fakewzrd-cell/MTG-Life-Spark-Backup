@@ -8,7 +8,12 @@ import '../../ui/tokens/layout_tokens.dart';
 import '../game/widgets/game_modal_chrome.dart';
 
 /// Actions from the profile hero overflow sheet.
-enum ProfileSheetAction { editProfile, backupProfile, restoreProfile }
+enum ProfileSheetAction {
+  editProfile,
+  showSitCode,
+  backupProfile,
+  restoreProfile,
+}
 
 /// Quiet listing: Edit, Back up, and Load backup.
 Future<ProfileSheetAction?> showProfileOptionsSheet(BuildContext context) {
@@ -44,6 +49,13 @@ class _ProfileOptionsSheet extends StatelessWidget {
             title: l10n.profileOptionsEdit,
             subtitle: l10n.profileOptionsEditSubtitle,
             onTap: () => _pick(context, ProfileSheetAction.editProfile),
+          ),
+          _ProfileOptionTile(
+            colors: colors,
+            icon: Icons.qr_code_2_rounded,
+            title: l10n.oneViewShowSitCode,
+            subtitle: l10n.oneViewShowSitCodeSubtitle,
+            onTap: () => _pick(context, ProfileSheetAction.showSitCode),
           ),
           _ProfileOptionTile(
             colors: colors,
